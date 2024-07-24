@@ -9,6 +9,7 @@
 #include <typeindex>
 #include <typeinfo>
 #include <unordered_map>
+#include "renderer.hpp"
 
 namespace SPRF {
 
@@ -330,6 +331,11 @@ class Scene {
     /** @brief Active camera in the scene */
     raylib::Camera3D* m_active_camera = NULL;
 
+    int camPosLoc;
+    int kaLoc;
+
+    Renderer m_renderer;
+
     /**
      * @brief Add an entity to the scene.
      * @param entity Shared pointer to the entity.
@@ -375,7 +381,15 @@ class Scene {
     }
 
   public:
-    Scene() {}
+    Scene() {
+        camPosLoc = m_renderer.shader().GetLocation("camPos");
+        kaLoc = m_renderer.shader().GetLocation("ka");
+        set_ka(0.1);
+    }
+
+    Renderer& renderer(){
+        return m_renderer;
+    }
 
     /**
      * @brief Create a new entity in the scene.
@@ -413,17 +427,26 @@ class Scene {
         m_active_camera = camera;
     }
 
+    void set_ka(float ka){
+        m_renderer.shader().SetValue(kaLoc,&ka,SHADER_UNIFORM_FLOAT);
+    }
+
     /**
      * @brief Draw scene.
      */
     void draw() {
         update();
+        auto camera_pos = get_active_camera().GetPosition();
+        float camPos[3] = {camera_pos.x,camera_pos.y,camera_pos.z};
+        m_renderer.shader().SetValue(camPosLoc,(void*)camPos,SHADER_UNIFORM_VEC3);
 
         ClearBackground(BLACK);
 
         get_active_camera().BeginMode();
 
         draw3D();
+
+        m_renderer.render();
 
         get_active_camera().EndMode();
 

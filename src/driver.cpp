@@ -6,7 +6,7 @@
 
 #include "camera.hpp"
 #include "ecs.hpp"
-#include "renderer.hpp"
+#include "model.hpp"
 
 namespace SPRF {
 
@@ -15,8 +15,7 @@ class Script : public Component {
     void init() { this->entity().get_component<Transform>().position.z = 10; }
 
     void update() {
-        // this->entity().get_component<Transform>().position.z -=
-        // GetFrameTime();
+        //this->entity().get_component<Transform>().position.z -= GetFrameTime();
     }
 };
 
@@ -37,14 +36,14 @@ int main() {
 
     SPRF::Scene scene;
 
+    auto render_model = scene.renderer().create_render_model(std::make_shared<raylib::Model>(raylib::Mesh::Sphere(1, 50, 50)));
+
     auto test = scene.create_entity();
-    test->add_component<SPRF::Model>(
-        std::make_shared<raylib::Model>(raylib::Mesh::Sphere(1, 50, 50)));
+    test->add_component<SPRF::Model>(render_model);
     test->add_component<SPRF::Script>();
 
     auto child = test->create_child();
-    child->add_component<SPRF::Model>(
-        std::make_shared<raylib::Model>(raylib::Mesh::Sphere(1, 50, 50)));
+    child->add_component<SPRF::Model>(render_model);
     child->get_component<SPRF::Transform>().position.x = 3;
 
     auto my_camera = scene.create_entity();
