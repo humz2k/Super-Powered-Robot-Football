@@ -33,7 +33,7 @@ class Script2 : public Component {
 } // namespace SPRF
 
 int main() {
-    raylib::Window window(1024, 1024, "test");
+    raylib::Window window(900, 900, "test");
 
     SPRF::Scene scene;
 
@@ -56,8 +56,18 @@ int main() {
 
     SetTargetFPS(60);
 
+    raylib::RenderTexture2D tex(1024, 1024);
+    raylib::Rectangle render_rect(-raylib::Vector2(tex.GetTexture().GetSize()));
+    render_rect.SetWidth(-render_rect.GetWidth());
+
     while (!window.ShouldClose()) {
-        scene.draw(window);
+        BeginDrawing();
+        scene.draw(tex);
+
+        raylib::Rectangle window_rect(window.GetSize());
+
+        tex.GetTexture().Draw(render_rect, window_rect);
+        EndDrawing();
     }
 
     scene.destroy();

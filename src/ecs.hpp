@@ -416,12 +416,10 @@ class Scene {
     /**
      * @brief Draw scene.
      */
-    void draw(raylib::Window& window) {
+    void draw() {
         update();
 
-        BeginDrawing();
-
-        window.ClearBackground(BLACK);
+        ClearBackground(BLACK);
 
         get_active_camera().BeginMode();
 
@@ -432,8 +430,14 @@ class Scene {
         draw2D();
 
         DrawFPS(10, 10);
+    }
 
-        EndDrawing();
+    void draw(raylib::RenderTexture2D& texture) {
+        texture.BeginMode();
+
+        draw();
+
+        texture.EndMode();
     }
 };
 } // namespace SPRF

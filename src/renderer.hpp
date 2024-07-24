@@ -1,9 +1,9 @@
 #ifndef _SPRF_RENDERER_HPP_
 #define _SPRF_RENDERER_HPP_
 
-#include <memory>
 #include "ecs.hpp"
 #include "raylib-cpp.hpp"
+#include <memory>
 
 namespace SPRF {
 
