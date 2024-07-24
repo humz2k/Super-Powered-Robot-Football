@@ -7,6 +7,7 @@
 #include "camera.hpp"
 #include "ecs.hpp"
 #include "model.hpp"
+#include "shaders.hpp"
 
 namespace SPRF {
 
@@ -15,7 +16,8 @@ class Script : public Component {
     void init() { this->entity().get_component<Transform>().position.z = 10; }
 
     void update() {
-        //this->entity().get_component<Transform>().position.z -= GetFrameTime();
+        // this->entity().get_component<Transform>().position.z -=
+        // GetFrameTime();
     }
 };
 
@@ -36,7 +38,8 @@ int main() {
 
     SPRF::Scene scene;
 
-    auto render_model = scene.renderer().create_render_model(std::make_shared<raylib::Model>(raylib::Mesh::Sphere(1, 50, 50)));
+    auto render_model = scene.renderer().create_render_model(
+        std::make_shared<raylib::Model>(raylib::Mesh::Sphere(1, 50, 50)));
 
     auto test = scene.create_entity();
     test->add_component<SPRF::Model>(render_model);
@@ -46,10 +49,21 @@ int main() {
     child->add_component<SPRF::Model>(render_model);
     child->get_component<SPRF::Transform>().position.x = 3;
 
+    auto floor = scene.create_entity();
+    floor->add_component<SPRF::Model>(scene.renderer().create_render_model(
+        std::make_shared<raylib::Model>(raylib::Mesh::Plane(20, 20, 10, 10))));
+    floor->get_component<SPRF::Transform>().position.y = -1;
+
     auto my_camera = scene.create_entity();
     my_camera->add_component<SPRF::Camera>().set_active();
     my_camera->get_component<SPRF::Transform>().position.z = -10;
     my_camera->add_component<SPRF::Script2>();
+
+    //SPRF::Light light(scene.renderer().shader());
+    //SPRF::Light light2(scene.renderer().shader());
+
+    //light.enabled(1);
+    //light.L(raylib::Vector3(1,1,1));
 
     scene.init();
 

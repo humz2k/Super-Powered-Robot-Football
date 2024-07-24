@@ -2,6 +2,7 @@
 #define _SPRB_ECS_HPP_
 
 #include "raylib-cpp.hpp"
+#include "renderer.hpp"
 #include <cassert>
 #include <iostream>
 #include <memory>
@@ -9,7 +10,6 @@
 #include <typeindex>
 #include <typeinfo>
 #include <unordered_map>
-#include "renderer.hpp"
 
 namespace SPRF {
 
@@ -331,10 +331,10 @@ class Scene {
     /** @brief Active camera in the scene */
     raylib::Camera3D* m_active_camera = NULL;
 
-    int camPosLoc;
-    int kaLoc;
-
     Renderer m_renderer;
+
+    ShaderUniform<raylib::Vector3> campos_loc;
+    ShaderUniform<float> ka_loc;
 
     /**
      * @brief Add an entity to the scene.
@@ -381,15 +381,10 @@ class Scene {
     }
 
   public:
-    Scene() {
-        camPosLoc = m_renderer.shader().GetLocation("camPos");
-        kaLoc = m_renderer.shader().GetLocation("ka");
-        set_ka(0.1);
+    Scene() : ka_loc("ka",1,renderer().shader()), campos_loc("camPos",raylib::Vector3(0,0,0),renderer().shader()) {
     }
 
-    Renderer& renderer(){
-        return m_renderer;
-    }
+    Renderer& renderer() { return m_renderer; }
 
     /**
      * @brief Create a new entity in the scene.
@@ -427,8 +422,12 @@ class Scene {
         m_active_camera = camera;
     }
 
-    void set_ka(float ka){
-        m_renderer.shader().SetValue(kaLoc,&ka,SHADER_UNIFORM_FLOAT);
+    float ka(float v) {
+        return ka_loc.value(v);
+    }
+
+    float ka() const{
+        return ka_loc.value();
     }
 
     /**
@@ -436,9 +435,7 @@ class Scene {
      */
     void draw() {
         update();
-        auto camera_pos = get_active_camera().GetPosition();
-        float camPos[3] = {camera_pos.x,camera_pos.y,camera_pos.z};
-        m_renderer.shader().SetValue(camPosLoc,(void*)camPos,SHADER_UNIFORM_VEC3);
+        campos_loc.value(get_active_camera().GetPosition());
 
         ClearBackground(BLACK);
 
