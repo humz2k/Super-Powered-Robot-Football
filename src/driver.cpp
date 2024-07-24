@@ -4,26 +4,11 @@
 #include <string>
 #include <vector>
 
+#include "camera.hpp"
 #include "ecs.hpp"
+#include "renderer.hpp"
 
 namespace SPRF {
-
-class Model : public Component {
-  private:
-    std::shared_ptr<raylib::Model> m_model;
-
-  public:
-    Model(std::shared_ptr<raylib::Model> model) : m_model(model) {}
-
-    void draw3D(raylib::Matrix parent_transform) {
-        raylib::Matrix transform =
-            raylib::Matrix(m_model->GetTransform()) * parent_transform;
-        for (int i = 0; i < m_model->meshCount; i++) {
-            DrawMesh(m_model->meshes[i],
-                     m_model->materials[m_model->meshMaterial[i]], transform);
-        }
-    }
-};
 
 class Script : public Component {
   public:
@@ -72,24 +57,7 @@ int main() {
     SetTargetFPS(60);
 
     while (!window.ShouldClose()) {
-
-        scene.update();
-
-        BeginDrawing();
-
-        window.ClearBackground(BLACK);
-
-        scene.get_active_camera().BeginMode();
-
-        scene.draw3D();
-
-        scene.get_active_camera().EndMode();
-
-        scene.draw2D();
-
-        DrawFPS(10, 10);
-
-        EndDrawing();
+        scene.draw(window);
     }
 
     scene.destroy();
