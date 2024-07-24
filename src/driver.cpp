@@ -1,63 +1,65 @@
 #include "raylib-cpp.hpp"
+#include <iostream>
 #include <memory>
 #include <string>
 #include <vector>
-#include <iostream>
 
 #include "ecs.hpp"
 
-namespace SPRF{
+namespace SPRF {
 
-class Model : public Component{
-    private:
-        std::shared_ptr<raylib::Model> m_model;
-    public:
-        Model(std::shared_ptr<raylib::Model> model) : m_model(model){ }
+class Model : public Component {
+  private:
+    std::shared_ptr<raylib::Model> m_model;
 
-        void draw3D(raylib::Matrix parent_transform){
-            raylib::Matrix transform = raylib::Matrix(m_model->GetTransform()) * parent_transform;
-            for (int i = 0; i < m_model->meshCount; i++){
-                DrawMesh(m_model->meshes[i],m_model->materials[m_model->meshMaterial[i]], transform);
-            }
+  public:
+    Model(std::shared_ptr<raylib::Model> model) : m_model(model) {}
+
+    void draw3D(raylib::Matrix parent_transform) {
+        raylib::Matrix transform =
+            raylib::Matrix(m_model->GetTransform()) * parent_transform;
+        for (int i = 0; i < m_model->meshCount; i++) {
+            DrawMesh(m_model->meshes[i],
+                     m_model->materials[m_model->meshMaterial[i]], transform);
         }
+    }
 };
 
-class Script : public Component{
-    public:
-        void init(){
-            this->entity().get_component<Transform>().position.z = 10;
-        }
+class Script : public Component {
+  public:
+    void init() { this->entity().get_component<Transform>().position.z = 10; }
 
-        void update(){
-            //this->entity().get_component<Transform>().position.z -= GetFrameTime();
-        }
+    void update() {
+        // this->entity().get_component<Transform>().position.z -=
+        // GetFrameTime();
+    }
 };
 
-class Script2 : public Component{
-    public:
-        void init(){
-            this->entity().get_component<Transform>().position.x = 3;
-        }
+class Script2 : public Component {
+  public:
+    void init() { this->entity().get_component<Transform>().position.x = 3; }
 
-        void update(){
-            //this->entity().get_component<Transform>().rotation.y -= GetFrameTime() * 0.1;
-        }
+    void update() {
+        // this->entity().get_component<Transform>().rotation.y -=
+        // GetFrameTime() * 0.1;
+    }
 };
 
-}
+} // namespace SPRF
 
-
-int main(){
-    raylib::Window window(1024,1024,"test");
+int main() {
+    raylib::Window window(1024, 1024, "test");
 
     SPRF::Scene scene;
 
     auto test = scene.create_entity();
-    test->add_component<SPRF::Model>(std::make_shared<raylib::Model>(raylib::Mesh::Sphere(1,50,50)));
+    test->add_component<SPRF::Model>(
+        std::make_shared<raylib::Model>(raylib::Mesh::Sphere(1, 50, 50)));
     test->add_component<SPRF::Script>();
 
     auto child = test->create_child();
-    child->add_component<SPRF::Model>(std::make_shared<raylib::Model>(raylib::Mesh::Sphere(1,50,50)));
+    child->add_component<SPRF::Model>(
+        std::make_shared<raylib::Model>(raylib::Mesh::Sphere(1, 50, 50)));
     child->get_component<SPRF::Transform>().position.x = 3;
 
     auto my_camera = scene.create_entity();
@@ -69,7 +71,7 @@ int main(){
 
     SetTargetFPS(60);
 
-    while (!window.ShouldClose()){
+    while (!window.ShouldClose()) {
 
         scene.update();
 
@@ -85,7 +87,7 @@ int main(){
 
         scene.draw2D();
 
-        DrawFPS(10,10);
+        DrawFPS(10, 10);
 
         EndDrawing();
     }
