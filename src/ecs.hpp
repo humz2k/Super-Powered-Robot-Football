@@ -333,9 +333,6 @@ class Scene {
 
     Renderer m_renderer;
 
-    ShaderUniform<raylib::Vector3> campos_loc;
-    ShaderUniform<float> ka_loc;
-
     /**
      * @brief Add an entity to the scene.
      * @param entity Shared pointer to the entity.
@@ -381,7 +378,7 @@ class Scene {
     }
 
   public:
-    Scene() : ka_loc("ka",1,renderer().shader()), campos_loc("camPos",raylib::Vector3(0,0,0),renderer().shader()) {
+    Scene() {
     }
 
     Renderer& renderer() { return m_renderer; }
@@ -422,28 +419,21 @@ class Scene {
         m_active_camera = camera;
     }
 
-    float ka(float v) {
-        return ka_loc.value(v);
-    }
-
-    float ka() const{
-        return ka_loc.value();
-    }
-
     /**
      * @brief Draw scene.
      */
     void draw() {
         update();
-        campos_loc.value(get_active_camera().GetPosition());
 
         ClearBackground(BLACK);
 
-        get_active_camera().BeginMode();
-
         draw3D();
 
-        m_renderer.render();
+        m_renderer.calculate_shadows();
+
+        get_active_camera().BeginMode();
+
+        m_renderer.render(get_active_camera());
 
         get_active_camera().EndMode();
 
@@ -453,11 +443,27 @@ class Scene {
     }
 
     void draw(raylib::RenderTexture2D& texture) {
+        update();
+
+        ClearBackground(BLACK);
+
+        draw3D();
+
+        m_renderer.calculate_shadows();
+
         texture.BeginMode();
 
-        draw();
+        get_active_camera().BeginMode();
+
+        m_renderer.render(get_active_camera());
+
+        get_active_camera().EndMode();
 
         texture.EndMode();
+
+        draw2D();
+
+        DrawFPS(10, 10);
     }
 };
 } // namespace SPRF
