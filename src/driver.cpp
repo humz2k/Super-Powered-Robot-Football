@@ -73,7 +73,7 @@ int main() {
 
     SPRF::Game game(900, 900, "test", 900, 900, 200);
 
-    //ToggleFullscreen();
+    // ToggleFullscreen();
 
     game.load_scene<SPRF::Scene1>();
 
