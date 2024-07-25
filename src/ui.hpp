@@ -74,6 +74,8 @@ class UIWindow : public UIElement {
         r.SetPosition(r.GetPosition() + offset);
         return r.CheckCollision(GetMousePosition());
     }
+
+    void set_transparency(int transparency) { m_color.a = transparency; }
 };
 
 class UIText : public UIElement {

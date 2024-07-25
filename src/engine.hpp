@@ -112,6 +112,8 @@ class DefaultScene : public Scene {
     DefaultScene()
         : m_dev_console(
               this->create_entity()->add_component<DefaultDevConsole>()) {}
+
+    DefaultDevConsole& dev_console() { return m_dev_console; }
 };
 
 } // namespace SPRF

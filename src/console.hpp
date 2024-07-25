@@ -20,6 +20,7 @@ class DevConsoleCommand {
 
 class DevConsole : public Component, public UITextInputBox {
   private:
+    int m_transparency = 230;
     UIWindow m_background;
     UIWindow m_foreground;
     std::vector<UIText> m_text_boxes;
@@ -49,9 +50,9 @@ class DevConsole : public Component, public UITextInputBox {
   public:
     DevConsole(int n_lines = 50, float scroll_speed = 2)
         : m_background(raylib::Vector2(0.1, 0.1), raylib::Vector2(0.9, 0.9),
-                       raylib::Color(23, 27, 33, 230)),
+                       raylib::Color(23, 27, 33, m_transparency)),
           m_foreground(raylib::Vector2(0.12, 0.12), raylib::Vector2(0.88, 0.86),
-                       raylib::Color(30, 35, 43, 240)),
+                       raylib::Color(30, 35, 43, m_transparency)),
           m_font("/Users/humzaqureshi/GitHub/Super-Powered-Robot-Football/src/"
                  "JetBrainsMono-Regular.ttf"),
           m_scroll_speed(scroll_speed),
@@ -99,9 +100,13 @@ class DevConsole : public Component, public UITextInputBox {
         if (!m_enabled)
             return;
         UITextInputBox::update(m_offset);
-        if ((m_background.mouse_over(m_offset)) && (IsMouseButtonDown(0)) &&
-            (!m_foreground.mouse_over(m_offset))) {
-            m_clicked = true;
+        if (IsMouseButtonDown(0)) {
+            if ((m_background.mouse_over(m_offset))) {
+                m_clicked = true;
+                m_transparency = 230;
+            } else {
+                m_transparency = 150;
+            }
         }
         if (IsMouseButtonUp(0)) {
             m_clicked = false;
@@ -133,6 +138,8 @@ class DevConsole : public Component, public UITextInputBox {
     void draw2D() {
         if (!m_enabled)
             return;
+        m_background.set_transparency(m_transparency);
+        m_foreground.set_transparency(m_transparency);
         m_background.draw(m_offset);
         m_foreground.draw(m_offset);
         assert(m_console_start >= 0);
@@ -170,6 +177,7 @@ class DevConsole : public Component, public UITextInputBox {
                     out_color = DARKBLUE;
                 }
             }
+            out_color.a = m_transparency;
             text_box.update_color(out_color);
             text_box.draw(m_offset);
         }
