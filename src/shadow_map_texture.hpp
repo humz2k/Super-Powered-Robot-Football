@@ -10,6 +10,17 @@
 
 namespace SPRF {
 
+/**
+ * @brief Load a shadow map render texture.
+ *
+ * This function creates a framebuffer object (FBO) with a depth texture
+ * attachment but without a color texture attachment, which is suitable for
+ * shadow mapping.
+ *
+ * @param width Width of the shadow map.
+ * @param height Height of the shadow map.
+ * @return RenderTexture2D The loaded shadow map render texture.
+ */
 static RenderTexture2D LoadShadowmapRenderTexture(int width, int height) {
     RenderTexture2D target = {0};
 
@@ -45,6 +56,14 @@ static RenderTexture2D LoadShadowmapRenderTexture(int width, int height) {
     return target;
 }
 
+/**
+ * @brief Unload a shadow map render texture.
+ *
+ * This function unloads the framebuffer object (FBO) and its associated depth
+ * texture.
+ *
+ * @param target The shadow map render texture to unload.
+ */
 static void UnloadShadowmapRenderTexture(RenderTexture2D target) {
     if (target.id > 0) {
         // NOTE: Depth texture/renderbuffer is automatically

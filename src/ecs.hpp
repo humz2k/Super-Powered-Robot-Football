@@ -20,6 +20,9 @@ class Transform;
 
 /**
  * @brief Base class for all components.
+ *
+ * Components are attached to entities and provide functionality such as
+ * rendering, updating, and more.
  */
 class Component {
   private:
@@ -54,11 +57,11 @@ class Component {
      */
     virtual void update() {}
     /**
-     * @brief Update the component before update.
+     * @brief Update the component before the main update.
      */
     virtual void before_update() {}
     /**
-     * @brief Update the component after update.
+     * @brief Update the component after the main update.
      */
     virtual void after_update() {}
     /**
@@ -112,6 +115,8 @@ class Transform {
 
 /**
  * @brief Class representing an entity in the scene.
+ *
+ * Entities are containers for components and manage their lifecycle.
  */
 class Entity {
   private:
@@ -322,6 +327,9 @@ class Entity {
 
 /**
  * @brief Class representing a scene containing entities.
+ *
+ * A scene manages a collection of entities and coordinates their updates and
+ * rendering.
  */
 class Scene {
   private:
@@ -331,6 +339,7 @@ class Scene {
     /** @brief Active camera in the scene */
     raylib::Camera3D* m_active_camera = NULL;
 
+    /** @brief Renderer for the scene */
     Renderer m_renderer;
 
     /**
@@ -380,6 +389,10 @@ class Scene {
   public:
     Scene() {}
 
+    /**
+     * @brief Get the renderer for the scene.
+     * @return Reference to the renderer.
+     */
     Renderer& renderer() { return m_renderer; }
 
     /**
@@ -418,6 +431,15 @@ class Scene {
         m_active_camera = camera;
     }
 
+    /**
+     * @brief Draw the entire scene to a render texture.
+     *
+     * This method updates all entities, clears the background, calculates
+     * shadows, sets the active render texture, and renders all entities in 3D
+     * and 2D.
+     *
+     * @param texture Render texture to draw to.
+     */
     void draw(raylib::RenderTexture2D& texture) {
         update();
 
