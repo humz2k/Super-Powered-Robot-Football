@@ -1,6 +1,7 @@
 #ifndef _SPRF_RENDERER_HPP_
 #define _SPRF_RENDERER_HPP_
 
+#include "base.hpp"
 #include "raylib-cpp.hpp"
 #include "shaders.hpp"
 #include "shadow_map_texture.hpp"
@@ -15,7 +16,7 @@ namespace SPRF {
  * This class manages a 3D model and its instances, allowing for rendering with
  * different shaders.
  */
-class RenderModel {
+class RenderModel : public Logger {
   private:
     /** @brief Shared pointer to the model */
     std::shared_ptr<raylib::Model> m_model;
@@ -84,7 +85,7 @@ class RenderModel {
  * This class manages a collection of render models and lights, allowing for the
  * rendering of 3D scenes with shadow mapping.
  */
-class Renderer {
+class Renderer : public Logger {
   private:
     /** @brief List of render models */
     std::vector<std::shared_ptr<RenderModel>> m_render_models;

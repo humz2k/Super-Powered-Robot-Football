@@ -3,6 +3,7 @@
 
 #define MAX_LIGHTS 2
 
+#include "base.hpp"
 #include "raylib-cpp.hpp"
 #include "shadow_map_texture.hpp"
 #include <string>
@@ -14,7 +15,7 @@ namespace SPRF {
  *
  * @tparam T Type of the uniform variable.
  */
-template <class T> class ShaderUniformBase {
+template <class T> class ShaderUniformBase : public Logger {
   protected:
     /** @brief Value of the uniform variable */
     T m_value;
@@ -159,8 +160,6 @@ class ShaderUniform<raylib::Color> : public ShaderUniformBase<raylib::Color> {
                           ((float)value().g) / (float)255.0f,
                           ((float)value().b) / (float)255.0f,
                           ((float)value().a) / (float)255.0f};
-        std::cout << "color: " << array[0] << ", " << array[1] << ", "
-                  << array[2] << ", " << array[3] << std::endl;
         shader().SetValue(loc(), array, SHADER_ATTRIB_VEC3);
     }
 };
@@ -255,7 +254,7 @@ class ShaderUniform<raylib::Vector4>
 /**
  * @brief Class representing a light source in the scene.
  */
-class Light {
+class Light : public Logger {
   private:
     /** @brief Static counter for light instances */
     inline static int light_count = 0;

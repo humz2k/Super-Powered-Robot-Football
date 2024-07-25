@@ -1,6 +1,7 @@
 #ifndef _SPRB_ECS_HPP_
 #define _SPRB_ECS_HPP_
 
+#include "base.hpp"
 #include "raylib-cpp.hpp"
 #include "renderer.hpp"
 #include <cassert>
@@ -24,7 +25,7 @@ class Transform;
  * Components are attached to entities and provide functionality such as
  * rendering, updating, and more.
  */
-class Component {
+class Component : public Logger {
   private:
     /** @brief Pointer to the parent entity */
     Entity* m_entity = NULL;
@@ -78,7 +79,7 @@ class Component {
 /**
  * @brief Class representing a transform with position, rotation, and scale.
  */
-class Transform {
+class Transform : public Logger {
   public:
     /** @brief Position of the transform */
     raylib::Vector3 position;
@@ -118,7 +119,7 @@ class Transform {
  *
  * Entities are containers for components and manage their lifecycle.
  */
-class Entity {
+class Entity : public Logger {
   private:
     /** @brief Components attached to the entity */
     std::unordered_map<std::type_index, Component*> m_components;
@@ -331,7 +332,7 @@ class Entity {
  * A scene manages a collection of entities and coordinates their updates and
  * rendering.
  */
-class Scene {
+class Scene : public Logger {
   private:
     /** @brief Entities in the scene */
     std::vector<std::shared_ptr<Entity>> m_entities;
@@ -385,7 +386,7 @@ class Scene {
      * @return Reference to the active camera.
      */
     raylib::Camera3D& get_active_camera() {
-        if (!m_active_camera){
+        if (!m_active_camera) {
             return m_default_camera;
         }
         return *m_active_camera;
