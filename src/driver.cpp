@@ -71,9 +71,9 @@ class Scene1 : public DefaultScene {
 
 int main() {
 
-    SPRF::Game game(1184, 666, "test", 1024, 768, 200);
+    SPRF::Game game(1512, 982, "test", 1512, 982, 0);
 
-    // ToggleFullscreen();
+    ToggleFullscreen();
 
     game.load_scene<SPRF::Scene1>();
 

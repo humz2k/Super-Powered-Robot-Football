@@ -55,6 +55,7 @@ class Game : public Logger {
         SetTargetFPS(m_fps_max);
         m_current_scene = std::make_shared<Scene>();
         m_current_scene->init();
+        SetTextureFilter(m_render_view.texture, TEXTURE_FILTER_BILINEAR);
     }
 
     ~Game() {
