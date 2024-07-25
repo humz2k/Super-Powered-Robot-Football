@@ -1,5 +1,5 @@
-#ifndef _SPRF_GAME_HPP_
-#define _SPRF_GAME_HPP_
+#ifndef _SPRF_ENGINE_HPP_
+#define _SPRF_ENGINE_HPP_
 
 #include "raylib-cpp.hpp"
 #include <iostream>
@@ -14,26 +14,14 @@
 
 #include "base.hpp"
 
+#include "console.hpp"
+#include "ui.hpp"
+
 namespace SPRF {
 
-struct LogMessage {
-    std::string message;
-    std::string source;
-    int type;
-    LogMessage(std::string message_, std::string source_, int type_)
-        : message(message_), source(source_), type(type_) {}
-};
+extern bool game_should_quit;
 
-void CustomLog(int msgType, const char* text, va_list args);
-
-class LogManager {
-  public:
-    std::vector<LogMessage> log_stack;
-
-    LogManager() { SetTraceLogCallback(CustomLog); }
-};
-
-extern LogManager log_manager;
+void quit();
 
 class Game : public Logger {
   private:
@@ -75,7 +63,7 @@ class Game : public Logger {
         log(LOG_INFO, "Closed game");
     }
 
-    bool running() { return !m_window.ShouldClose(); }
+    bool running() { return (!m_window.ShouldClose()) && (!game_should_quit); }
 
     template <class T, typename... Args> void load_scene(Args... args) {
         log(LOG_INFO, "Loading scene %s", typeid(T).name());
@@ -94,6 +82,38 @@ class Game : public Logger {
     }
 };
 
+class EchoCommand : public DevConsoleCommand {
+    void handle(std::vector<std::string>& args) {
+        std::string out = "";
+        for (auto& i : args) {
+            out += i + " ";
+        }
+        TraceLog(LOG_CONSOLE, out.c_str());
+    }
+};
+
+class QuitCommand : public DevConsoleCommand {
+    void handle(std::vector<std::string>& args) { quit(); }
+};
+
+class DefaultDevConsole : public DevConsole {
+  public:
+    DefaultDevConsole() {
+        add_command<EchoCommand>("echo");
+        add_command<QuitCommand>("quit");
+    }
+};
+
+class DefaultScene : public Scene {
+  private:
+    DefaultDevConsole& m_dev_console;
+
+  public:
+    DefaultScene()
+        : m_dev_console(
+              this->create_entity()->add_component<DefaultDevConsole>()) {}
+};
+
 } // namespace SPRF
 
-#endif // _SPRF_GAME_HPP_
+#endif // _SPRF_ENGINE_HPP_

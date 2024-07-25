@@ -17,7 +17,7 @@ class Logger {
     std::string m_log_name;
 
   public:
-    Logger() : m_log_name("SPRF") {}
+    Logger() : m_log_name("GAME") {}
     Logger(std::string log_name) : m_log_name(log_name) {}
 
     template <typename... Args> void log(int log_level, Args... args) {

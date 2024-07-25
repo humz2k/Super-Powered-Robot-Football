@@ -1,17 +1,4 @@
-#include "raylib-cpp.hpp"
-#include <iostream>
-#include <memory>
-#include <string>
-#include <vector>
-
-#include "camera.hpp"
-#include "ecs.hpp"
-#include "model.hpp"
-#include "shaders.hpp"
-
-#include "game.hpp"
-
-#include "ui.hpp"
+#include "engine.hpp"
 
 namespace SPRF {
 
@@ -39,13 +26,11 @@ class Script2 : public Component {
     }
 };
 
-class DefaultScene : public Scene {
+class Scene1 : public DefaultScene {
   public:
-    DefaultScene() {
+    Scene1() {
         auto render_model = this->renderer().create_render_model(
             std::make_shared<raylib::Model>(raylib::Mesh::Sphere(1, 50, 50)));
-
-        this->create_entity()->add_component<SPRF::UIConsole>();
 
         auto test = this->create_entity();
         test->add_component<SPRF::Model>(render_model);
@@ -90,7 +75,7 @@ int main() {
 
     // ToggleFullscreen();
 
-    game.load_scene<SPRF::DefaultScene>();
+    game.load_scene<SPRF::Scene1>();
 
     while (game.running()) {
         game.draw();
