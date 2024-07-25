@@ -378,8 +378,7 @@ class Scene {
     }
 
   public:
-    Scene() {
-    }
+    Scene() {}
 
     Renderer& renderer() { return m_renderer; }
 
@@ -419,29 +418,6 @@ class Scene {
         m_active_camera = camera;
     }
 
-    /**
-     * @brief Draw scene.
-     */
-    void draw() {
-        update();
-
-        ClearBackground(BLACK);
-
-        draw3D();
-
-        m_renderer.calculate_shadows();
-
-        get_active_camera().BeginMode();
-
-        m_renderer.render(get_active_camera());
-
-        get_active_camera().EndMode();
-
-        draw2D();
-
-        DrawFPS(10, 10);
-    }
-
     void draw(raylib::RenderTexture2D& texture) {
         update();
 
@@ -459,9 +435,9 @@ class Scene {
 
         get_active_camera().EndMode();
 
-        texture.EndMode();
-
         draw2D();
+
+        texture.EndMode();
 
         DrawFPS(10, 10);
     }

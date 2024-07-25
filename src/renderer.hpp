@@ -41,9 +41,7 @@ class RenderModel {
         m_model->materials[0].shader = old_shader;
     }
 
-    void draw() {
-      draw(m_model->materials[0].shader);
-    }
+    void draw() { draw(m_model->materials[0].shader); }
 };
 
 class Renderer {
@@ -57,9 +55,14 @@ class Renderer {
 
   public:
     Renderer(float ka = 0.2, int shadow_scale = 1024)
-        : m_shader(raylib::Shader("/Users/humzaqureshi/GitHub/Super-Powered-Robot-Football/src/lights.vs", "/Users/humzaqureshi/GitHub/Super-Powered-Robot-Football/src/lights.fs")),
-        m_ka("ka",ka,m_shader), m_camera_position("camPos",raylib::Vector3(0,0,0),m_shader),
-        m_shadow_map_res("shadowMapRes",shadow_scale,m_shader) {}
+        : m_shader(
+              raylib::Shader("/Users/humzaqureshi/GitHub/"
+                             "Super-Powered-Robot-Football/src/lights.vs",
+                             "/Users/humzaqureshi/GitHub/"
+                             "Super-Powered-Robot-Football/src/lights.fs")),
+          m_ka("ka", ka, m_shader),
+          m_camera_position("camPos", raylib::Vector3(0, 0, 0), m_shader),
+          m_shadow_map_res("shadowMapRes", shadow_scale, m_shader) {}
 
     std::shared_ptr<RenderModel>
     create_render_model(std::shared_ptr<raylib::Model> model) {
@@ -69,26 +72,28 @@ class Renderer {
 
     raylib::Shader& shader() { return m_shader; }
 
-    std::shared_ptr<Light> add_light(){
-      std::shared_ptr<Light> out = std::make_shared<Light>(m_shader,m_shadow_map_res.value());
-      m_lights.push_back(out);
-      return out;
+    std::shared_ptr<Light> add_light() {
+        std::shared_ptr<Light> out =
+            std::make_shared<Light>(m_shader, m_shadow_map_res.value());
+        m_lights.push_back(out);
+        return out;
     }
 
-    void calculate_shadows(){
-      int slot_start = 15 - MAX_LIGHTS;
-      assert(m_lights.size() <= MAX_LIGHTS);
-      for (auto& light : m_lights){
-        if (!light->enabled())continue;
-        raylib::Camera3D light_cam = light->light_cam();
-        light->BeginShadowMode();
-        ClearBackground(BLACK);
+    void calculate_shadows() {
+        int slot_start = 15 - MAX_LIGHTS;
+        assert(m_lights.size() <= MAX_LIGHTS);
+        for (auto& light : m_lights) {
+            if (!light->enabled())
+                continue;
+            raylib::Camera3D light_cam = light->light_cam();
+            light->BeginShadowMode();
+            ClearBackground(BLACK);
 
-        for (auto& i : m_render_models) {
-            i->draw();
+            for (auto& i : m_render_models) {
+                i->draw();
+            }
+            light->EndShadowMode(slot_start);
         }
-        light->EndShadowMode(slot_start);
-      }
     }
 
     void render(raylib::Camera& camera) {
@@ -101,13 +106,9 @@ class Renderer {
         camera.EndMode();
     }
 
-    float ka(float v) {
-        return m_ka.value(v);
-    }
+    float ka(float v) { return m_ka.value(v); }
 
-    float ka() const{
-        return m_ka.value();
-    }
+    float ka() const { return m_ka.value(); }
 };
 
 } // namespace SPRF

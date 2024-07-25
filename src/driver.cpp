@@ -38,7 +38,7 @@ class Script2 : public Component {
 } // namespace SPRF
 
 int main() {
-    raylib::Window window(900, 900, "test");
+    raylib::Window window(1184, 666, "test");
 
     SPRF::Scene scene;
 
@@ -63,20 +63,19 @@ int main() {
     my_camera->get_component<SPRF::Transform>().position.z = -13;
     my_camera->get_component<SPRF::Transform>().position.y = 2;
     my_camera->get_component<SPRF::Transform>().rotation.x = 0.1;
-    //my_camera->add_component<SPRF::Script2>();
 
     auto light = scene.renderer().add_light();
     light->enabled(1);
 
     auto light2 = scene.renderer().add_light();
     light2->enabled(1);
-    light2->L(raylib::Vector3(0,2,5));
+    light2->L(raylib::Vector3(0, 2, 5));
 
     scene.init();
 
     SetTargetFPS(60);
 
-    raylib::RenderTexture2D tex(1024, 1024);
+    raylib::RenderTexture2D tex(1024, 768);
     raylib::Rectangle render_rect(-raylib::Vector2(tex.GetTexture().GetSize()));
     render_rect.SetWidth(-render_rect.GetWidth());
 
