@@ -69,6 +69,12 @@ class DefaultScene : public Scene {
         auto light2 = this->renderer().add_light();
         light2->enabled(1);
         light2->L(raylib::Vector3(0, 2, 5));
+
+        this->renderer().load_skybox(
+            "/Users/humzaqureshi/GitHub/Super-Powered-Robot-Football/src/"
+            "defaultskybox.png");
+        this->renderer().disable_skybox();
+        this->renderer().enable_skybox();
     }
 };
 

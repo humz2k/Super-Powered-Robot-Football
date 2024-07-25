@@ -91,6 +91,8 @@ class Renderer : public Logger {
     std::vector<std::shared_ptr<RenderModel>> m_render_models;
     /** @brief Shader used for rendering */
     raylib::Shader m_shader;
+    /** @brief Skybox shader */
+    raylib::Shader m_skybox_shader;
     /** @brief Camera position uniform */
     ShaderUniform<raylib::Vector3> m_camera_position;
     /** @brief Ambient light coefficient uniform */
@@ -99,6 +101,22 @@ class Renderer : public Logger {
     std::vector<std::shared_ptr<Light>> m_lights;
     /** @brief Shadow map resolution uniform */
     ShaderUniform<int> m_shadow_map_res;
+    /** @brief Skybox model */
+    std::shared_ptr<raylib::Model> m_skybox_model = NULL;
+    /** @brief Skybox enabled flag */
+    bool m_skybox_enabled = true;
+
+    void draw_skybox(raylib::Vector3 camera_position) {
+        if (!m_skybox_enabled)
+            return;
+        if (!m_skybox_model)
+            return;
+        rlDisableBackfaceCulling();
+        rlDisableDepthMask();
+        m_skybox_model->Draw(camera_position);
+        rlEnableBackfaceCulling();
+        rlEnableDepthMask();
+    }
 
   public:
     /**
@@ -113,6 +131,11 @@ class Renderer : public Logger {
                              "Super-Powered-Robot-Football/src/lights.vs",
                              "/Users/humzaqureshi/GitHub/"
                              "Super-Powered-Robot-Football/src/lights.fs")),
+          m_skybox_shader(
+              raylib::Shader("/Users/humzaqureshi/GitHub/"
+                             "Super-Powered-Robot-Football/src/skybox.vs",
+                             "/Users/humzaqureshi/GitHub/"
+                             "Super-Powered-Robot-Football/src/skybox.fs")),
           m_ka("ka", ka, m_shader),
           m_camera_position("camPos", raylib::Vector3(0, 0, 0), m_shader),
           m_shadow_map_res("shadowMapRes", shadow_scale, m_shader) {}
@@ -186,6 +209,7 @@ class Renderer : public Logger {
     void render(raylib::Camera& camera) {
         m_camera_position.value(camera.GetPosition());
         camera.BeginMode();
+        draw_skybox(camera.GetPosition());
         for (auto& i : m_render_models) {
             i->draw(m_shader);
             i->clear_instances();
@@ -207,6 +231,32 @@ class Renderer : public Logger {
      * @return Ambient light coefficient.
      */
     float ka() const { return m_ka.value(); }
+
+    /** @brief Adds a skybox to the renderer
+     *
+     * @param path path to the skybox
+     */
+    void load_skybox(std::string path) {
+        m_skybox_model =
+            std::make_shared<raylib::Model>(raylib::Mesh::Cube(1, 1, 1));
+        m_skybox_model->materials[0].shader = m_skybox_shader;
+        SetShaderValue(m_skybox_model->materials[0].shader,
+                       GetShaderLocation(m_skybox_model->materials[0].shader,
+                                         "environmentMap"),
+                       (int[1]){MATERIAL_MAP_CUBEMAP}, SHADER_UNIFORM_INT);
+        raylib::Image img(path);
+        m_skybox_model->materials[0].maps[MATERIAL_MAP_CUBEMAP].texture =
+            LoadTextureCubemap(img, CUBEMAP_LAYOUT_AUTO_DETECT);
+    }
+
+    /** @brief Unloads the skybox from the renderer */
+    void unload_skybox() { m_skybox_model = NULL; }
+
+    /** @brief Enables the skybox */
+    void enable_skybox() { m_skybox_enabled = true; }
+
+    /** @brief Disables the skybox */
+    void disable_skybox() { m_skybox_enabled = false; }
 };
 
 } // namespace SPRF
