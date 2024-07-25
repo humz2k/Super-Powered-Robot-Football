@@ -254,11 +254,11 @@ class Entity : public Logger {
      * @brief Call draw2D on components.
      */
     void draw2D() {
-        for (auto i : m_children) {
-            i->draw2D();
-        }
         for (const auto& [key, value] : m_components) {
             value->draw2D();
+        }
+        for (auto i : m_children) {
+            i->draw2D();
         }
     }
 
@@ -373,15 +373,6 @@ class Scene : public Logger {
     }
 
     /**
-     * @brief Call draw2D on entity components.
-     */
-    void draw2D() {
-        for (auto i : m_entities) {
-            i->draw2D();
-        }
-    }
-
-    /**
      * @brief Get the active camera of the scene.
      * @return Reference to the active camera.
      */
@@ -463,11 +454,16 @@ class Scene : public Logger {
 
         get_active_camera().EndMode();
 
-        draw2D();
-
         texture.EndMode();
+    }
 
-        DrawFPS(10, 10);
+    /**
+     * @brief Call draw2D on entity components.
+     */
+    void draw2D() {
+        for (auto i : m_entities) {
+            i->draw2D();
+        }
     }
 };
 } // namespace SPRF

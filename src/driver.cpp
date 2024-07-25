@@ -11,6 +11,8 @@
 
 #include "game.hpp"
 
+#include "ui.hpp"
+
 namespace SPRF {
 
 class Script : public Component {
@@ -42,6 +44,8 @@ class DefaultScene : public Scene {
     DefaultScene() {
         auto render_model = this->renderer().create_render_model(
             std::make_shared<raylib::Model>(raylib::Mesh::Sphere(1, 50, 50)));
+
+        this->create_entity()->add_component<SPRF::UIConsole>();
 
         auto test = this->create_entity();
         test->add_component<SPRF::Model>(render_model);
@@ -83,6 +87,8 @@ class DefaultScene : public Scene {
 int main() {
 
     SPRF::Game game(1184, 666, "test", 1024, 768, 200);
+
+    // ToggleFullscreen();
 
     game.load_scene<SPRF::DefaultScene>();
 

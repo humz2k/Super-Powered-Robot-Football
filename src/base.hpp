@@ -23,7 +23,7 @@ class Logger {
     template <typename... Args> void log(int log_level, Args... args) {
         // typeid(*this).name();
         char msg[512];
-        sprintf(msg, args...);
+        snprintf(msg, sizeof(msg), args...);
         TraceLog(log_level, "%s: %s", m_log_name.c_str(), msg);
     }
 };
