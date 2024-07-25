@@ -76,7 +76,7 @@ class DefaultScene : public Scene {
 
 int main() {
 
-    SPRF::Game game(1184, 666, "test", 1024, 768);
+    SPRF::Game game(1184, 666, "test", 1024, 768, 200);
 
     game.load_scene<SPRF::DefaultScene>();
 
