@@ -84,6 +84,8 @@ class Game : public Logger {
 };
 
 class EchoCommand : public DevConsoleCommand {
+    public:
+    using DevConsoleCommand::DevConsoleCommand;
     void handle(std::vector<std::string>& args) {
         std::string out = "";
         for (auto& i : args) {
@@ -94,7 +96,42 @@ class EchoCommand : public DevConsoleCommand {
 };
 
 class QuitCommand : public DevConsoleCommand {
+    public:
+    using DevConsoleCommand::DevConsoleCommand;
     void handle(std::vector<std::string>& args) { quit(); }
+};
+
+class FnCommand : public DevConsoleCommand {
+    public:
+    using DevConsoleCommand::DevConsoleCommand;
+    void handle(std::vector<std::string>& args){
+        if (args.size() < 3){
+            TraceLog(LOG_CONSOLE,"Error - not enough arguments");
+            return;
+        }
+        auto& variable = args[0];
+
+        auto& term = args[args.size()-1];
+
+        std::vector<std::string> out;
+        std::string command = args[1];
+        if (command == variable){
+            command = term;
+        }
+        for (int i = 2; i < args.size() - 1; i++){
+            if (args[i] != variable){
+                out.push_back(args[i]);
+            } else {
+                out.push_back(term);
+            }
+        }
+        std::string running = command + " ";
+        for (auto& i : out){
+            running += i + " ";
+        }
+        TraceLog(LOG_CONSOLE,"%s",running.c_str());
+        dev_console().run_command(command,out);
+    }
 };
 
 class DefaultDevConsole : public DevConsole {
@@ -102,6 +139,7 @@ class DefaultDevConsole : public DevConsole {
     DefaultDevConsole() {
         add_command<EchoCommand>("echo");
         add_command<QuitCommand>("quit");
+        add_command<FnCommand>("fn");
     }
 };
 

@@ -11,16 +11,29 @@
 
 namespace SPRF {
 
+class DevConsole;
+
 class DevConsoleCommand {
+  private:
+    DevConsole& m_dev_console;
   public:
-    DevConsoleCommand() {}
+    DevConsoleCommand(DevConsole& dev_console) : m_dev_console(dev_console) {}
+    DevConsole& dev_console(){return m_dev_console;}
     virtual ~DevConsoleCommand() {}
     virtual void handle(std::vector<std::string>& args) {}
+};
+
+struct CommandAlias{
+    std::string command = "NULL";
+    std::vector<std::string> args;
+    CommandAlias(){};
+    CommandAlias(std::string command_, std::vector<std::string> args_) : command(command_), args(args_){}
 };
 
 class DevConsole : public Component, public UITextInputBox {
   private:
     int m_transparency = 230;
+    int m_max_recursion_depth = 10;
     UIWindow m_background;
     UIWindow m_foreground;
     std::vector<UIText> m_text_boxes;
@@ -32,6 +45,8 @@ class DevConsole : public Component, public UITextInputBox {
     float m_scroll_speed;
     std::unordered_map<std::string, std::shared_ptr<DevConsoleCommand>>
         m_commands;
+    std::unordered_map<std::string, CommandAlias>
+        m_aliases;
     // UITextInputBox m_input_box;
 
     void incr_console_start() {
@@ -69,6 +84,68 @@ class DevConsole : public Component, public UITextInputBox {
         m_console_start = log_manager.log_stack.size() - m_text_boxes.size();
     }
 
+    bool alias_exists(std::string command){
+        return m_aliases.find(command) != m_aliases.end();
+    }
+
+    bool command_exists(std::string command){
+        return m_commands.find(command) != m_commands.end();
+    }
+
+    CommandAlias evaluate_alias(std::string command, std::vector<std::string> args = std::vector<std::string>(), int depth = 0){
+        if (!alias_exists(command)){
+            return CommandAlias();
+        }
+        auto& alias = m_aliases[command];
+        std::vector<std::string> final_args;
+        final_args.reserve(alias.args.size() + args.size());
+        for (auto& i : alias.args){
+            final_args.push_back(i);
+        }
+        for (auto& i : args){
+            final_args.push_back(i);
+        }
+        if (!alias_exists(alias.command)){
+            return CommandAlias(alias.command,final_args);
+        }
+        if (depth > m_max_recursion_depth){
+            TraceLog(LOG_CONSOLE, "Error - exceeded max recursion depth (%d)",
+                m_max_recursion_depth);
+            return CommandAlias();
+        }
+        return evaluate_alias(alias.command,final_args);
+    }
+
+    void run_command(std::string command, std::vector<std::string> args, int depth = 0){
+        if (command == "alias"){
+            if (args.size() >= 2){
+                create_alias(args[0],args[1],std::vector<std::string>(args.begin() + 2,args.end()));
+            } else {
+                TraceLog(LOG_CONSOLE,"Error - not enough arguments");
+            }
+            return;
+        }
+        if (alias_exists(command)){
+            auto alias = evaluate_alias(command,args);
+            run_command(alias.command,alias.args);
+            return;
+        }
+        if (command_exists(command)) {
+            m_commands[command]->handle(args);
+        } else {
+            TraceLog(LOG_CONSOLE, "Error - unknown command '%s'",
+                    command.c_str());
+        }
+    }
+
+    void create_alias(std::string alias, std::string command, std::vector<std::string> arguments){
+        if (command_exists(alias)){
+            TraceLog(LOG_CONSOLE,"Error - command %s exists",alias.c_str());
+            return;
+        }
+        m_aliases[alias] = CommandAlias(command,arguments);
+    }
+
     void on_submit(std::string input) {
         TraceLog(LOG_INFO, input.c_str());
         std::istringstream iss(input);
@@ -76,22 +153,20 @@ class DevConsole : public Component, public UITextInputBox {
         std::vector<std::string> args;
         getline(iss, s, ' ');
         std::string command = s;
+
         while (getline(iss, s, ' ')) {
             if (s.size() > 0)
                 args.push_back(s);
         }
-        if (m_commands.find(command) == m_commands.end()) {
-            TraceLog(LOG_CONSOLE, "Error - unknown command '%s'",
-                     command.c_str());
-        } else {
-            m_commands[command]->handle(args);
-        }
+
+        run_command(command,args);
+
         m_console_start = log_manager.log_stack.size() - m_text_boxes.size();
     }
 
     template <class T, typename... Args>
     void add_command(std::string name, Args... args) {
-        m_commands[name] = std::make_shared<T>(args...);
+        m_commands[name] = std::make_shared<T>(*this,args...);
     }
 
     void update() {
