@@ -9,6 +9,8 @@
 #include "model.hpp"
 #include "shaders.hpp"
 
+#include "game.hpp"
+
 namespace SPRF {
 
 class Script : public Component {
@@ -35,61 +37,51 @@ class Script2 : public Component {
     }
 };
 
+class DefaultScene : public Scene {
+    public:
+        DefaultScene(){
+            auto render_model = this->renderer().create_render_model(
+            std::make_shared<raylib::Model>(raylib::Mesh::Sphere(1, 50, 50)));
+
+            auto test = this->create_entity();
+            test->add_component<SPRF::Model>(render_model);
+            test->add_component<SPRF::Script>();
+
+            auto child = this->create_entity();
+            child->add_component<SPRF::Model>(render_model);
+            child->get_component<SPRF::Transform>().position.x = 2;
+            child->get_component<SPRF::Transform>().position.y = 1;
+
+            auto floor = this->create_entity();
+            floor->add_component<SPRF::Model>(this->renderer().create_render_model(
+                std::make_shared<raylib::Model>(raylib::Mesh::Plane(20, 20, 10, 10))));
+
+            auto my_camera = this->create_entity();
+            my_camera->add_component<SPRF::Camera>().set_active();
+            my_camera->get_component<SPRF::Transform>().position.z = -13;
+            my_camera->get_component<SPRF::Transform>().position.y = 2;
+            my_camera->get_component<SPRF::Transform>().rotation.x = 0.1;
+
+            auto light = this->renderer().add_light();
+            light->enabled(1);
+
+            auto light2 = this->renderer().add_light();
+            light2->enabled(1);
+            light2->L(raylib::Vector3(0, 2, 5));
+        }
+};
+
 } // namespace SPRF
 
 int main() {
-    raylib::Window window(1184, 666, "test");
 
-    SPRF::Scene scene;
+    SPRF::Game game(1184,666,"test",1024,768);
 
-    auto render_model = scene.renderer().create_render_model(
-        std::make_shared<raylib::Model>(raylib::Mesh::Sphere(1, 50, 50)));
+    game.load_scene<SPRF::DefaultScene>();
 
-    auto test = scene.create_entity();
-    test->add_component<SPRF::Model>(render_model);
-    test->add_component<SPRF::Script>();
-
-    auto child = scene.create_entity();
-    child->add_component<SPRF::Model>(render_model);
-    child->get_component<SPRF::Transform>().position.x = 2;
-    child->get_component<SPRF::Transform>().position.y = 1;
-
-    auto floor = scene.create_entity();
-    floor->add_component<SPRF::Model>(scene.renderer().create_render_model(
-        std::make_shared<raylib::Model>(raylib::Mesh::Plane(20, 20, 10, 10))));
-
-    auto my_camera = scene.create_entity();
-    my_camera->add_component<SPRF::Camera>().set_active();
-    my_camera->get_component<SPRF::Transform>().position.z = -13;
-    my_camera->get_component<SPRF::Transform>().position.y = 2;
-    my_camera->get_component<SPRF::Transform>().rotation.x = 0.1;
-
-    auto light = scene.renderer().add_light();
-    light->enabled(1);
-
-    auto light2 = scene.renderer().add_light();
-    light2->enabled(1);
-    light2->L(raylib::Vector3(0, 2, 5));
-
-    scene.init();
-
-    SetTargetFPS(60);
-
-    raylib::RenderTexture2D tex(1024, 768);
-    raylib::Rectangle render_rect(-raylib::Vector2(tex.GetTexture().GetSize()));
-    render_rect.SetWidth(-render_rect.GetWidth());
-
-    while (!window.ShouldClose()) {
-        BeginDrawing();
-        scene.draw(tex);
-
-        raylib::Rectangle window_rect(window.GetSize());
-
-        tex.GetTexture().Draw(render_rect, window_rect);
-        EndDrawing();
+    while(game.running()){
+        game.draw();
     }
-
-    scene.destroy();
 
     return 0;
 }

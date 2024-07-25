@@ -253,11 +253,11 @@ class Entity {
      * @brief Call draw2D on components.
      */
     void draw2D() {
-        for (const auto& [key, value] : m_components) {
-            value->draw2D();
-        }
         for (auto i : m_children) {
             i->draw2D();
+        }
+        for (const auto& [key, value] : m_components) {
+            value->draw2D();
         }
     }
 
@@ -336,6 +336,9 @@ class Scene {
     /** @brief Entities in the scene */
     std::vector<std::shared_ptr<Entity>> m_entities;
 
+    /** @brief Default camera in the scene */
+    raylib::Camera3D m_default_camera;
+
     /** @brief Active camera in the scene */
     raylib::Camera3D* m_active_camera = NULL;
 
@@ -382,7 +385,9 @@ class Scene {
      * @return Reference to the active camera.
      */
     raylib::Camera3D& get_active_camera() {
-        assert(m_active_camera);
+        if (!m_active_camera){
+            return m_default_camera;
+        }
         return *m_active_camera;
     }
 
