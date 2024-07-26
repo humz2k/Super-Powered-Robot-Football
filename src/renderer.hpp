@@ -202,15 +202,16 @@ class Renderer : public Logger {
      *
      * @param camera Camera used to render the scene.
      */
-    void render(raylib::Camera& camera) {
-        m_camera_position.value(camera.GetPosition());
-        camera.BeginMode();
-        draw_skybox(camera.GetPosition());
+    void render(raylib::Camera* camera) {
+        m_camera_position.value(camera->GetPosition());
+        camera->BeginMode();
+        ClearBackground(WHITE);
+        draw_skybox(camera->GetPosition());
         for (auto& i : m_render_models) {
             i->draw(m_shader);
             i->clear_instances();
         }
-        camera.EndMode();
+        camera->EndMode();
     }
 
     /**

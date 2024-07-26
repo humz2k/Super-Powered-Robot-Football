@@ -16,13 +16,23 @@ class Script : public Component {
     }
 };
 
-class Script2 : public Component {
+class FPSController : public Component {
   public:
-    void init() { this->entity()->get_component<Transform>()->position.x = 3; }
+    void init() { }
 
     void update() {
-        // this->entity()->get_component<Transform>().rotation.y -=
-        // GetFrameTime() * 0.1;
+        if (IsKeyDown(KEY_W)){
+            this->entity()->get_component<Transform>()->position.z += GetFrameTime();
+        }
+        if (IsKeyDown(KEY_S)){
+            this->entity()->get_component<Transform>()->position.z -= GetFrameTime();
+        }
+        if (IsKeyDown(KEY_A)){
+            this->entity()->get_component<Transform>()->position.x += GetFrameTime();
+        }
+        if (IsKeyDown(KEY_D)){
+            this->entity()->get_component<Transform>()->position.x -= GetFrameTime();
+        }
     }
 };
 
@@ -32,14 +42,20 @@ class Scene1 : public DefaultScene {
         RenderModel* render_model = this->renderer()->create_render_model(
             raylib::Mesh::Sphere(1, 50, 50));
 
-        auto test = this->create_entity();
-        test->add_component<SPRF::Model>(render_model);
-        test->add_component<SPRF::Script>();
+        //auto test = this->create_entity();
+        //test->add_component<SPRF::Model>(render_model);
+        //test->add_component<SPRF::Script>();
 
-        auto child = this->create_entity();
-        child->add_component<SPRF::Model>(render_model);
-        child->get_component<SPRF::Transform>()->position.x = 2;
-        child->get_component<SPRF::Transform>()->position.y = 1;
+        for (int i = -10; i < 10; i ++){
+            for (int j = -10; j < 10; j++){
+                auto child = this->create_entity();
+                child->add_component<SPRF::Model>(render_model);
+                //child->add_component<SPRF::FPSController>();
+                child->get_component<SPRF::Transform>()->position.x = i * 2;
+                child->get_component<SPRF::Transform>()->position.y = 0.5;
+                child->get_component<SPRF::Transform>()->position.z = j * 2;
+            }
+        }
 
         auto floor = this->create_entity();
         floor->add_component<SPRF::Model>(this->renderer()->create_render_model(
@@ -47,9 +63,10 @@ class Scene1 : public DefaultScene {
 
         auto my_camera = this->create_entity();
         my_camera->add_component<SPRF::Camera>()->set_active();
+        my_camera->add_component<SPRF::FPSController>();
         my_camera->get_component<SPRF::Transform>()->position.z = -13;
-        my_camera->get_component<SPRF::Transform>()->position.y = 2;
-        my_camera->get_component<SPRF::Transform>()->rotation.x = 0.1;
+        my_camera->get_component<SPRF::Transform>()->position.y = 5;
+        my_camera->get_component<SPRF::Transform>()->rotation.x = 0.4;
 
         auto light = this->renderer()->add_light();
         light->enabled(1);

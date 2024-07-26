@@ -41,7 +41,7 @@ class DevConsole : public Component, public UITextInputBox {
     std::vector<UIText> m_text_boxes;
     int m_console_start = 0;
     raylib::Font m_font;
-    bool m_enabled = true;
+    bool m_enabled = false;
     raylib::Vector2 m_offset = raylib::Vector2(0, 0);
     bool m_clicked = false;
     float m_scroll_speed;
@@ -178,8 +178,12 @@ class DevConsole : public Component, public UITextInputBox {
     }
 
     void update() {
-        if (IsKeyPressed(KEY_GRAVE))
+        if (IsKeyPressed(KEY_GRAVE)){
             m_enabled = !m_enabled;
+            if (m_enabled){
+                set_selected(true);
+            }
+        }
         if (!m_enabled)
             return;
         UITextInputBox::update(m_offset);

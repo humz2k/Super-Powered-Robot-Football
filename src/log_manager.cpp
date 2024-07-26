@@ -1,5 +1,7 @@
 #include "log_manager.hpp"
 
+#include <iostream>
+
 namespace SPRF {
 LogManager log_manager;
 
@@ -53,6 +55,8 @@ void CustomLog(int msgType, const char* text, va_list args) {
     last_source = source;
 
     std::string out = log_type + std::string(msg);
+
+    std::cout << out << std::endl;
 
     log_manager.log_stack.push_back(LogMessage(out, source, msgType));
 }

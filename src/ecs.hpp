@@ -295,7 +295,6 @@ class Entity : public Logger {
         auto temp = m_components.find(std::type_index(typeid(T)));
         assert((temp != m_components.end()));
         return dynamic_cast<T*>(temp->second);
-        ;
     }
 
     /**
@@ -374,11 +373,11 @@ class Scene : public Logger {
      * @brief Get the active camera of the scene.
      * @return Reference to the active camera.
      */
-    raylib::Camera3D& get_active_camera() {
+    raylib::Camera3D* get_active_camera() {
         if (!m_active_camera) {
-            return m_default_camera;
+            return &m_default_camera;
         }
-        return *m_active_camera;
+        return m_active_camera;
     }
 
   public:
@@ -452,11 +451,11 @@ class Scene : public Logger {
 
         texture.BeginMode();
 
-        get_active_camera().BeginMode();
+        get_active_camera()->BeginMode();
 
         m_renderer.render(get_active_camera());
 
-        get_active_camera().EndMode();
+        get_active_camera()->EndMode();
 
         texture.EndMode();
     }
