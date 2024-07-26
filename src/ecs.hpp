@@ -33,9 +33,9 @@ class Component : public Logger {
   protected:
     /**
      * @brief Get the parent entity of the component.
-     * @return Reference to the parent entity.
+     * @return Pointer to the parent entity.
      */
-    Entity& entity() { return *m_entity; }
+    Entity* entity() { return m_entity; }
 
   public:
     Component() {}
@@ -124,21 +124,19 @@ class Entity : public Logger {
     /** @brief Components attached to the entity */
     std::unordered_map<std::type_index, Component*> m_components;
     /** @brief Children entities */
-    std::vector<std::shared_ptr<Entity>> m_children;
+    std::vector<Entity*> m_children;
     /** @brief Transform of the entity */
     Transform m_transform;
-    /** @brief Reference to the scene */
-    Scene& m_scene;
+    /** @brief Pointer to the scene */
+    Scene* m_scene;
     /** @brief Pointer to the parent entity */
     Entity* m_parent = NULL;
 
     /**
      * @brief Add a child entity.
-     * @param child Shared pointer to the child entity.
+     * @param child Pointer to the child entity.
      */
-    void add_child(std::shared_ptr<Entity> child) {
-        m_children.push_back(child);
-    }
+    void add_child(Entity* child) { m_children.push_back(child); }
 
     /**
      * @brief Call draw3D on components.
@@ -181,16 +179,16 @@ class Entity : public Logger {
   public:
     /**
      * @brief Construct a new Entity object.
-     * @param scene Reference to the scene.
+     * @param scene Pointer to the scene.
      */
-    Entity(Scene& scene) : m_scene(scene){};
+    Entity(Scene* scene) : m_scene(scene){};
 
     /**
      * @brief Construct a new Entity object with a parent entity.
-     * @param scene Reference to the scene.
+     * @param scene Pointer to the scene.
      * @param parent Pointer to the parent entity.
      */
-    Entity(Scene& scene, Entity* parent) : m_scene(scene), m_parent(parent){};
+    Entity(Scene* scene, Entity* parent) : m_scene(scene), m_parent(parent){};
 
     /**
      * @brief Destroy the Entity object and its components.
@@ -198,7 +196,9 @@ class Entity : public Logger {
     ~Entity() {
         for (const auto& [key, value] : m_components) {
             delete value;
-            m_components.erase(key);
+        }
+        for (auto i : m_children) {
+            delete i;
         }
     }
 
@@ -215,10 +215,10 @@ class Entity : public Logger {
 
     /**
      * @brief Create a child entity.
-     * @return Shared pointer to the child entity.
+     * @return Pointer to the child entity.
      */
-    std::shared_ptr<Entity> create_child() {
-        auto out = std::make_shared<Entity>(m_scene, this);
+    Entity* create_child() {
+        Entity* out = new Entity(m_scene, this);
         add_child(out);
         return out;
     }
@@ -287,13 +287,25 @@ class Entity : public Logger {
     }
 
     /**
+     * @brief Get a component of the entity.
+     * @tparam T Type of the component.
+     * @return Pointer to the component.
+     */
+    template <class T> T* get_component() {
+        auto temp = m_components.find(std::type_index(typeid(T)));
+        assert((temp != m_components.end()));
+        return dynamic_cast<T*>(temp->second);
+        ;
+    }
+
+    /**
      * @brief Add a component to the entity.
      * @tparam T Type of the component.
      * @tparam Args Parameter pack for the component constructor.
      * @param args Arguments for the component constructor.
-     * @return Reference to the added component.
+     * @return Pointer to the added component.
      */
-    template <class T, typename... Args> T& add_component(Args... args) {
+    template <class T, typename... Args> T* add_component(Args... args) {
         auto temp = m_components.find(std::type_index(typeid(T)));
         assert((temp == m_components.end()));
         m_components[std::type_index(typeid(T))] = new T(args...);
@@ -302,28 +314,16 @@ class Entity : public Logger {
     }
 
     /**
-     * @brief Get a component of the entity.
-     * @tparam T Type of the component.
-     * @return Reference to the component.
-     */
-    template <class T> T& get_component() {
-        auto temp = m_components.find(std::type_index(typeid(T)));
-        assert((temp != m_components.end()));
-        T& component = *dynamic_cast<T*>(temp->second);
-        return component;
-    }
-
-    /**
      * @brief Specialization for getting the Transform component.
-     * @return Reference to the Transform component.
+     * @return Pointer to the Transform component.
      */
-    template <> Transform& get_component<Transform>() { return m_transform; }
+    template <> Transform* get_component<Transform>() { return &m_transform; }
 
     /**
      * @brief Get the scene the entity belongs to.
-     * @return Reference to the scene.
+     * @return Pointer to the scene.
      */
-    Scene& scene() { return m_scene; }
+    Scene* scene() { return m_scene; }
 };
 
 /**
@@ -335,7 +335,7 @@ class Entity : public Logger {
 class Scene : public Logger {
   private:
     /** @brief Entities in the scene */
-    std::vector<std::shared_ptr<Entity>> m_entities;
+    std::vector<Entity*> m_entities;
 
     /** @brief Default camera in the scene */
     raylib::Camera3D m_default_camera;
@@ -348,11 +348,9 @@ class Scene : public Logger {
 
     /**
      * @brief Add an entity to the scene.
-     * @param entity Shared pointer to the entity.
+     * @param entity Pointer to the entity.
      */
-    void add_entity(std::shared_ptr<Entity> entity) {
-        m_entities.push_back(entity);
-    }
+    void add_entity(Entity* entity) { m_entities.push_back(entity); }
 
     /**
      * @brief Update entity components.
@@ -386,18 +384,24 @@ class Scene : public Logger {
   public:
     Scene() {}
 
+    ~Scene() {
+        for (auto i : m_entities) {
+            delete i;
+        }
+    }
+
     /**
      * @brief Get the renderer for the scene.
-     * @return Reference to the renderer.
+     * @return Pointer to the renderer.
      */
-    Renderer& renderer() { return m_renderer; }
+    Renderer* renderer() { return &m_renderer; }
 
     /**
      * @brief Create a new entity in the scene.
-     * @return Shared pointer to the created entity.
+     * @return Pointer to the created entity.
      */
-    std::shared_ptr<Entity> create_entity() {
-        auto out = std::make_shared<Entity>(*this);
+    Entity* create_entity() {
+        auto out = new Entity(this);
         add_entity(out);
         return out;
     }

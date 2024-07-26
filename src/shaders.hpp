@@ -298,7 +298,7 @@ class Light : public Logger {
     /** @brief Shadow map texture */
     RenderTexture2D m_shadow_map;
     /** @brief Light view-projection matrix */
-    raylib::Matrix m_light_vp;
+    // raylib::Matrix m_light_vp;
 
   public:
     /**
@@ -326,12 +326,12 @@ class Light : public Logger {
                 m_shader),
           m_L("lights[" + std::to_string(m_id) + "].L",
               raylib::Vector3(1, 1, 1).Normalize(), m_shader),
-          m_shadow_map(LoadShadowmapRenderTexture(shadowMapRes, shadowMapRes)),
           m_scale(scale), m_fov(fov),
           m_shadow_mapLoc(shader.GetLocation("lights[" + std::to_string(m_id) +
                                              "].shadowMap")),
           m_light_vpLoc(
-              shader.GetLocation("light_vp[" + std::to_string(m_id) + "]")) {
+              shader.GetLocation("light_vp[" + std::to_string(m_id) + "]")),
+          m_shadow_map(LoadShadowmapRenderTexture(shadowMapRes, shadowMapRes)) {
         light_count++;
         assert(id() < MAX_LIGHTS);
     }

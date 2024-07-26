@@ -145,14 +145,14 @@ class DefaultDevConsole : public DevConsole {
 
 class DefaultScene : public Scene {
   private:
-    DefaultDevConsole& m_dev_console;
+    DefaultDevConsole* m_dev_console;
 
   public:
     DefaultScene()
         : m_dev_console(
               this->create_entity()->add_component<DefaultDevConsole>()) {}
 
-    DefaultDevConsole& dev_console() { return m_dev_console; }
+    DefaultDevConsole* dev_console() { return m_dev_console; }
 };
 
 } // namespace SPRF

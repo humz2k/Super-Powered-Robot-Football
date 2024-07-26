@@ -15,7 +15,7 @@ class Camera : public Component {
     raylib::Camera3D m_camera;
 
     void update_camera() {
-        auto transform = this->entity().global_transform();
+        auto transform = this->entity()->global_transform();
         auto feet = raylib::Vector3(0, 0, 0).Transform(transform);
         auto head = raylib::Vector3(0, 1, 0).Transform(transform);
         auto eyes = raylib::Vector3(0, 0, 1).Transform(transform);
@@ -35,7 +35,7 @@ class Camera : public Component {
     /**
      * @brief Set the camera as active in the scene.
      */
-    void set_active() { this->entity().scene().set_active_camera(&m_camera); }
+    void set_active() { this->entity()->scene()->set_active_camera(&m_camera); }
 
     void init() { update_camera(); }
 

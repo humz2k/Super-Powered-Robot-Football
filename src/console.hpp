@@ -65,15 +65,15 @@ class DevConsole : public Component, public UITextInputBox {
 
   public:
     DevConsole(int n_lines = 50, float scroll_speed = 2)
-        : m_background(raylib::Vector2(0.1, 0.1), raylib::Vector2(0.9, 0.9),
+        : UITextInputBox(m_font, raylib::Vector2(0.12, 0.86),
+                         raylib::Vector2(0.88, 0.88)),
+          m_background(raylib::Vector2(0.1, 0.1), raylib::Vector2(0.9, 0.9),
                        raylib::Color(23, 27, 33, m_transparency)),
           m_foreground(raylib::Vector2(0.12, 0.12), raylib::Vector2(0.88, 0.86),
                        raylib::Color(30, 35, 43, m_transparency)),
           m_font("/Users/humzaqureshi/GitHub/Super-Powered-Robot-Football/src/"
                  "JetBrainsMono-Regular.ttf"),
-          m_scroll_speed(scroll_speed),
-          UITextInputBox(m_font, raylib::Vector2(0.12, 0.86),
-                         raylib::Vector2(0.88, 0.88)) {
+          m_scroll_speed(scroll_speed) {
         float total_height = 0.86 - 0.12;
         float text_height = total_height / ((float)n_lines);
         float start = 0.12;

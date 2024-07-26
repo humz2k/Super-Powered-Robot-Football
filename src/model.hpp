@@ -10,10 +10,10 @@ namespace SPRF {
 
 class Model : public Component {
   private:
-    std::shared_ptr<RenderModel> m_model;
+    RenderModel* m_model;
 
   public:
-    Model(std::shared_ptr<RenderModel> model) : m_model(model) {}
+    Model(RenderModel* model) : m_model(model) {}
 
     void draw3D(raylib::Matrix parent_transform) {
         m_model->add_instance(parent_transform);

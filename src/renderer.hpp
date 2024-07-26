@@ -19,21 +19,19 @@ namespace SPRF {
 class RenderModel : public Logger {
   private:
     /** @brief Shared pointer to the model */
-    std::shared_ptr<raylib::Model> m_model;
+    raylib::Model* m_model;
     /** @brief Transformation matrix of the model */
     raylib::Matrix m_model_transform;
     /** @brief Instances of the model */
     std::vector<raylib::Matrix> m_instances;
 
   public:
-    /**
-     * @brief Construct a new RenderModel object.
-     *
-     * @param model Shared pointer to the model.
-     */
-    RenderModel(std::shared_ptr<raylib::Model> model)
-        : m_model(model),
+    template <typename... Args>
+    RenderModel(Args... args)
+        : m_model(new raylib::Model(args...)),
           m_model_transform(raylib::Matrix(m_model->GetTransform())) {}
+
+    ~RenderModel() { delete m_model; }
 
     /**
      * @brief Clear all instances of the model.
@@ -88,7 +86,7 @@ class RenderModel : public Logger {
 class Renderer : public Logger {
   private:
     /** @brief List of render models */
-    std::vector<std::shared_ptr<RenderModel>> m_render_models;
+    std::vector<RenderModel*> m_render_models;
     /** @brief Shader used for rendering */
     raylib::Shader m_shader;
     /** @brief Skybox shader */
@@ -136,19 +134,18 @@ class Renderer : public Logger {
                              "Super-Powered-Robot-Football/src/skybox.vs",
                              "/Users/humzaqureshi/GitHub/"
                              "Super-Powered-Robot-Football/src/skybox.fs")),
-          m_ka("ka", ka, m_shader),
           m_camera_position("camPos", raylib::Vector3(0, 0, 0), m_shader),
+          m_ka("ka", ka, m_shader),
           m_shadow_map_res("shadowMapRes", shadow_scale, m_shader) {}
 
-    /**
-     * @brief Create a render model and add it to the renderer.
-     *
-     * @param model Shared pointer to the model.
-     * @return Shared pointer to the created render model.
-     */
-    std::shared_ptr<RenderModel>
-    create_render_model(std::shared_ptr<raylib::Model> model) {
-        m_render_models.push_back(std::make_shared<RenderModel>(model));
+    ~Renderer() {
+        for (auto i : m_render_models) {
+            delete i;
+        }
+    }
+
+    template <typename... Args> RenderModel* create_render_model(Args... args) {
+        m_render_models.push_back(new RenderModel(args...));
         return m_render_models[m_render_models.size() - 1];
     }
 
@@ -187,7 +184,6 @@ class Renderer : public Logger {
         for (auto& light : m_lights) {
             if (!light->enabled())
                 continue;
-            raylib::Camera3D light_cam = light->light_cam();
             light->BeginShadowMode();
             ClearBackground(BLACK);
 
