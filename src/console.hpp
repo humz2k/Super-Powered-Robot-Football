@@ -178,9 +178,9 @@ class DevConsole : public Component, public UITextInputBox {
     }
 
     void update() {
-        if (IsKeyPressed(KEY_GRAVE)){
+        if (IsKeyPressed(KEY_GRAVE)) {
             m_enabled = !m_enabled;
-            if (m_enabled){
+            if (m_enabled) {
                 set_selected(true);
             }
         }

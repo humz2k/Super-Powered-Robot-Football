@@ -80,6 +80,7 @@ class Game : public Logger {
         m_current_scene->draw2D();
         DrawFPS(10, 10);
         EndDrawing();
+        game_info.frame_time = GetFrameTime();
     }
 };
 

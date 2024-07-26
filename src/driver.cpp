@@ -18,20 +18,24 @@ class Script : public Component {
 
 class FPSController : public Component {
   public:
-    void init() { }
+    void init() {}
 
     void update() {
-        if (IsKeyDown(KEY_W)){
-            this->entity()->get_component<Transform>()->position.z += GetFrameTime();
+        if (IsKeyDown(KEY_W)) {
+            this->entity()->get_component<Transform>()->position.z +=
+                GetFrameTime();
         }
-        if (IsKeyDown(KEY_S)){
-            this->entity()->get_component<Transform>()->position.z -= GetFrameTime();
+        if (IsKeyDown(KEY_S)) {
+            this->entity()->get_component<Transform>()->position.z -=
+                GetFrameTime();
         }
-        if (IsKeyDown(KEY_A)){
-            this->entity()->get_component<Transform>()->position.x += GetFrameTime();
+        if (IsKeyDown(KEY_A)) {
+            this->entity()->get_component<Transform>()->position.x +=
+                GetFrameTime();
         }
-        if (IsKeyDown(KEY_D)){
-            this->entity()->get_component<Transform>()->position.x -= GetFrameTime();
+        if (IsKeyDown(KEY_D)) {
+            this->entity()->get_component<Transform>()->position.x -=
+                GetFrameTime();
         }
     }
 };
@@ -42,15 +46,15 @@ class Scene1 : public DefaultScene {
         RenderModel* render_model = this->renderer()->create_render_model(
             raylib::Mesh::Sphere(1, 50, 50));
 
-        //auto test = this->create_entity();
-        //test->add_component<SPRF::Model>(render_model);
-        //test->add_component<SPRF::Script>();
+        // auto test = this->create_entity();
+        // test->add_component<SPRF::Model>(render_model);
+        // test->add_component<SPRF::Script>();
 
-        for (int i = -10; i < 10; i ++){
-            for (int j = -10; j < 10; j++){
+        for (int i = -10; i < 10; i++) {
+            for (int j = -10; j < 10; j++) {
                 auto child = this->create_entity();
                 child->add_component<SPRF::Model>(render_model);
-                //child->add_component<SPRF::FPSController>();
+                // child->add_component<SPRF::FPSController>();
                 child->get_component<SPRF::Transform>()->position.x = i * 2;
                 child->get_component<SPRF::Transform>()->position.y = 0.5;
                 child->get_component<SPRF::Transform>()->position.z = j * 2;
@@ -87,7 +91,7 @@ class Scene1 : public DefaultScene {
 
 int main() {
 
-    SPRF::Game game(900, 900, "test", 900, 900, 200);
+    SPRF::Game game(900, 900, "test", 900, 900, 300);
 
     // ToggleFullscreen();
 

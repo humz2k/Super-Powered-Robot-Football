@@ -12,6 +12,15 @@
 
 namespace SPRF {
 
+class GameInfo{
+    public:
+      int visible_meshes = 0;
+      float frame_time = 0;
+      GameInfo(){}
+};
+
+extern GameInfo game_info;
+
 class Logger {
   private:
     std::string m_log_name;

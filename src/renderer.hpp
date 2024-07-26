@@ -10,6 +10,41 @@
 #include <vector>
 
 namespace SPRF {
+
+struct BBox {
+    raylib::Vector3 c1, c2, c3, c4, c5, c6, c7, c8;
+    BBox(BoundingBox bbox) {
+        c1 = bbox.min;
+        c2 = bbox.min;
+        c2.z = bbox.max.z;
+        c3 = bbox.min;
+        c3.x = bbox.max.x;
+        c4 = bbox.min;
+        c4.y = bbox.max.y;
+        c5 = bbox.min;
+        c5.x = bbox.max.x;
+        c5.z = bbox.max.z;
+        c6 = bbox.min;
+        c6.y = bbox.max.y;
+        c6.z = bbox.max.z;
+        c7 = bbox.min;
+        c7.y = bbox.max.y;
+        c7.x = bbox.max.x;
+        c8 = bbox.max;
+    }
+
+    BBox() {}
+
+    bool visible(raylib::Matrix matrix) {
+        Vector3* points = (Vector3*)this;
+        for (int i = 0; i < 8; i++) {
+            if (Vector3Transform(points[i], matrix).z <= 0)
+                return true;
+        }
+        return false;
+    }
+};
+
 /**
  * @brief Class representing a model to be rendered.
  *
@@ -20,6 +55,8 @@ class RenderModel : public Logger {
   private:
     /** @brief Shared pointer to the model */
     raylib::Model* m_model;
+    BBox* m_bounding_boxes;
+    // std::vector<
     /** @brief Transformation matrix of the model */
     raylib::Matrix m_model_transform;
     /** @brief Instances of the model */
@@ -29,9 +66,18 @@ class RenderModel : public Logger {
     template <typename... Args>
     RenderModel(Args... args)
         : m_model(new raylib::Model(args...)),
-          m_model_transform(raylib::Matrix(m_model->GetTransform())) {}
+          m_model_transform(raylib::Matrix(m_model->GetTransform())) {
+        m_bounding_boxes = (BBox*)malloc(sizeof(BBox));
+        for (int i = 0; i < m_model->meshCount; i++) {
+            m_bounding_boxes[i] =
+                (BoundingBox(GetMeshBoundingBox(m_model->meshes[i])));
+        }
+    }
 
-    ~RenderModel() { delete m_model; }
+    ~RenderModel() {
+        delete m_model;
+        free(m_bounding_boxes);
+    }
 
     /**
      * @brief Clear all instances of the model.
@@ -44,7 +90,7 @@ class RenderModel : public Logger {
      * @param instance Transformation matrix of the instance.
      */
     void add_instance(raylib::Matrix instance) {
-        m_instances.push_back(instance);
+        m_instances.push_back(m_model_transform * instance);
     }
 
     /**
@@ -56,15 +102,19 @@ class RenderModel : public Logger {
      *
      * @param shader Shader to be used for drawing.
      */
-    void draw(Shader shader) {
+    void draw(Shader shader, raylib::Matrix vp) {
         Shader old_shader = m_model->materials[0].shader;
         m_model->materials[0].shader = shader;
-        for (auto& transform : m_instances) {
-            raylib::Matrix final_transform = m_model_transform * transform;
-            for (int i = 0; i < m_model->meshCount; i++) {
-                DrawMesh(m_model->meshes[i],
-                         m_model->materials[m_model->meshMaterial[i]],
-                         final_transform);
+        for (int i = 0; i < m_model->meshCount; i++) {
+            BBox bbox = m_bounding_boxes[i];
+            Mesh mesh = m_model->meshes[i];
+            Material material = m_model->materials[m_model->meshMaterial[i]];
+            for (auto& transform : m_instances) {
+                raylib::Matrix final_transform = transform;
+                if (bbox.visible(final_transform * vp)) {
+                    game_info.visible_meshes++;
+                    DrawMesh(mesh, material, final_transform);
+                }
             }
         }
         m_model->materials[0].shader = old_shader;
@@ -73,7 +123,7 @@ class RenderModel : public Logger {
     /**
      * @brief Draw the model with its default shader.
      */
-    void draw() { draw(m_model->materials[0].shader); }
+    void draw(raylib::Matrix vp) { draw(m_model->materials[0].shader, vp); }
 };
 
 /**
@@ -188,7 +238,7 @@ class Renderer : public Logger {
             ClearBackground(BLACK);
 
             for (auto& i : m_render_models) {
-                i->draw();
+                i->draw(light->light_cam().GetMatrix());
             }
             light->EndShadowMode(slot_start);
         }
@@ -206,9 +256,10 @@ class Renderer : public Logger {
         m_camera_position.value(camera->GetPosition());
         camera->BeginMode();
         ClearBackground(WHITE);
+        game_info.visible_meshes = 0;
         draw_skybox(camera->GetPosition());
         for (auto& i : m_render_models) {
-            i->draw(m_shader);
+            i->draw(m_shader, camera->GetMatrix());
             i->clear_instances();
         }
         camera->EndMode();
