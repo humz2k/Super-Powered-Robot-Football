@@ -71,7 +71,7 @@ class Game : public Logger {
     template <class T, typename... Args> void load_scene(Args... args) {
         log(LOG_INFO, "Loading scene %s", typeid(T).name());
         m_current_scene->destroy();
-        m_current_scene = std::make_shared<T>(args...);
+        m_current_scene = std::make_shared<T>(this, args...);
         m_current_scene->init();
     }
 
@@ -84,8 +84,13 @@ class Game : public Logger {
         game_info.draw_debug();
         EndDrawing();
         game_info.frame_time = GetFrameTime();
+        if (m_current_scene->should_close()) {
+            m_current_scene->on_close();
+        }
     }
 };
+
+// extern Game* game;
 
 class EchoCommand : public DevConsoleCommand {
   public:
@@ -150,13 +155,17 @@ class DefaultDevConsole : public DevConsole {
 class DefaultScene : public Scene {
   private:
     DefaultDevConsole* m_dev_console;
+    Game* m_game;
 
   public:
-    DefaultScene()
+    DefaultScene(Game* game)
         : m_dev_console(
-              this->create_entity()->add_component<DefaultDevConsole>()) {}
+              this->create_entity()->add_component<DefaultDevConsole>()),
+          m_game(game) {}
 
     DefaultDevConsole* dev_console() { return m_dev_console; }
+
+    Game* game() { return m_game; }
 };
 
 } // namespace SPRF

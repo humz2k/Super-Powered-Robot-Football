@@ -73,37 +73,24 @@ class FPSController : public Component {
         this->entity()->get_component<Transform>()->position +=
             outdir.Normalize() * (m_speed * game_info.frame_time);
 
-        /*if (IsKeyDown(KEY_W)) {
-            //this->entity()->get_component<Transform>()->position.z +=
-            //    GetFrameTime();
+        if (IsKeyPressed(KEY_Q)) {
+            this->entity()->scene()->close();
         }
-        if (IsKeyDown(KEY_S)) {
-            this->entity()->get_component<Transform>()->position.z -=
-                GetFrameTime();
-        }
-        if (IsKeyDown(KEY_A)) {
-            this->entity()->get_component<Transform>()->position.x +=
-                GetFrameTime();
-        }
-        if (IsKeyDown(KEY_D)) {
-            this->entity()->get_component<Transform>()->position.x -=
-                GetFrameTime();
-        }*/
     }
 };
 
 class Scene1 : public DefaultScene {
   public:
-    Scene1() {
-        RenderModel* render_model = this->renderer()->create_render_model(
-            raylib::Mesh::Sphere(1, 25, 25));
+    Scene1(Game* game) : DefaultScene(game) {
+        // RenderModel* render_model = this->renderer()->create_render_model(
+        //     raylib::Mesh::Sphere(1, 25, 25));
 
         // auto test = this->create_entity();
         // test->add_component<SPRF::Model>(render_model);
         // test->add_component<SPRF::Script>();
 
-        for (int i = -10; i < 10; i++) {
-            for (int j = -10; j < 10; j++) {
+        /*for (int i = -20; i < 20; i++) {
+            for (int j = -20; j < 20; j++) {
                 auto child = this->create_entity();
                 child->add_component<SPRF::Model>(render_model);
                 // child->add_component<SPRF::FPSController>();
@@ -111,7 +98,7 @@ class Scene1 : public DefaultScene {
                 child->get_component<SPRF::Transform>()->position.y = 0.5;
                 child->get_component<SPRF::Transform>()->position.z = j * 2;
             }
-        }
+        }*/
 
         auto floor = this->create_entity();
         floor->add_component<SPRF::Model>(this->renderer()->create_render_model(
@@ -136,6 +123,11 @@ class Scene1 : public DefaultScene {
             "defaultskybox.png");
         this->renderer()->disable_skybox();
         this->renderer()->enable_skybox();
+    }
+
+    void on_close() {
+        TraceLog(LOG_INFO, "scene closed");
+        game()->load_scene<DefaultScene>();
     }
 };
 

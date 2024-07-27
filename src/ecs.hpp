@@ -345,6 +345,8 @@ class Scene : public Logger {
     /** @brief Renderer for the scene */
     Renderer m_renderer;
 
+    bool m_should_close = false;
+
     /**
      * @brief Add an entity to the scene.
      * @param entity Pointer to the entity.
@@ -381,13 +383,17 @@ class Scene : public Logger {
     }
 
   public:
-    Scene() {}
+    template <typename... Args> Scene(Args... args) {}
 
-    ~Scene() {
+    virtual ~Scene() {
         for (auto i : m_entities) {
             delete i;
         }
     }
+
+    bool should_close() { return m_should_close; }
+
+    void close() { m_should_close = true; }
 
     /**
      * @brief Get the renderer for the scene.
@@ -459,6 +465,8 @@ class Scene : public Logger {
 
         texture.EndMode();
     }
+
+    virtual void on_close() {}
 
     /**
      * @brief Call draw2D on entity components.

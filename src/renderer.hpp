@@ -11,54 +11,108 @@
 
 namespace SPRF {
 
+/**
+ * @brief Represents a plane in 3D space.
+ */
 struct Plane {
+    /** @brief Normal vector of the plane */
     raylib::Vector3 normal = raylib::Vector3(0, 1, 0);
+    /** @brief A point on the plane */
     raylib::Vector3 point = raylib::Vector3(0, 0, 0);
+
+    /**
+     * @brief Calculate the signed distance from a point to the plane.
+     * @param P The point to calculate the distance from.
+     * @return Signed distance from the point to the plane.
+     */
     float signed_distance(Vector3 P) {
         return normal.DotProduct(Vector3Subtract(P, point));
     }
 };
 
+/**
+ * @brief Represents the view frustum of a camera.
+ */
 class ViewFrustrum {
   private:
+    /** @brief Reference to the camera */
     raylib::Camera3D& m_camera;
+    /** @brief Planes defining the view frustum */
     Plane m_planes[6];
 
+    /**
+     * @brief Get the display height.
+     * @return Display height.
+     */
     float display_height() {
-        if (IsWindowFullscreen()) {
-            return GetRenderHeight();
-        }
-        return GetScreenHeight();
+        return IsWindowFullscreen() ? GetRenderHeight() : GetScreenHeight();
     }
 
+    /**
+     * @brief Get the display width.
+     * @return Display width.
+     */
     float display_width() {
-        if (IsWindowFullscreen()) {
-            return GetRenderWidth();
-        }
-        return GetScreenWidth();
+        return IsWindowFullscreen() ? GetRenderWidth() : GetScreenWidth();
     }
 
+    /**
+     * @brief Get the aspect ratio.
+     * @return Aspect ratio.
+     */
     float aspect() { return display_width() / display_height(); }
 
+    /**
+     * @brief Get the field of view.
+     * @return Field of view.
+     */
     float fov_y() { return m_camera.fovy; }
 
+    /**
+     * @brief Get the near clipping plane distance.
+     * @return Near clipping plane distance.
+     */
     float z_near() { return RL_CULL_DISTANCE_NEAR; }
 
+    /**
+     * @brief Get the far clipping plane distance.
+     * @return Far clipping plane distance.
+     */
     float z_far() { return RL_CULL_DISTANCE_FAR; }
 
+    /**
+     * @brief Get the camera position.
+     * @return Camera position.
+     */
     raylib::Vector3 cam_position() { return m_camera.position; }
 
+    /**
+     * @brief Get the camera front vector.
+     * @return Camera front vector.
+     */
     raylib::Vector3 cam_front() {
         return (raylib::Vector3(m_camera.target) -
                 raylib::Vector3(m_camera.position))
             .Normalize();
     }
 
+    /**
+     * @brief Get the camera up vector.
+     * @return Camera up vector.
+     */
     raylib::Vector3 cam_up() { return m_camera.up; }
 
+    /**
+     * @brief Get the camera right vector.
+     * @return Camera right vector.
+     */
     raylib::Vector3 cam_right() { return cam_front().CrossProduct(cam_up()); }
 
   public:
+    /**
+     * @brief Construct a new ViewFrustrum object.
+     * @param camera Reference to the camera.
+     */
     ViewFrustrum(raylib::Camera3D& camera) : m_camera(camera) {
         float halfVSide = z_far() * tanf(fov_y() * 0.5f);
         float halfHSide = halfVSide * aspect();
@@ -83,6 +137,11 @@ class ViewFrustrum {
         m_planes[5].point = cam_position();
     }
 
+    /**
+     * @brief Check if a point is inside the view frustum.
+     * @param point The point to check.
+     * @return True if the point is inside the view frustum, false otherwise.
+     */
     bool point_inside(Vector3 point) {
         for (int i = 0; i < 6; i++) {
             if (m_planes[i].signed_distance(point) < 0) {
@@ -93,8 +152,17 @@ class ViewFrustrum {
     }
 };
 
+/**
+ * @brief Represents a bounding box with corner points.
+ */
 struct BBox {
+    /** @brief Corner points of the bounding box */
     raylib::Vector3 c1, c2, c3, c4, c5, c6, c7, c8;
+
+    /**
+     * @brief Construct a new BBox object from a BoundingBox.
+     * @param bbox BoundingBox to construct from.
+     */
     BBox(BoundingBox bbox) {
         c1 = bbox.min;
         c2 = bbox.min;
@@ -117,15 +185,27 @@ struct BBox {
 
     BBox() {}
 
-    bool visible(raylib::Matrix matrix) {
+    /**
+     * @brief Check if the bounding box is visible with a vp matrix.
+     * @param matrix vp matrix.
+     * @return True if visible, false otherwise.
+     */
+    bool visible(raylib::Matrix vp) {
         Vector3* points = (Vector3*)this;
         for (int i = 0; i < 8; i++) {
-            if (Vector3Transform(points[i], matrix).z <= 0)
+            if (Vector3Transform(points[i], vp).z <= 0)
                 return true;
         }
         return false;
     }
 
+    /**
+     * @brief Check if the bounding box is visible with a transformation matrix
+     * and view frustum.
+     * @param transform Transformation matrix.
+     * @param frustrum View frustum.
+     * @return True if visible, false otherwise.
+     */
     bool visible(Matrix& transform, ViewFrustrum& frustrum) {
         Vector3* points = (Vector3*)this;
         for (int i = 0; i < 8; i++) {
@@ -157,10 +237,14 @@ class RenderModel : public Logger {
     int m_n_instances = 0;
     /** @brief Instances of the model */
     raylib::Matrix* m_instances = NULL;
-
+    /** @brief Number of visible instances of the model */
     int m_n_visible_instances = 0;
+    /** @brief Visible instances of the model */
     Matrix* m_visible_instances = NULL;
 
+    /**
+     * @brief Reallocate memory for instances.
+     */
     void realloc_instances() {
         m_instances = (raylib::Matrix*)realloc(
             m_instances, sizeof(raylib::Matrix) * m_instances_allocated);
@@ -169,6 +253,12 @@ class RenderModel : public Logger {
     }
 
   public:
+    /**
+     * @brief Construct a new RenderModel object.
+     *
+     * @tparam Args Parameter pack for the model constructor.
+     * @param args Arguments for the model constructor.
+     */
     template <typename... Args>
     RenderModel(Args... args)
         : m_model(new raylib::Model(args...)),
@@ -206,7 +296,6 @@ class RenderModel : public Logger {
         }
         m_instances[m_n_instances] = m_model_transform * instance;
         m_n_instances++;
-        // m_instances.push_back(m_model_transform * instance);
     }
 
     /**
@@ -246,6 +335,17 @@ class RenderModel : public Logger {
         }
     }
 
+    /**
+     * @brief Draw the model with a specified shader and view frustum.
+     *
+     * This method temporarily sets the shader of the model's materials to the
+     * provided shader, draws all instances of the model, and then restores the
+     * original shader.
+     *
+     * @param shader Shader to be used for drawing.
+     * @param vp View-projection matrix.
+     * @param frustrum View frustum.
+     */
     void draw(Shader shader, raylib::Matrix vp, ViewFrustrum& frustrum) {
         Shader old_shader = m_model->materials[0].shader;
         for (int i = 0; i < m_model->meshCount; i++) {
@@ -302,7 +402,7 @@ class Renderer : public Logger {
     /** @brief Ambient light coefficient uniform */
     ShaderUniform<float> m_ka;
     /** @brief List of lights */
-    std::vector<std::shared_ptr<Light>> m_lights;
+    std::vector<Light*> m_lights;
     /** @brief Shadow map resolution uniform */
     ShaderUniform<int> m_shadow_map_res;
     /** @brief Skybox model */
@@ -310,6 +410,10 @@ class Renderer : public Logger {
     /** @brief Skybox enabled flag */
     bool m_skybox_enabled = true;
 
+    /**
+     * @brief Draw the skybox.
+     * @param camera_position Position of the camera.
+     */
     void draw_skybox(raylib::Vector3 camera_position) {
         if (!m_skybox_enabled)
             return;
@@ -362,8 +466,18 @@ class Renderer : public Logger {
         for (auto i : m_render_models) {
             delete i;
         }
+        for (auto i : m_lights) {
+            delete i;
+        }
     }
 
+    /**
+     * @brief Create a render model and add it to the renderer.
+     *
+     * @tparam Args Parameter pack for the model constructor.
+     * @param args Arguments for the model constructor.
+     * @return Pointer to the created render model.
+     */
     template <typename... Args> RenderModel* create_render_model(Args... args) {
         m_render_models.push_back(new RenderModel(args...));
         return m_render_models[m_render_models.size() - 1];
@@ -382,11 +496,10 @@ class Renderer : public Logger {
      * This method creates a new light, adds it to the list of lights, and
      * returns it.
      *
-     * @return Shared pointer to the created light.
+     * @return Pointer to the created light.
      */
-    std::shared_ptr<Light> add_light() {
-        std::shared_ptr<Light> out =
-            std::make_shared<Light>(m_shader, m_shadow_map_res.value());
+    Light* add_light() {
+        Light* out = new Light(m_shader, m_shadow_map_res.value());
         m_lights.push_back(out);
         return out;
     }

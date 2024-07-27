@@ -86,6 +86,8 @@ class DevConsole : public Component, public UITextInputBox {
         game_info.dev_console_active = m_enabled;
     }
 
+    bool enabled() { return m_enabled; }
+
     bool alias_exists(std::string command) {
         return m_aliases.find(command) != m_aliases.end();
     }
