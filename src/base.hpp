@@ -20,6 +20,7 @@ class GameInfo {
     int visible_meshes = 0;
     int hidden_meshes = 0;
     float frame_time = 0;
+    bool dev_console_active = false;
     GameInfo() {}
 
     void load_debug_font() {

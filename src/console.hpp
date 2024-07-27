@@ -83,6 +83,7 @@ class DevConsole : public Component, public UITextInputBox {
                 text_height * 0.95, "test"));
         }
         m_console_start = log_manager.log_stack.size() - m_text_boxes.size();
+        game_info.dev_console_active = m_enabled;
     }
 
     bool alias_exists(std::string command) {
@@ -184,6 +185,7 @@ class DevConsole : public Component, public UITextInputBox {
                 set_selected(true);
             }
         }
+        game_info.dev_console_active = m_enabled;
         if (!m_enabled)
             return;
         UITextInputBox::update(m_offset);

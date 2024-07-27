@@ -128,7 +128,6 @@ class RenderModel : public Logger {
      */
     void draw(Shader shader, raylib::Matrix vp) {
         Shader old_shader = m_model->materials[0].shader;
-        m_model->materials[0].shader = shader;
         for (int i = 0; i < m_model->meshCount; i++) {
 
             BBox bbox = m_bounding_boxes[i];
@@ -148,16 +147,11 @@ class RenderModel : public Logger {
 
             Mesh mesh = m_model->meshes[i];
             Material material = m_model->materials[m_model->meshMaterial[i]];
-            // material.shader = shader;
-            // material.maps[MATERIAL_MAP_DIFFUSE].color = RED;
-            // instance_ptr = m_visible_instances;
+            material.shader = shader;
             DrawMeshInstanced(mesh, material, m_visible_instances,
                               m_n_visible_instances);
-            // for (int j = 0; j < m_n_visible_instances; j++){
-            //     DrawMesh(mesh, material, *instance_ptr++);
-            // }
+            material.shader = old_shader;
         }
-        m_model->materials[0].shader = old_shader;
     }
 
     /**

@@ -17,13 +17,65 @@ class Script : public Component {
 };
 
 class FPSController : public Component {
+  private:
+    raylib::Vector2 sense = raylib::Vector2(0.005, 0.005);
+    float m_speed = 10;
+    bool mouse_locked = false;
+
   public:
     void init() {}
 
     void update() {
+        if (game_info.dev_console_active) {
+            if (mouse_locked) {
+                EnableCursor();
+                mouse_locked = false;
+            }
+            return;
+        }
+        if (!mouse_locked) {
+            DisableCursor();
+            mouse_locked = true;
+        }
+        auto mouse_delta = raylib::Vector2(GetMouseDelta()) * sense;
+        this->entity()->get_component<Transform>()->rotation.x += mouse_delta.y;
+        this->entity()->get_component<Transform>()->rotation.y -= mouse_delta.x;
+
+        this->entity()->get_component<Transform>()->rotation.y =
+            Wrap(this->entity()->get_component<Transform>()->rotation.y, 0,
+                 2 * M_PI);
+        this->entity()->get_component<Transform>()->rotation.x =
+            Clamp(this->entity()->get_component<Transform>()->rotation.x,
+                  -M_PI * 0.5f + 0.5, M_PI * 0.5f - 0.5);
+
+        raylib::Vector3 forward = Vector3Normalize(Vector3RotateByAxisAngle(
+            (Vector3){0.0f, 0.0f, 1.0f}, (Vector3){0.0f, 1.0f, 0.0f},
+            this->entity()->get_component<Transform>()->rotation.y));
+        raylib::Vector3 left = Vector3Normalize(Vector3RotateByAxisAngle(
+            (Vector3){1.0f, 0.0f, 0.0f}, (Vector3){0.0f, 1.0f, 0.0f},
+            this->entity()->get_component<Transform>()->rotation.y));
+
+        raylib::Vector3 outdir = Vector3Zero();
+
         if (IsKeyDown(KEY_W)) {
-            this->entity()->get_component<Transform>()->position.z +=
-                GetFrameTime();
+            outdir += forward;
+        }
+        if (IsKeyDown(KEY_S)) {
+            outdir -= forward;
+        }
+        if (IsKeyDown(KEY_D)) {
+            outdir -= left;
+        }
+        if (IsKeyDown(KEY_A)) {
+            outdir += left;
+        }
+
+        this->entity()->get_component<Transform>()->position +=
+            outdir.Normalize() * (m_speed * game_info.frame_time);
+
+        /*if (IsKeyDown(KEY_W)) {
+            //this->entity()->get_component<Transform>()->position.z +=
+            //    GetFrameTime();
         }
         if (IsKeyDown(KEY_S)) {
             this->entity()->get_component<Transform>()->position.z -=
@@ -36,7 +88,7 @@ class FPSController : public Component {
         if (IsKeyDown(KEY_D)) {
             this->entity()->get_component<Transform>()->position.x -=
                 GetFrameTime();
-        }
+        }*/
     }
 };
 
