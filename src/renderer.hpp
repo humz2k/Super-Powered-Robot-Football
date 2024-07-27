@@ -573,13 +573,14 @@ class Renderer : public Logger {
      *
      * @param camera Camera used to render the scene.
      */
-    void render(raylib::Camera* camera) {
+    void render(raylib::Camera* camera,
+                raylib::Color background_color = raylib::Color::White()) {
         m_camera_position.value(camera->GetPosition());
         ViewFrustrum frustrum(*camera);
         // auto cam = m_lights[0]->light_cam(camera);
         camera->BeginMode();
         // cam.BeginMode();
-        ClearBackground(WHITE);
+        ClearBackground(background_color);
         game_info.visible_meshes = 0;
         game_info.hidden_meshes = 0;
         draw_skybox(camera->GetPosition());

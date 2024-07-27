@@ -133,6 +133,25 @@ class Scene1 : public DefaultScene {
     }
 };
 
+class MainMenu : public DefaultScene {
+  private:
+    raylib::Font m_font;
+
+  public:
+    MainMenu(Game* game)
+        : DefaultScene(game),
+          m_font("/Users/humzaqureshi/GitHub/Super-Powered-Robot-Football/src/"
+                 "JetBrainsMono-Regular.ttf",
+                 128) {
+        set_background_color(BLACK);
+        this->create_entity()->add_component<UITextComponent>(
+            &m_font, raylib::Vector2(0, 0.01), 0.25,
+            "Super\nPowered\nRobot\nFootball");
+    }
+
+    void on_close() {}
+};
+
 } // namespace SPRF
 
 int main() {
@@ -141,7 +160,7 @@ int main() {
 
     // ToggleFullscreen();
 
-    game.load_scene<SPRF::Scene1>();
+    game.load_scene<SPRF::MainMenu>();
 
     while (game.running()) {
         game.draw();

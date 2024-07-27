@@ -86,10 +86,10 @@ class UIText : public UIElement {
     raylib::Vector2 m_pos;
     float m_height;
     raylib::Color m_color;
-    raylib::Font& m_font;
+    raylib::Font* m_font;
 
   public:
-    UIText(raylib::Font& font, raylib::Vector2 pos, float height,
+    UIText(raylib::Font* font, raylib::Vector2 pos, float height,
            std::string text = "", raylib::Color color = GREEN)
         : m_text(text), m_pos(pos), m_height(height), m_color(color),
           m_font(font) {}
@@ -100,8 +100,8 @@ class UIText : public UIElement {
         raylib::Vector2 coord = relative_to_actual(m_pos) + offset;
         float height = m_height * display_height();
         raylib::Vector2 first_size =
-            MeasureTextEx(m_font, m_text.c_str(), 20, 1);
-        DrawTextEx(m_font, m_text, coord, 20 * (height / first_size.y), 1,
+            MeasureTextEx(*m_font, m_text.c_str(), 20, 1);
+        DrawTextEx(*m_font, m_text, coord, 20 * (height / first_size.y), 1,
                    m_color);
     }
 
@@ -118,7 +118,7 @@ class UITextInputBox : public UIText {
     UIWindow m_background;
 
   public:
-    UITextInputBox(raylib::Font& font, raylib::Vector2 top_left,
+    UITextInputBox(raylib::Font* font, raylib::Vector2 top_left,
                    raylib::Vector2 bottom_right,
                    raylib::Color background_passive_color = DARKGRAY,
                    raylib::Color background_selected_color = GREEN,
@@ -189,8 +189,19 @@ class UITextInputBox : public UIText {
     }
 };
 
-class UIManager : public Component {
+class UITextComponent : public Component {
+  private:
+    raylib::Font* m_font;
+    UIText m_text;
+
   public:
+    UITextComponent(raylib::Font* font, raylib::Vector2 pos, float height,
+                    std::string text = "", raylib::Color color = GREEN)
+        : m_font(font), m_text(m_font, pos, height, text, color) {
+        TraceLog(LOG_INFO, "setting height = %g", height);
+    }
+
+    void draw2D() { m_text.draw(); }
 };
 
 } // namespace SPRF

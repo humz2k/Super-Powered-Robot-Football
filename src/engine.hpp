@@ -80,7 +80,10 @@ class Game : public Logger {
         m_current_scene->draw(m_render_view);
         m_render_view.GetTexture().Draw(render_rect(), window_rect());
         m_current_scene->draw2D();
-        DrawFPS(10, 10);
+        std::string fps_string = std::to_string(GetFPS()) + " fps";
+        DrawText(fps_string.c_str(),
+                 GetDisplayWidth() - MeasureText(fps_string.c_str(), 10), 0, 10,
+                 GREEN);
         game_info.draw_debug();
         EndDrawing();
         game_info.frame_time = GetFrameTime();

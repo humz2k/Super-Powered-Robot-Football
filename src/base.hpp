@@ -12,6 +12,20 @@
 
 namespace SPRF {
 
+static int GetDisplayWidth() {
+    if (IsWindowFullscreen()) {
+        return GetRenderWidth();
+    }
+    return GetScreenWidth();
+}
+
+static int GetDisplayHeight() {
+    if (IsWindowFullscreen()) {
+        return GetRenderHeight();
+    }
+    return GetScreenHeight();
+}
+
 class GameInfo {
   private:
     raylib::Font m_font;

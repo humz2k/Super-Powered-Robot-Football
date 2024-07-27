@@ -345,6 +345,8 @@ class Scene : public Logger {
     /** @brief Renderer for the scene */
     Renderer m_renderer;
 
+    raylib::Color m_background_color = raylib::Color::White();
+
     bool m_should_close = false;
 
     /**
@@ -394,6 +396,10 @@ class Scene : public Logger {
     bool should_close() { return m_should_close; }
 
     void close() { m_should_close = true; }
+
+    void set_background_color(raylib::Color color) {
+        m_background_color = color;
+    }
 
     /**
      * @brief Get the renderer for the scene.
@@ -459,7 +465,7 @@ class Scene : public Logger {
 
         get_active_camera()->BeginMode();
 
-        m_renderer.render(get_active_camera());
+        m_renderer.render(get_active_camera(), m_background_color);
 
         get_active_camera()->EndMode();
 
