@@ -69,9 +69,11 @@ class RenderModel : public Logger {
     int m_n_visible_instances = 0;
     Matrix* m_visible_instances = NULL;
 
-    void realloc_instances(){
-        m_instances = (raylib::Matrix*)realloc(m_instances,sizeof(raylib::Matrix) * m_instances_allocated);
-        m_visible_instances = (Matrix*)realloc(m_visible_instances,sizeof(Matrix) * m_instances_allocated);
+    void realloc_instances() {
+        m_instances = (raylib::Matrix*)realloc(
+            m_instances, sizeof(raylib::Matrix) * m_instances_allocated);
+        m_visible_instances = (Matrix*)realloc(
+            m_visible_instances, sizeof(Matrix) * m_instances_allocated);
     }
 
   public:
@@ -106,13 +108,13 @@ class RenderModel : public Logger {
      * @param instance Transformation matrix of the instance.
      */
     void add_instance(raylib::Matrix instance) {
-        if (m_n_instances == m_instances_allocated){
+        if (m_n_instances == m_instances_allocated) {
             m_instances_allocated *= 2;
             realloc_instances();
         }
         m_instances[m_n_instances] = m_model_transform * instance;
         m_n_instances++;
-        //m_instances.push_back(m_model_transform * instance);
+        // m_instances.push_back(m_model_transform * instance);
     }
 
     /**
@@ -146,14 +148,14 @@ class RenderModel : public Logger {
 
             Mesh mesh = m_model->meshes[i];
             Material material = m_model->materials[m_model->meshMaterial[i]];
-            //material.shader = shader;
-            //material.maps[MATERIAL_MAP_DIFFUSE].color = RED;
-            //instance_ptr = m_visible_instances;
-            DrawMeshInstanced(mesh,material,m_visible_instances,m_n_visible_instances);
-            //for (int j = 0; j < m_n_visible_instances; j++){
-            //    DrawMesh(mesh, material, *instance_ptr++);
-            //}
-
+            // material.shader = shader;
+            // material.maps[MATERIAL_MAP_DIFFUSE].color = RED;
+            // instance_ptr = m_visible_instances;
+            DrawMeshInstanced(mesh, material, m_visible_instances,
+                              m_n_visible_instances);
+            // for (int j = 0; j < m_n_visible_instances; j++){
+            //     DrawMesh(mesh, material, *instance_ptr++);
+            // }
         }
         m_model->materials[0].shader = old_shader;
     }
@@ -219,11 +221,11 @@ class Renderer : public Logger {
                              "Super-Powered-Robot-Football/src/lights.vs",
                              "/Users/humzaqureshi/GitHub/"
                              "Super-Powered-Robot-Football/src/lights.fs")),
-            m_shadow_shader(
-                raylib::Shader("/Users/humzaqureshi/GitHub/"
-                             "Super-Powered-Robot-Football/src/lights.vs","/Users/humzaqureshi/GitHub/"
-                             "Super-Powered-Robot-Football/src/base.fs")
-            ),
+          m_shadow_shader(
+              raylib::Shader("/Users/humzaqureshi/GitHub/"
+                             "Super-Powered-Robot-Football/src/lights.vs",
+                             "/Users/humzaqureshi/GitHub/"
+                             "Super-Powered-Robot-Football/src/base.fs")),
           m_skybox_shader(
               raylib::Shader("/Users/humzaqureshi/GitHub/"
                              "Super-Powered-Robot-Football/src/skybox.vs",
@@ -232,10 +234,14 @@ class Renderer : public Logger {
           m_camera_position("camPos", raylib::Vector3(0, 0, 0), m_shader),
           m_ka("ka", ka, m_shader),
           m_shadow_map_res("shadowMapRes", shadow_scale, m_shader) {
-        m_shader.locs[SHADER_LOC_MATRIX_MVP] = GetShaderLocation(m_shader, "mvp");
-        m_shader.locs[SHADER_LOC_MATRIX_MODEL] = GetShaderLocationAttrib(m_shader, "instanceTransform");
-        m_shadow_shader.locs[SHADER_LOC_MATRIX_MVP] = GetShaderLocation(m_shadow_shader, "mvp");
-        m_shadow_shader.locs[SHADER_LOC_MATRIX_MODEL] = GetShaderLocationAttrib(m_shadow_shader, "instanceTransform");
+        m_shader.locs[SHADER_LOC_MATRIX_MVP] =
+            GetShaderLocation(m_shader, "mvp");
+        m_shader.locs[SHADER_LOC_MATRIX_MODEL] =
+            GetShaderLocationAttrib(m_shader, "instanceTransform");
+        m_shadow_shader.locs[SHADER_LOC_MATRIX_MVP] =
+            GetShaderLocation(m_shadow_shader, "mvp");
+        m_shadow_shader.locs[SHADER_LOC_MATRIX_MODEL] =
+            GetShaderLocationAttrib(m_shadow_shader, "instanceTransform");
     }
 
     ~Renderer() {
@@ -288,7 +294,7 @@ class Renderer : public Logger {
             ClearBackground(BLACK);
 
             for (auto& i : m_render_models) {
-                i->draw(m_shadow_shader,light->light_cam().GetMatrix());
+                i->draw(m_shadow_shader, light->light_cam().GetMatrix());
             }
             light->EndShadowMode(slot_start);
         }
