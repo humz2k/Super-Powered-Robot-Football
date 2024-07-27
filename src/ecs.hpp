@@ -447,7 +447,7 @@ class Scene : public Logger {
 
         draw3D();
 
-        m_renderer.calculate_shadows();
+        m_renderer.calculate_shadows(get_active_camera());
 
         texture.BeginMode();
 

@@ -209,7 +209,7 @@ class Renderer : public Logger {
      * @param ka Ambient light coefficient.
      * @param shadow_scale Shadow map resolution.
      */
-    Renderer(float ka = 0.2, int shadow_scale = 1024)
+    Renderer(float ka = 0.2, int shadow_scale = 4096)
         : m_shader(
               raylib::Shader("/Users/humzaqureshi/GitHub/"
                              "Super-Powered-Robot-Football/src/lights.vs",
@@ -278,17 +278,17 @@ class Renderer : public Logger {
      * up shadow mapping by rendering the scene from the light's perspective to
      * a shadow map.
      */
-    void calculate_shadows() {
+    void calculate_shadows(raylib::Camera* camera) {
         int slot_start = 15 - MAX_LIGHTS;
         assert(m_lights.size() <= MAX_LIGHTS);
         for (auto& light : m_lights) {
             if (!light->enabled())
                 continue;
-            light->BeginShadowMode();
+            light->BeginShadowMode(camera);
             ClearBackground(BLACK);
 
             for (auto& i : m_render_models) {
-                i->draw(m_shadow_shader, light->light_cam().GetMatrix());
+                i->draw(m_shadow_shader, light->light_cam(camera).GetMatrix());
             }
             light->EndShadowMode(slot_start);
         }
@@ -304,15 +304,19 @@ class Renderer : public Logger {
      */
     void render(raylib::Camera* camera) {
         m_camera_position.value(camera->GetPosition());
+        //auto cam = m_lights[0]->light_cam(camera);
         camera->BeginMode();
+        //cam.BeginMode();
         ClearBackground(WHITE);
         game_info.visible_meshes = 0;
         game_info.hidden_meshes = 0;
         draw_skybox(camera->GetPosition());
         for (auto& i : m_render_models) {
             i->draw(m_shader, camera->GetMatrix());
+            //i->draw(m_shader, cam.GetMatrix());
             i->clear_instances();
         }
+        //cam.EndMode();
         camera->EndMode();
     }
 

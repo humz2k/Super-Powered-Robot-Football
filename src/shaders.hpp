@@ -309,8 +309,8 @@ class Light : public Logger {
      * @param scale Scale of the light.
      * @param fov Field of view for the light.
      */
-    Light(raylib::Shader& shader, int shadowMapRes = 2048, float scale = 20.0f,
-          float fov = 10.0f)
+    Light(raylib::Shader& shader, int shadowMapRes = 2048, float scale = 50.0f,
+          float fov = 90.0f)
         : m_id(light_count), m_shader(shader),
           m_enabled("lights[" + std::to_string(m_id) + "].enabled", 0,
                     m_shader),
@@ -502,11 +502,11 @@ class Light : public Logger {
      *
      * @return Camera representation of the light.
      */
-    raylib::Camera3D light_cam() const {
+    raylib::Camera3D light_cam(raylib::Camera* camera) const {
         raylib::Camera3D out;
-        out.position = L() * scale();
+        out.position = L() * scale();// + camera->GetPosition();
         out.projection = CAMERA_ORTHOGRAPHIC;
-        out.target = raylib::Vector3(0, 0, 0);
+        out.target = raylib::Vector3(0, 0, 0);//camera->GetPosition();//
         out.fovy = fov();
         out.up = raylib::Vector3(0.0f, 1.0f, 0.0f);
         return out;
@@ -515,10 +515,10 @@ class Light : public Logger {
     /**
      * @brief Begin shadow map rendering mode.
      */
-    void BeginShadowMode() {
+    void BeginShadowMode(raylib::Camera* camera) {
         BeginTextureMode(m_shadow_map);
         ClearBackground(WHITE);
-        BeginMode3D(light_cam());
+        BeginMode3D(light_cam(camera));
         m_light_view = rlGetMatrixModelview();
         m_light_proj = rlGetMatrixProjection();
     }
