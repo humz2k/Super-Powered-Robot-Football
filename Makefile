@@ -19,6 +19,8 @@ ENET_MAC_LIB ?= $(ENET_DIR)/.libs/libenet.a
 ENET_LIB ?= $(ENET_MAC_LIB)
 ENET_INCLUDE ?= $(ENET_DIR)/include
 
+DRIVERS_DIR ?= drivers
+
 RAYLIB_FLAGS ?= UNSUPPORTED_PLATFORM
 ifeq ($(PLATFORM_OS), WINDOWS)
 	RAYLIB_FLAGS = $(RAYLIB_WINDOWS_FLAGS)
@@ -33,7 +35,7 @@ endif
 
 DEBUG_FLAGS ?= -g -fsanitize=address -fsanitize=undefined -fno-omit-frame-pointer -fno-inline
 
-FLAGS ?= -O3 -Wall -Wpedantic -Wno-newline-eof -Wno-c99-extensions -Wno-format-security -Wno-unused-function -Werror -fPIC # $(DEBUG_FLAGS)
+FLAGS ?= -O3 -Wall -Wpedantic -Wno-newline-eof -Wno-c99-extensions -Wno-format-security -Wno-unused-function -Wno-unused-private-field -Werror -fPIC # $(DEBUG_FLAGS)
 
 SOURCE_DIR ?= src
 BUILD_DIR ?= build
@@ -41,21 +43,18 @@ BUILD_DIR ?= build
 SOURCES := $(shell find $(SOURCE_DIR) -name '*.cpp')
 OBJECTS := $(SOURCES:%.cpp=$(BUILD_DIR)/%.o)
 
-GAME_SOURCES := $(shell find $(SOURCE_DIR)/game -name '*.cpp')
-GAME_OBJECTS := $(GAME_SOURCES:%.cpp=$(BUILD_DIR)/%.o)
+# GAME_SOURCES := $(shell find $(SOURCE_DIR)/game -name '*.cpp')
+# GAME_OBJECTS := $(GAME_SOURCES:%.cpp=$(BUILD_DIR)/%.o)
 
-SERVER_SOURCES := $(shell find $(SOURCE_DIR)/server -name '*.cpp')
-SERVER_OBJECTS := $(SERVER_SOURCES:%.cpp=$(BUILD_DIR)/%.o)
+# SERVER_SOURCES := $(shell find $(SOURCE_DIR)/server -name '*.cpp')
+# SERVER_OBJECTS := $(SERVER_SOURCES:%.cpp=$(BUILD_DIR)/%.o)
 
 HEADERS := $(shell find $(SOURCE_DIR) -name '*.hpp')
 
 main: $(BUILD_DIR)/game $(BUILD_DIR)/server
 
-$(BUILD_DIR)/game: $(GAME_OBJECTS) $(RAYLIB_DIR)/libraylib.a $(ENET_LIB)
-	$(CXX) $^ -o $(BUILD_DIR)/game $(RAYLIB_FLAGS) $(FLAGS)
-
-$(BUILD_DIR)/server: $(SERVER_OBJECTS) $(RAYLIB_DIR)/libraylib.a $(ENET_LIB)
-	$(CXX) $^ -o $(BUILD_DIR)/server $(RAYLIB_FLAGS) $(FLAGS)
+$(BUILD_DIR)/%: $(BUILD_DIR)/$(DRIVERS_DIR)/%.o $(OBJECTS) $(RAYLIB_DIR)/libraylib.a $(ENET_LIB)
+	$(CXX) $^ -o $@ $(RAYLIB_FLAGS) $(FLAGS)
 
 $(ENET_MAC_LIB):
 	cd $(ENET_DIR) && $(MAKE)
@@ -64,7 +63,7 @@ $(ENET_MAC_LIB):
 
 $(BUILD_DIR)/%.o: %.cpp $(HEADERS)
 	mkdir -p $(@D)
-	$(CXX) -c $< -o $@ -I$(RAYLIB_CPP_DIR) -I$(RAYLIB_DIR) -I$(SOURCE_DIR) -std=c++17 $(FLAGS)
+	$(CXX) -c $< -o $@ -I$(RAYLIB_CPP_DIR) -I$(RAYLIB_DIR) -I$(SOURCE_DIR) -I$(ENET_INCLUDE) -std=c++17 $(FLAGS)
 
 $(RAYLIB_DIR)/libraylib.a:
 	cd $(RAYLIB_DIR) && $(MAKE) MACOSX_DEPLOYMENT_TARGET=10.9

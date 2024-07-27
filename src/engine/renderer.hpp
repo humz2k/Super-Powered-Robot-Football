@@ -3,9 +3,9 @@
 
 #include "base.hpp"
 #include "raylib-cpp.hpp"
+#include "shader_sources.hpp"
 #include "shaders.hpp"
 #include "shadow_map_texture.hpp"
-#include "shader_sources.hpp"
 #include <iostream>
 #include <memory>
 #include <vector>
@@ -473,15 +473,9 @@ class Renderer : public Logger {
      * @param shadow_scale Shadow map resolution.
      */
     Renderer(float ka = 0.2, int shadow_scale = 4096)
-        : m_shader(
-              raylib::Shader::LoadFromMemory(lights_vs,
-                             lights_fs)),
-          m_shadow_shader(
-              raylib::Shader::LoadFromMemory(lights_vs,
-                             base_fs)),
-          m_skybox_shader(
-              raylib::Shader::LoadFromMemory(skybox_vs,
-                             skybox_fs)),
+        : m_shader(raylib::Shader::LoadFromMemory(lights_vs, lights_fs)),
+          m_shadow_shader(raylib::Shader::LoadFromMemory(lights_vs, base_fs)),
+          m_skybox_shader(raylib::Shader::LoadFromMemory(skybox_vs, skybox_fs)),
           m_camera_position("camPos", raylib::Vector3(0, 0, 0), m_shader),
           m_ka("ka", ka, m_shader),
           m_shadow_map_res("shadowMapRes", shadow_scale, m_shader) {
