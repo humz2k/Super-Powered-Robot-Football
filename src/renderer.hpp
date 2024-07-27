@@ -142,9 +142,9 @@ class ViewFrustrum {
      * @param point The point to check.
      * @return True if the point is inside the view frustum, false otherwise.
      */
-    bool point_inside(Vector3 point) {
+    bool point_inside(Vector3 point, float radius = 0) {
         for (int i = 0; i < 6; i++) {
-            if (m_planes[i].signed_distance(point) < 0) {
+            if (m_planes[i].signed_distance(point) < -radius) {
                 return false;
             }
         }
@@ -155,15 +155,16 @@ class ViewFrustrum {
 /**
  * @brief Represents a bounding box with corner points.
  */
-struct BBox {
+struct BBoxCorners {
     /** @brief Corner points of the bounding box */
     raylib::Vector3 c1, c2, c3, c4, c5, c6, c7, c8;
+    float m_radius;
 
     /**
      * @brief Construct a new BBox object from a BoundingBox.
      * @param bbox BoundingBox to construct from.
      */
-    BBox(BoundingBox bbox) {
+    BBoxCorners(BoundingBox bbox) {
         c1 = bbox.min;
         c2 = bbox.min;
         c2.z = bbox.max.z;
@@ -181,9 +182,21 @@ struct BBox {
         c7.y = bbox.max.y;
         c7.x = bbox.max.x;
         c8 = bbox.max;
+
+        auto diff = Vector3Subtract(bbox.max, bbox.min);
+        diff.x = fabs(diff.x);
+        diff.y = fabs(diff.y);
+        diff.z = fabs(diff.z);
+        m_radius = diff.x;
+        if (diff.y > m_radius) {
+            m_radius = diff.y;
+        }
+        if (diff.z > m_radius) {
+            m_radius = diff.z;
+        }
     }
 
-    BBox() {}
+    BBoxCorners() {}
 
     /**
      * @brief Check if the bounding box is visible with a vp matrix.
@@ -228,7 +241,7 @@ class RenderModel : public Logger {
     /** @brief Pointer to the model */
     raylib::Model* m_model;
     /** @brief Bounding boxes of meshes of the model */
-    BBox* m_bounding_boxes = NULL;
+    BBoxCorners* m_bounding_boxes = NULL;
     /** @brief Transformation matrix of the model */
     raylib::Matrix m_model_transform;
     /** @brief Number of instances allocated */
@@ -241,6 +254,8 @@ class RenderModel : public Logger {
     int m_n_visible_instances = 0;
     /** @brief Visible instances of the model */
     Matrix* m_visible_instances = NULL;
+
+    bool m_clip = true;
 
     /**
      * @brief Reallocate memory for instances.
@@ -263,10 +278,11 @@ class RenderModel : public Logger {
     RenderModel(Args... args)
         : m_model(new raylib::Model(args...)),
           m_model_transform(raylib::Matrix(m_model->GetTransform())) {
-        m_bounding_boxes = (BBox*)malloc(sizeof(BBox) * m_model->meshCount);
+        m_bounding_boxes =
+            (BBoxCorners*)malloc(sizeof(BBoxCorners) * m_model->meshCount);
         for (int i = 0; i < m_model->meshCount; i++) {
             m_bounding_boxes[i] =
-                (BoundingBox(GetMeshBoundingBox(m_model->meshes[i])));
+                (BBoxCorners(GetMeshBoundingBox(m_model->meshes[i])));
         }
         m_instances_allocated = 50;
         realloc_instances();
@@ -278,6 +294,24 @@ class RenderModel : public Logger {
         free(m_instances);
         free(m_visible_instances);
     }
+
+    /**
+     * @brief Sets whether this model should be frustrum culled
+     *
+     * @param clip whether this model should be frustrum culled
+     * @return whether this model should be frustrum culled
+     */
+    bool clip(bool clip) {
+        m_clip = clip;
+        return m_clip;
+    }
+
+    /**
+     * @brief Gets whether this model should be frustrum culled
+     *
+     * @return whether this model should be frustrum culled
+     */
+    bool clip() { return m_clip; }
 
     /**
      * @brief Clear all instances of the model.
@@ -311,7 +345,7 @@ class RenderModel : public Logger {
         Shader old_shader = m_model->materials[0].shader;
         for (int i = 0; i < m_model->meshCount; i++) {
 
-            BBox bbox = m_bounding_boxes[i];
+            BBoxCorners bbox = m_bounding_boxes[i];
             m_n_visible_instances = 0;
 
             raylib::Matrix* instance_ptr = m_instances;
@@ -347,10 +381,14 @@ class RenderModel : public Logger {
      * @param frustrum View frustum.
      */
     void draw(Shader shader, raylib::Matrix vp, ViewFrustrum& frustrum) {
+        if (!m_clip) {
+            draw(shader, vp);
+            return;
+        }
         Shader old_shader = m_model->materials[0].shader;
         for (int i = 0; i < m_model->meshCount; i++) {
 
-            BBox bbox = m_bounding_boxes[i];
+            BBoxCorners bbox = m_bounding_boxes[i];
             m_n_visible_instances = 0;
 
             raylib::Matrix* instance_ptr = m_instances;

@@ -16,6 +16,13 @@ class GameInfo {
   private:
     raylib::Font m_font;
 
+    template <class T>
+    void draw_debug_var(std::string name, T var, int x, int y,
+                        Color color = RED) {
+        DrawTextEx(m_font, (name + ": " + std::to_string(var)),
+                   raylib::Vector2(x, y), 10, 1, color);
+    }
+
   public:
     int visible_meshes = 0;
     int hidden_meshes = 0;
@@ -30,11 +37,8 @@ class GameInfo {
     }
 
     void draw_debug() {
-        DrawTextEx(m_font,
-                   ("visible_meshes: " + std::to_string(visible_meshes)),
-                   raylib::Vector2(50, 50), 10, 1, RED);
-        DrawTextEx(m_font, ("hidden_meshes: " + std::to_string(hidden_meshes)),
-                   raylib::Vector2(50, 60), 10, 1, RED);
+        draw_debug_var("visible_meshes", visible_meshes, 50, 50);
+        draw_debug_var("hidden_meshes", hidden_meshes, 50, 60);
     }
 
     void unload_debug_font() { m_font.Unload(); }

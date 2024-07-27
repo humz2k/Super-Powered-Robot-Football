@@ -82,14 +82,14 @@ class FPSController : public Component {
 class Scene1 : public DefaultScene {
   public:
     Scene1(Game* game) : DefaultScene(game) {
-        // RenderModel* render_model = this->renderer()->create_render_model(
-        //     raylib::Mesh::Sphere(1, 25, 25));
+        RenderModel* render_model = this->renderer()->create_render_model(
+            raylib::Mesh::Sphere(1, 25, 25));
 
         // auto test = this->create_entity();
         // test->add_component<SPRF::Model>(render_model);
         // test->add_component<SPRF::Script>();
 
-        /*for (int i = -20; i < 20; i++) {
+        for (int i = -20; i < 20; i++) {
             for (int j = -20; j < 20; j++) {
                 auto child = this->create_entity();
                 child->add_component<SPRF::Model>(render_model);
@@ -98,11 +98,13 @@ class Scene1 : public DefaultScene {
                 child->get_component<SPRF::Transform>()->position.y = 0.5;
                 child->get_component<SPRF::Transform>()->position.z = j * 2;
             }
-        }*/
+        }
 
         auto floor = this->create_entity();
-        floor->add_component<SPRF::Model>(this->renderer()->create_render_model(
-            raylib::Mesh::Plane(20, 20, 10, 10)));
+        auto floor_model = this->renderer()->create_render_model(
+            raylib::Mesh::Plane(20, 20, 10, 10));
+        floor_model->clip(false);
+        floor->add_component<SPRF::Model>(floor_model);
 
         auto my_camera = this->create_entity();
         my_camera->add_component<SPRF::Camera>()->set_active();
