@@ -1,8 +1,35 @@
+PLATFORM_OS ?= UNKNOWN
+
+ifeq ($(OS),Windows_NT)
+	PLATFORM_OS = WINDOWS
+else
+	UNAMEOS = $(shell uname)
+	ifeq ($(UNAMEOS), Darwin)
+		PLATFORM_OS = OSX
+	endif
+endif
+
 RAYLIB_DIR ?= raylib/src
 RAYLIB_CPP_DIR ?= raylib-cpp/include
 RAYLIB_OSX_FLAGS ?= -framework CoreVideo -framework IOKit -framework Cocoa -framework GLUT -framework OpenGL
+RAYLIB_WINDOWS_FLAGS ?= -lopengl32 -lgdi32 -lwinmm
 
-RAYLIB_FLAGS := $(RAYLIB_OSX_FLAGS)
+ENET_DIR ?= enet
+ENET_MAC_LIB ?= $(ENET_DIR)/.libs/libenet.a
+ENET_LIB ?= $(ENET_MAC_LIB)
+ENET_INCLUDE ?= $(ENET_DIR)/include
+
+RAYLIB_FLAGS ?= UNSUPPORTED_PLATFORM
+ifeq ($(PLATFORM_OS), WINDOWS)
+	RAYLIB_FLAGS = $(RAYLIB_WINDOWS_FLAGS)
+	ENET_LIB = $(ENET_DIR)/enet64.lib
+endif
+ifeq ($(PLATFORM_OS), OSX)
+	RAYLIB_FLAGS = $(RAYLIB_OSX_FLAGS)
+	ENET_LIB = $(ENET_MAC_LIB)
+	ODE_LIB = $(ODE_NIX_LIB)
+endif
+
 
 DEBUG_FLAGS ?= -g -fsanitize=address -fsanitize=undefined -fno-omit-frame-pointer -fno-inline
 
@@ -14,10 +41,24 @@ BUILD_DIR ?= build
 SOURCES := $(shell find $(SOURCE_DIR) -name '*.cpp')
 OBJECTS := $(SOURCES:%.cpp=$(BUILD_DIR)/%.o)
 
+GAME_SOURCES := $(shell find $(SOURCE_DIR)/game -name '*.cpp')
+GAME_OBJECTS := $(GAME_SOURCES:%.cpp=$(BUILD_DIR)/%.o)
+
+SERVER_SOURCES := $(shell find $(SOURCE_DIR)/server -name '*.cpp')
+SERVER_OBJECTS := $(SERVER_SOURCES:%.cpp=$(BUILD_DIR)/%.o)
+
 HEADERS := $(shell find $(SOURCE_DIR) -name '*.hpp')
 
-main: $(OBJECTS) $(RAYLIB_DIR)/libraylib.a
+main: $(BUILD_DIR)/game $(BUILD_DIR)/server
+
+$(BUILD_DIR)/game: $(GAME_OBJECTS) $(RAYLIB_DIR)/libraylib.a $(ENET_LIB)
 	$(CXX) $^ -o $(BUILD_DIR)/game $(RAYLIB_FLAGS) $(FLAGS)
+
+$(BUILD_DIR)/server: $(SERVER_OBJECTS) $(RAYLIB_DIR)/libraylib.a $(ENET_LIB)
+	$(CXX) $^ -o $(BUILD_DIR)/server $(RAYLIB_FLAGS) $(FLAGS)
+
+$(ENET_MAC_LIB):
+	cd $(ENET_DIR) && $(MAKE)
 
 .secondary: $(OBJECTS)
 

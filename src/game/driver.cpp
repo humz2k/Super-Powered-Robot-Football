@@ -160,7 +160,7 @@ int main() {
 
     // ToggleFullscreen();
 
-    game.load_scene<SPRF::MainMenu>();
+    game.load_scene<SPRF::Scene1>();
 
     while (game.running()) {
         game.draw();
