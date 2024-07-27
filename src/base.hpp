@@ -13,10 +13,26 @@
 namespace SPRF {
 
 class GameInfo{
+    private:
+      raylib::Font m_font;
     public:
       int visible_meshes = 0;
+      int hidden_meshes = 0;
       float frame_time = 0;
       GameInfo(){}
+
+      void load_debug_font(){
+        m_font = raylib::Font("/Users/humzaqureshi/GitHub/Super-Powered-Robot-Football/src/JetBrainsMono-Regular.ttf");
+      }
+
+      void draw_debug(){
+        DrawTextEx(m_font,("visible_meshes: " + std::to_string(visible_meshes)),raylib::Vector2(50,50),10,1,RED);
+        DrawTextEx(m_font,("hidden_meshes: " + std::to_string(hidden_meshes)),raylib::Vector2(50,60),10,1,RED);
+      }
+
+      void unload_debug_font(){
+        m_font.Unload();
+      }
 };
 
 extern GameInfo game_info;

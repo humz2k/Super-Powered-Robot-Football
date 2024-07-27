@@ -56,10 +56,12 @@ class Game : public Logger {
         m_current_scene = std::make_shared<Scene>();
         m_current_scene->init();
         SetTextureFilter(m_render_view.texture, TEXTURE_FILTER_BILINEAR);
+        game_info.load_debug_font();
     }
 
     ~Game() {
         log(LOG_INFO, "Closing game");
+        game_info.unload_debug_font();
         m_current_scene->destroy();
         log(LOG_INFO, "Closed game");
     }
@@ -79,6 +81,7 @@ class Game : public Logger {
         m_render_view.GetTexture().Draw(render_rect(), window_rect());
         m_current_scene->draw2D();
         DrawFPS(10, 10);
+        game_info.draw_debug();
         EndDrawing();
         game_info.frame_time = GetFrameTime();
     }

@@ -44,7 +44,7 @@ class Scene1 : public DefaultScene {
   public:
     Scene1() {
         RenderModel* render_model = this->renderer()->create_render_model(
-            raylib::Mesh::Sphere(1, 50, 50));
+            raylib::Mesh::Sphere(1, 25, 25));
 
         // auto test = this->create_entity();
         // test->add_component<SPRF::Model>(render_model);
@@ -91,7 +91,7 @@ class Scene1 : public DefaultScene {
 
 int main() {
 
-    SPRF::Game game(900, 900, "test", 900, 900, 300);
+    SPRF::Game game(900, 900, "test", 900, 900, 500);
 
     // ToggleFullscreen();
 

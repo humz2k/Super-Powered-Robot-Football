@@ -26,7 +26,7 @@ $(BUILD_DIR)/%.o: %.cpp $(HEADERS)
 	$(CXX) -c $< -o $@ -I$(RAYLIB_CPP_DIR) -I$(RAYLIB_DIR) -I$(SOURCE_DIR) -std=c++17 $(FLAGS)
 
 $(RAYLIB_DIR)/libraylib.a:
-	cd $(RAYLIB_DIR) && $(MAKE) MACOSX_DEPLOYMENT_TARGET=10.9 CUSTOM_CFLAGS=-fno-inline
+	cd $(RAYLIB_DIR) && $(MAKE) MACOSX_DEPLOYMENT_TARGET=10.9
 
 .PHONY: clean
 clean:

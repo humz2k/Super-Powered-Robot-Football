@@ -53,36 +53,52 @@ struct BBox {
  */
 class RenderModel : public Logger {
   private:
-    /** @brief Shared pointer to the model */
+    /** @brief Pointer to the model */
     raylib::Model* m_model;
-    BBox* m_bounding_boxes;
-    // std::vector<
+    /** @brief Bounding boxes of meshes of the model */
+    BBox* m_bounding_boxes = NULL;
     /** @brief Transformation matrix of the model */
     raylib::Matrix m_model_transform;
+    /** @brief Number of instances allocated */
+    int m_instances_allocated = 0;
+    /** @brief Number of instances of the model */
+    int m_n_instances = 0;
     /** @brief Instances of the model */
-    std::vector<raylib::Matrix> m_instances;
+    raylib::Matrix* m_instances = NULL;
+
+    int m_n_visible_instances = 0;
+    Matrix* m_visible_instances = NULL;
+
+    void realloc_instances(){
+        m_instances = (raylib::Matrix*)realloc(m_instances,sizeof(raylib::Matrix) * m_instances_allocated);
+        m_visible_instances = (Matrix*)realloc(m_visible_instances,sizeof(Matrix) * m_instances_allocated);
+    }
 
   public:
     template <typename... Args>
     RenderModel(Args... args)
         : m_model(new raylib::Model(args...)),
           m_model_transform(raylib::Matrix(m_model->GetTransform())) {
-        m_bounding_boxes = (BBox*)malloc(sizeof(BBox));
+        m_bounding_boxes = (BBox*)malloc(sizeof(BBox) * m_model->meshCount);
         for (int i = 0; i < m_model->meshCount; i++) {
             m_bounding_boxes[i] =
                 (BoundingBox(GetMeshBoundingBox(m_model->meshes[i])));
         }
+        m_instances_allocated = 50;
+        realloc_instances();
     }
 
     ~RenderModel() {
         delete m_model;
         free(m_bounding_boxes);
+        free(m_instances);
+        free(m_visible_instances);
     }
 
     /**
      * @brief Clear all instances of the model.
      */
-    void clear_instances() { m_instances.clear(); }
+    void clear_instances() { m_n_instances = 0; }
 
     /**
      * @brief Add an instance of the model.
@@ -90,7 +106,13 @@ class RenderModel : public Logger {
      * @param instance Transformation matrix of the instance.
      */
     void add_instance(raylib::Matrix instance) {
-        m_instances.push_back(m_model_transform * instance);
+        if (m_n_instances == m_instances_allocated){
+            m_instances_allocated *= 2;
+            realloc_instances();
+        }
+        m_instances[m_n_instances] = m_model_transform * instance;
+        m_n_instances++;
+        //m_instances.push_back(m_model_transform * instance);
     }
 
     /**
@@ -106,16 +128,32 @@ class RenderModel : public Logger {
         Shader old_shader = m_model->materials[0].shader;
         m_model->materials[0].shader = shader;
         for (int i = 0; i < m_model->meshCount; i++) {
+
             BBox bbox = m_bounding_boxes[i];
-            Mesh mesh = m_model->meshes[i];
-            Material material = m_model->materials[m_model->meshMaterial[i]];
-            for (auto& transform : m_instances) {
-                raylib::Matrix final_transform = transform;
-                if (bbox.visible(final_transform * vp)) {
+            m_n_visible_instances = 0;
+
+            raylib::Matrix* instance_ptr = m_instances;
+            for (int j = 0; j < m_n_instances; j++) {
+                raylib::Matrix transform = *instance_ptr++;
+                if (bbox.visible(transform * vp)) {
                     game_info.visible_meshes++;
-                    DrawMesh(mesh, material, final_transform);
+                    m_visible_instances[m_n_visible_instances] = transform;
+                    m_n_visible_instances++;
+                } else {
+                    game_info.hidden_meshes++;
                 }
             }
+
+            Mesh mesh = m_model->meshes[i];
+            Material material = m_model->materials[m_model->meshMaterial[i]];
+            //material.shader = shader;
+            //material.maps[MATERIAL_MAP_DIFFUSE].color = RED;
+            //instance_ptr = m_visible_instances;
+            DrawMeshInstanced(mesh,material,m_visible_instances,m_n_visible_instances);
+            //for (int j = 0; j < m_n_visible_instances; j++){
+            //    DrawMesh(mesh, material, *instance_ptr++);
+            //}
+
         }
         m_model->materials[0].shader = old_shader;
     }
@@ -139,6 +177,8 @@ class Renderer : public Logger {
     std::vector<RenderModel*> m_render_models;
     /** @brief Shader used for rendering */
     raylib::Shader m_shader;
+    /** @brief Shader used for rendering shadows */
+    raylib::Shader m_shadow_shader;
     /** @brief Skybox shader */
     raylib::Shader m_skybox_shader;
     /** @brief Camera position uniform */
@@ -179,6 +219,11 @@ class Renderer : public Logger {
                              "Super-Powered-Robot-Football/src/lights.vs",
                              "/Users/humzaqureshi/GitHub/"
                              "Super-Powered-Robot-Football/src/lights.fs")),
+            m_shadow_shader(
+                raylib::Shader("/Users/humzaqureshi/GitHub/"
+                             "Super-Powered-Robot-Football/src/lights.vs","/Users/humzaqureshi/GitHub/"
+                             "Super-Powered-Robot-Football/src/base.fs")
+            ),
           m_skybox_shader(
               raylib::Shader("/Users/humzaqureshi/GitHub/"
                              "Super-Powered-Robot-Football/src/skybox.vs",
@@ -186,7 +231,12 @@ class Renderer : public Logger {
                              "Super-Powered-Robot-Football/src/skybox.fs")),
           m_camera_position("camPos", raylib::Vector3(0, 0, 0), m_shader),
           m_ka("ka", ka, m_shader),
-          m_shadow_map_res("shadowMapRes", shadow_scale, m_shader) {}
+          m_shadow_map_res("shadowMapRes", shadow_scale, m_shader) {
+        m_shader.locs[SHADER_LOC_MATRIX_MVP] = GetShaderLocation(m_shader, "mvp");
+        m_shader.locs[SHADER_LOC_MATRIX_MODEL] = GetShaderLocationAttrib(m_shader, "instanceTransform");
+        m_shadow_shader.locs[SHADER_LOC_MATRIX_MVP] = GetShaderLocation(m_shadow_shader, "mvp");
+        m_shadow_shader.locs[SHADER_LOC_MATRIX_MODEL] = GetShaderLocationAttrib(m_shadow_shader, "instanceTransform");
+    }
 
     ~Renderer() {
         for (auto i : m_render_models) {
@@ -238,7 +288,7 @@ class Renderer : public Logger {
             ClearBackground(BLACK);
 
             for (auto& i : m_render_models) {
-                i->draw(light->light_cam().GetMatrix());
+                i->draw(m_shadow_shader,light->light_cam().GetMatrix());
             }
             light->EndShadowMode(slot_start);
         }
@@ -257,6 +307,7 @@ class Renderer : public Logger {
         camera->BeginMode();
         ClearBackground(WHITE);
         game_info.visible_meshes = 0;
+        game_info.hidden_meshes = 0;
         draw_skybox(camera->GetPosition());
         for (auto& i : m_render_models) {
             i->draw(m_shader, camera->GetMatrix());

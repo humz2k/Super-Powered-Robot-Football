@@ -1,8 +1,12 @@
 #include "log_manager.hpp"
+#include "base.hpp"
 
 #include <iostream>
 
 namespace SPRF {
+
+GameInfo game_info;
+
 LogManager log_manager;
 
 static std::string last_source = "NONE";
