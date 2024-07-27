@@ -11,6 +11,88 @@
 
 namespace SPRF {
 
+struct Plane {
+    raylib::Vector3 normal = raylib::Vector3(0, 1, 0);
+    raylib::Vector3 point = raylib::Vector3(0, 0, 0);
+    float signed_distance(Vector3 P) {
+        return normal.DotProduct(Vector3Subtract(P, point));
+    }
+};
+
+class ViewFrustrum {
+  private:
+    raylib::Camera3D& m_camera;
+    Plane m_planes[6];
+
+    float display_height() {
+        if (IsWindowFullscreen()) {
+            return GetRenderHeight();
+        }
+        return GetScreenHeight();
+    }
+
+    float display_width() {
+        if (IsWindowFullscreen()) {
+            return GetRenderWidth();
+        }
+        return GetScreenWidth();
+    }
+
+    float aspect() { return display_width() / display_height(); }
+
+    float fov_y() { return m_camera.fovy; }
+
+    float z_near() { return RL_CULL_DISTANCE_NEAR; }
+
+    float z_far() { return RL_CULL_DISTANCE_FAR; }
+
+    raylib::Vector3 cam_position() { return m_camera.position; }
+
+    raylib::Vector3 cam_front() {
+        return (raylib::Vector3(m_camera.target) -
+                raylib::Vector3(m_camera.position))
+            .Normalize();
+    }
+
+    raylib::Vector3 cam_up() { return m_camera.up; }
+
+    raylib::Vector3 cam_right() { return cam_front().CrossProduct(cam_up()); }
+
+  public:
+    ViewFrustrum(raylib::Camera3D& camera) : m_camera(camera) {
+        float halfVSide = z_far() * tanf(fov_y() * 0.5f);
+        float halfHSide = halfVSide * aspect();
+        auto front = cam_front();
+        auto frontMultFar = front * z_far();
+
+        m_planes[0].normal = front;
+        m_planes[0].point = cam_position() + (front * z_near());
+        m_planes[1].normal = -front;
+        m_planes[1].point = cam_position() + (frontMultFar);
+        m_planes[2].normal =
+            (frontMultFar - cam_right() * halfHSide).CrossProduct(cam_up());
+        m_planes[2].point = cam_position();
+        m_planes[3].normal =
+            cam_up().CrossProduct(frontMultFar + cam_right() * halfHSide);
+        m_planes[3].point = cam_position();
+        m_planes[4].normal =
+            cam_right().CrossProduct(frontMultFar - cam_up() * halfVSide);
+        m_planes[4].point = cam_position();
+        m_planes[5].normal =
+            (frontMultFar + cam_up() * halfVSide).CrossProduct(cam_right());
+        m_planes[5].point = cam_position();
+    }
+
+    bool point_inside(Vector3 point) {
+        for (int i = 0; i < 6; i++) {
+            if (m_planes[i].signed_distance(point) < 0) {
+                return false;
+            }
+        }
+        return true;
+    }
+};
+
 struct BBox {
     raylib::Vector3 c1, c2, c3, c4, c5, c6, c7, c8;
     BBox(BoundingBox bbox) {
@@ -40,6 +122,16 @@ struct BBox {
         for (int i = 0; i < 8; i++) {
             if (Vector3Transform(points[i], matrix).z <= 0)
                 return true;
+        }
+        return false;
+    }
+
+    bool visible(Matrix& transform, ViewFrustrum& frustrum) {
+        Vector3* points = (Vector3*)this;
+        for (int i = 0; i < 8; i++) {
+            if (frustrum.point_inside(Vector3Transform(points[i], transform))) {
+                return true;
+            }
         }
         return false;
     }
@@ -137,6 +229,34 @@ class RenderModel : public Logger {
             for (int j = 0; j < m_n_instances; j++) {
                 raylib::Matrix transform = *instance_ptr++;
                 if (bbox.visible(transform * vp)) {
+                    game_info.visible_meshes++;
+                    m_visible_instances[m_n_visible_instances] = transform;
+                    m_n_visible_instances++;
+                } else {
+                    game_info.hidden_meshes++;
+                }
+            }
+
+            Mesh mesh = m_model->meshes[i];
+            Material material = m_model->materials[m_model->meshMaterial[i]];
+            material.shader = shader;
+            DrawMeshInstanced(mesh, material, m_visible_instances,
+                              m_n_visible_instances);
+            material.shader = old_shader;
+        }
+    }
+
+    void draw(Shader shader, raylib::Matrix vp, ViewFrustrum& frustrum) {
+        Shader old_shader = m_model->materials[0].shader;
+        for (int i = 0; i < m_model->meshCount; i++) {
+
+            BBox bbox = m_bounding_boxes[i];
+            m_n_visible_instances = 0;
+
+            raylib::Matrix* instance_ptr = m_instances;
+            for (int j = 0; j < m_n_instances; j++) {
+                raylib::Matrix transform = *instance_ptr++;
+                if (bbox.visible(transform, frustrum)) {
                     game_info.visible_meshes++;
                     m_visible_instances[m_n_visible_instances] = transform;
                     m_n_visible_instances++;
@@ -304,19 +424,20 @@ class Renderer : public Logger {
      */
     void render(raylib::Camera* camera) {
         m_camera_position.value(camera->GetPosition());
-        //auto cam = m_lights[0]->light_cam(camera);
+        ViewFrustrum frustrum(*camera);
+        // auto cam = m_lights[0]->light_cam(camera);
         camera->BeginMode();
-        //cam.BeginMode();
+        // cam.BeginMode();
         ClearBackground(WHITE);
         game_info.visible_meshes = 0;
         game_info.hidden_meshes = 0;
         draw_skybox(camera->GetPosition());
         for (auto& i : m_render_models) {
-            i->draw(m_shader, camera->GetMatrix());
-            //i->draw(m_shader, cam.GetMatrix());
+            i->draw(m_shader, camera->GetMatrix(), frustrum);
+            // i->draw(m_shader, cam.GetMatrix());
             i->clear_instances();
         }
-        //cam.EndMode();
+        // cam.EndMode();
         camera->EndMode();
     }
 

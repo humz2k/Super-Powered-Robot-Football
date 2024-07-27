@@ -504,9 +504,9 @@ class Light : public Logger {
      */
     raylib::Camera3D light_cam(raylib::Camera* camera) const {
         raylib::Camera3D out;
-        out.position = L() * scale();// + camera->GetPosition();
+        out.position = L() * scale(); // + camera->GetPosition();
         out.projection = CAMERA_ORTHOGRAPHIC;
-        out.target = raylib::Vector3(0, 0, 0);//camera->GetPosition();//
+        out.target = raylib::Vector3(0, 0, 0); // camera->GetPosition();//
         out.fovy = fov();
         out.up = raylib::Vector3(0.0f, 1.0f, 0.0f);
         return out;
