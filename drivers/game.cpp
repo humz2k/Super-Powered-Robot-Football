@@ -7,10 +7,14 @@ namespace SPRF {
 class MenuScene;
 
 class DisconnectCommand : public DevConsoleCommand {
-    using DevConsoleCommand::DevConsoleCommand;
-    void handle(std::vector<std::string>& args) {
-        dev_console().entity()->scene()->close();
-    }
+  private:
+    std::function<void()> m_callback;
+
+  public:
+    DisconnectCommand(DevConsole& dev_console, std::function<void()> callback)
+        : DevConsoleCommand(dev_console), m_callback(callback) {}
+
+    void handle(std::vector<std::string>& args) { m_callback(); }
 };
 
 class Scene1 : public DefaultScene {
@@ -18,42 +22,41 @@ class Scene1 : public DefaultScene {
     Scene1(Game* game, std::string host, enet_uint32 port)
         : DefaultScene(game) {
         this->create_entity()->add_component<Client>(host, port);
-        dev_console()->add_command<DisconnectCommand>("disconnect");
+        std::function<void()> callback = [this]() { disconnect(); };
+        dev_console()->add_command<DisconnectCommand>("disconnect", callback);
     }
+    void disconnect() { this->close(); }
     void on_close() { game()->load_scene<MenuScene>(); }
 };
 
 class ConnectCommand : public DevConsoleCommand {
   private:
-    std::string* m_host;
-    enet_uint32* m_port;
+    std::function<void(std::string, enet_uint32)> m_callback;
 
   public:
-    ConnectCommand(DevConsole& dev_console, std::string* host,
-                   enet_uint32* port)
-        : DevConsoleCommand(dev_console), m_host(host), m_port(port) {}
+    ConnectCommand(DevConsole& dev_console,
+                   std::function<void(std::string, enet_uint32)> callback)
+        : DevConsoleCommand(dev_console), m_callback(callback) {}
 
     void handle(std::vector<std::string>& args) {
-        *m_host = args[0].substr(0, args[0].find(":"));
-        *m_port =
+        std::string m_host = args[0].substr(0, args[0].find(":"));
+        enet_uint32 m_port =
             std::stoi(args[0].substr(args[0].find(":") + 1, args[0].length()));
-        dev_console().entity()->scene()->close();
+        m_callback(m_host, m_port);
     }
 };
 
 class MenuScene : public DefaultScene {
-  private:
-    std::string m_host;
-    enet_uint32 m_port;
-
   public:
     MenuScene(Game* game) : DefaultScene(game) {
-        dev_console()->add_command<ConnectCommand>("connect", &m_host, &m_port);
+        std::function<void(std::string, enet_uint32)> callback =
+            [this](std::string host, enet_uint32 port) { connect(host, port); };
+        dev_console()->add_command<ConnectCommand>("connect", callback);
     }
 
-    void on_close() {
-        TraceLog(LOG_INFO, "connecting to %s:%u", m_host.c_str(), m_port);
-        game()->load_scene<Scene1>(m_host, m_port);
+    void connect(std::string host, enet_uint32 port) {
+        TraceLog(LOG_INFO, "MenuScene connect called...");
+        game()->load_scene<Scene1>(host, port);
     }
 };
 
@@ -169,13 +172,15 @@ class TestScene : public DefaultScene {
 
 int main() {
 
-    SPRF::Game game(900, 900, "test", 900 * 2, 900 * 2, 500);
+    SPRF::game = new SPRF::Game(900, 900, "test", 900 * 2, 900 * 2, 500);
 
-    game.load_scene<SPRF::MenuScene>();
+    SPRF::game->load_scene<SPRF::MenuScene>();
 
-    while (game.running()) {
-        game.draw();
+    while (SPRF::game->running()) {
+        SPRF::game->draw();
     }
+
+    delete SPRF::game;
 
     return 0;
 }

@@ -2,6 +2,7 @@
 #define _SPRF_ENGINE_HPP_
 
 #include "raylib-cpp.hpp"
+#include <functional>
 #include <iostream>
 #include <memory>
 #include <string>
@@ -15,6 +16,7 @@
 #include "base.hpp"
 
 #include "console.hpp"
+#include "loading_screen.hpp"
 #include "ui.hpp"
 
 namespace SPRF {
@@ -30,7 +32,11 @@ class Game : public Logger {
     int m_fps_max;
     std::shared_ptr<Scene> m_current_scene;
 
+    std::function<void()> m_load_next;
+    bool m_scene_to_load = false;
+
   public:
+    LoadingScreen loading_screen;
     float deltaTime = 0;
 
     raylib::Rectangle render_rect() {
@@ -47,10 +53,14 @@ class Game : public Logger {
         return m_window.GetSize();
     }
 
+    Game() {}
+
     Game(int window_width, int window_height, std::string window_name,
          int render_width, int render_height, int fps_max = 200)
         : Logger("GAME"), m_window(window_width, window_height, window_name),
           m_render_view(render_width, render_height), m_fps_max(fps_max) {
+        loading_screen.draw_splash_screen();
+        loading_screen.draw();
         log(LOG_INFO, "Launching game");
         SetTargetFPS(m_fps_max);
         m_current_scene = std::make_shared<Scene>();
@@ -68,14 +78,16 @@ class Game : public Logger {
 
     bool running() { return (!m_window.ShouldClose()) && (!game_should_quit); }
 
-    template <class T, typename... Args>
-    std::shared_ptr<T> load_scene(Args... args) {
-        log(LOG_INFO, "Loading scene %s", typeid(T).name());
-        m_current_scene->destroy();
-        auto out = std::make_shared<T>(this, args...);
-        m_current_scene = out;
-        m_current_scene->init();
-        return out;
+    template <class T, typename... Args> void load_scene(Args... args) {
+        m_load_next = [this, args...]() {
+            loading_screen.draw();
+            log(LOG_INFO, "Loading scene %s", typeid(T).name());
+            m_current_scene->destroy();
+            auto out = std::make_shared<T>(this, args...);
+            m_current_scene = out;
+            m_current_scene->init();
+        };
+        m_scene_to_load = true;
     }
 
     void draw() {
@@ -90,11 +102,17 @@ class Game : public Logger {
         game_info.draw_debug();
         EndDrawing();
         game_info.frame_time = GetFrameTime();
-        if (m_current_scene->should_close()) {
+        if (m_scene_to_load) {
+            m_current_scene->on_close();
+            m_load_next();
+            m_scene_to_load = false;
+        } else if (m_current_scene->should_close()) {
             m_current_scene->on_close();
         }
     }
 };
+
+extern Game* game;
 
 // extern Game* game;
 
@@ -170,6 +188,14 @@ class DefaultScene : public Scene {
           m_game(game) {}
 
     DefaultDevConsole* dev_console() { return m_dev_console; }
+
+    // template <class T, typename... Args>
+    // void load_next(Args... args){
+    //     m_scene_to_load = true;
+    //     m_load_next = [this,args...](){
+    //         m_game->load_scene<T>(args...);
+    //     };
+    // }
 
     Game* game() { return m_game; }
 };

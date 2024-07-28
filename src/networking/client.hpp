@@ -4,6 +4,7 @@
 #include "engine/engine.hpp"
 #include "packet.hpp"
 #include <enet/enet.h>
+#include <functional>
 #include <mutex>
 #include <string>
 #include <thread>
@@ -58,16 +59,24 @@ class Client : public Component {
         }
     }
 
+    // returns 0 if connection failed, 1 if succeeded
     int connect() {
+        game->loading_screen.draw(0, "Creating ENet host...");
+
         m_client = enet_host_create(NULL, 1, 1, 0, 0);
         if (!m_client) {
             TraceLog(LOG_ERROR, "An error occurred while trying to create an "
                                 "ENet client host!");
             exit(EXIT_FAILURE);
         }
+
+        game->loading_screen.draw(0.1, "Setting host address and port...");
+
         TraceLog(LOG_INFO, "Setting host address and port");
         enet_address_set_host(&m_address, m_host.c_str());
         m_address.port = m_port;
+
+        game->loading_screen.draw(0.2, "Creating peer...");
 
         TraceLog(LOG_INFO, "Creating Peer");
         m_peer = enet_host_connect(m_client, &m_address, 1, 0);
@@ -76,6 +85,8 @@ class Client : public Component {
                      "No available peers for initiating an ENet connection!");
             exit(EXIT_FAILURE);
         }
+
+        game->loading_screen.draw(0.3, "Waiting for server response...");
 
         TraceLog(LOG_INFO, "Waiting for server response");
 
@@ -89,6 +100,8 @@ class Client : public Component {
                 connection_succeeded = true;
                 break;
             }
+            game->loading_screen.draw(0.3 + 0.05 * (float)i,
+                                      "Waiting for server response...");
         }
 
         enet_host_flush(m_client);
@@ -100,48 +113,71 @@ class Client : public Component {
             return 0;
         }
 
-        if (enet_host_service(m_client, &event, 5000) > 0 &&
-            event.type == ENET_EVENT_TYPE_RECEIVE) {
-            HandshakePacket* handshake = (HandshakePacket*)event.packet->data;
-            TraceLog(LOG_INFO,
-                     "I am player %u, server tickrate = %u, current_time = %u",
-                     handshake->id, handshake->tickrate,
-                     handshake->current_time);
-            enet_time_set(handshake->current_time);
-            m_last_time = enet_time_get();
-            enet_packet_destroy(event.packet);
-        } else {
+        game->loading_screen.draw(0.8, "Waiting for handshake...");
+        bool handshake_succeeded = false;
+        for (int i = 0; i < 10; i++) {
+            if (enet_host_service(m_client, &event, 500) > 0 &&
+                event.type == ENET_EVENT_TYPE_RECEIVE) {
+                HandshakePacket* handshake =
+                    (HandshakePacket*)event.packet->data;
+                TraceLog(
+                    LOG_INFO,
+                    "I am player %u, server tickrate = %u, current_time = %u",
+                    handshake->id, handshake->tickrate,
+                    handshake->current_time);
+                enet_time_set(handshake->current_time);
+                m_last_time = enet_time_get();
+                enet_packet_destroy(event.packet);
+                handshake_succeeded = true;
+                break;
+            }
+            game->loading_screen.draw(0.8 + 0.02 * (float)i,
+                                      "Waiting for handshake...");
+        }
+        if (!handshake_succeeded) {
             enet_peer_reset(m_peer);
             TraceLog(LOG_ERROR, "Server didn't assign an id.");
-            // this->entity()->scene()->close();
             return 0;
         }
-
         // flush (shouldn't be necessary but why not)
         enet_host_flush(m_client);
+        game->loading_screen.draw(1, "Connected!");
         m_connected = true;
         return 1;
     }
 
     void disconnect() {
+        game->loading_screen.draw(0, "Disconnecting Peer...");
         enet_peer_disconnect(m_peer, 0);
         enet_host_flush(m_client);
         ENetEvent event;
-        while (enet_host_service(m_client, &event, 3000) > 0) {
-            switch (event.type) {
-            case ENET_EVENT_TYPE_RECEIVE:
-                break;
-            case ENET_EVENT_TYPE_DISCONNECT:
-                TraceLog(LOG_INFO, "Disconnection succeeded.");
-                break;
-            default:
-                TraceLog(LOG_INFO, "unknown event recieved");
-                break;
+        game->loading_screen.draw(0.05, "Waiting for server response...");
+        bool disconnect_succeeded = false;
+        for (int i = 0; i < 10; i++) {
+            if (enet_host_service(m_client, &event, 500) > 0) {
+                switch (event.type) {
+                case ENET_EVENT_TYPE_RECEIVE:
+                    enet_packet_destroy(event.packet);
+                    break;
+                case ENET_EVENT_TYPE_DISCONNECT:
+                    TraceLog(LOG_INFO, "Disconnection succeeded.");
+                    disconnect_succeeded = true;
+                    break;
+                default:
+                    TraceLog(LOG_INFO, "unknown event recieved");
+                    break;
+                }
+                if (disconnect_succeeded) {
+                    break;
+                }
             }
-            enet_packet_destroy(event.packet);
+            game->loading_screen.draw(0.05 + 0.1 * (float)i,
+                                      "Waiting for server response...");
         }
+        game->loading_screen.draw(0.95, "Destroying ENet client...");
         TraceLog(LOG_INFO, "destroying enet client");
         enet_host_destroy(m_client);
+        game->loading_screen.draw(0.1, "Disconnected!");
     }
 
     bool should_quit() {
