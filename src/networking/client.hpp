@@ -9,6 +9,8 @@
 #include <string>
 #include <thread>
 
+#define N_PING_AVERAGE (5)
+
 namespace SPRF {
 
 // class PlayerData{
@@ -35,6 +37,17 @@ class Client : public Component {
     bool m_right = false;
 
     bool m_connected = false;
+
+    enet_uint32 m_pings[N_PING_AVERAGE] = {500, 500, 500, 500, 500};
+    int m_current_ping = 0;
+
+    void add_ping_measurement(enet_uint32 measurement) {
+        m_pings[m_current_ping] = measurement;
+        m_current_ping++;
+        if (m_current_ping >= N_PING_AVERAGE) {
+            m_current_ping = 0;
+        }
+    }
 
     void reset_inputs() {
         m_forward = false;
@@ -203,14 +216,16 @@ class Client : public Component {
     }
 
     void handle_recieve(ENetEvent* event) {
-        PlayerState* player_states = (PlayerState*)event->packet->data;
-        int n_players = (event->packet->dataLength) / sizeof(PlayerState);
-        if (player_states[0].timestamp > enet_time_get()) {
-            enet_time_set(player_states[0].timestamp);
-        }
-        for (int i = 0; i < n_players; i++) {
-            player_states[i].print();
-        }
+        PlayerStatePacket player_states(event->packet->data);
+        add_ping_measurement(enet_time_get() -
+                             player_states.header().ping_return);
+        // if (player_states.header().timestamp > enet_time_get()) {
+        //     enet_time_set(player_states.header().timestamp);
+        // }
+        // auto states = player_states.states();
+        // for (auto& i : states) {
+        //     i.print();
+        // }
     }
 
     void recv_packet() {
@@ -260,6 +275,14 @@ class Client : public Component {
         disconnect();
     }
 
+    float ping() {
+        float total = 0;
+        for (int i = 0; i < N_PING_AVERAGE; i++) {
+            total += m_pings[i];
+        }
+        return total / (float)N_PING_AVERAGE;
+    }
+
     void init() {
         if (!m_connected) {
             this->entity()->scene()->close();
@@ -270,8 +293,13 @@ class Client : public Component {
         if (!m_connected)
             return;
         update_inputs();
-        // ClientPacket
-        // packet(IsKeyPressed(KEY_W),IsKeyPressed(KEY_S),IsKeyPressed(KEY_A),IsKeyPressed(KEY_D));
+        // game_info.draw_debug()
+        //  ClientPacket
+        //  packet(IsKeyPressed(KEY_W),IsKeyPressed(KEY_S),IsKeyPressed(KEY_A),IsKeyPressed(KEY_D));
+    }
+
+    void draw2D() {
+        game_info.draw_debug_var("ping", (int)ping(), 100, 100, GREEN);
     }
 
     void destroy() {}

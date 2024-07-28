@@ -11,6 +11,10 @@
 
 namespace SPRF {
 
+class Simulation{
+
+};
+
 class Server {
   private:
     std::mutex server_mutex;
@@ -38,21 +42,17 @@ class Server {
         RawClientPacket* in_packet = (RawClientPacket*)event->packet->data;
         ClientPacket client_packet(*in_packet);
         enet_uint32 timestamp = enet_time_get();
-        for (auto& i : m_player_states) {
-            i.timestamp = timestamp;
-        }
-        ENetPacket* packet =
-            enet_packet_create(m_player_states.data(),
-                               sizeof(PlayerState) * m_player_states.size(),
-                               ENET_PACKET_FLAG_UNSEQUENCED);
+        PlayerStatePacket state_packet(
+            m_tick, timestamp, client_packet.ping_send, m_player_states);
+        ENetPacket* packet = enet_packet_create(
+            state_packet.raw, state_packet.size, ENET_PACKET_FLAG_UNSEQUENCED);
         assert(enet_peer_send(event->peer, 0, packet) == 0);
         enet_host_flush(m_enet_server);
     }
 
     void handle_connect(ENetEvent* event) {
         TraceLog(LOG_INFO, "Peer Connected");
-        m_player_states.push_back(
-            PlayerState(m_next_id, m_tick, enet_time_get()));
+        m_player_states.push_back(PlayerState(m_next_id));
         enet_uint32* id = (enet_uint32*)malloc(sizeof(enet_uint32));
         *id = m_next_id;
         event->peer->data = id;

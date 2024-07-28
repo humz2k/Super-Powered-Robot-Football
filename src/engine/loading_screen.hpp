@@ -88,9 +88,9 @@ class LoadingScreen {
         EndDrawing();
     }
 
-    void draw_splash_screen(
-        float time = 5,
-        std::string logo_path = "/Users/humzaqureshi/GitHub/"
+    void draw_splash_screen(float time = 5,
+                            std::string logo_path =
+                                "/Users/humzaqureshi/GitHub/"
                                 "Super-Powered-Robot-Football/src/logo.png") {
         float start = GetTime();
         float end = start + time;
@@ -114,7 +114,7 @@ class LoadingScreen {
             logo_texture.Draw(source_rect, dest_rect, (Vector2){0, 0}, 0,
                               color);
             EndDrawing();
-            if (IsMouseButtonPressed(0)) {
+            if (IsMouseButtonPressed(0) || (GetKeyPressed() != 0)) {
                 break;
             }
         }
