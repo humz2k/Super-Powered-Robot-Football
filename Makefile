@@ -1,3 +1,5 @@
+# remember to configure ODE and enet
+
 PLATFORM_OS ?= UNKNOWN
 
 ifeq ($(OS),Windows_NT)
@@ -18,6 +20,11 @@ ENET_DIR ?= enet
 ENET_MAC_LIB ?= $(ENET_DIR)/.libs/libenet.a
 ENET_LIB ?= $(ENET_MAC_LIB)
 ENET_INCLUDE ?= $(ENET_DIR)/include
+
+ODE_DIR ?= ODE
+ODE_NIX_LIB ?= $(ODE_DIR)/ode/src/.libs/libode.a
+ODE_LIB ?=
+ODE_INCLUDE ?= $(ODE_DIR)/include
 
 DRIVERS_DIR ?= drivers
 
@@ -47,17 +54,20 @@ HEADERS := $(shell find $(SOURCE_DIR) -name '*.hpp')
 
 main: $(BUILD_DIR)/game $(BUILD_DIR)/server
 
-$(BUILD_DIR)/%: $(BUILD_DIR)/$(DRIVERS_DIR)/%.o $(OBJECTS) $(RAYLIB_DIR)/libraylib.a $(ENET_LIB)
+$(BUILD_DIR)/%: $(BUILD_DIR)/$(DRIVERS_DIR)/%.o $(OBJECTS) $(RAYLIB_DIR)/libraylib.a $(ENET_LIB) $(ODE_LIB)
 	$(CXX) $^ -o $@ $(RAYLIB_FLAGS) $(FLAGS)
 
 $(ENET_MAC_LIB):
 	cd $(ENET_DIR) && $(MAKE)
 
+$(ODE_NIX_LIB):
+	cd $(ODE_DIR) && $(MAKE)
+
 .secondary: $(OBJECTS)
 
 $(BUILD_DIR)/%.o: %.cpp $(HEADERS)
 	mkdir -p $(@D)
-	$(CXX) -c $< -o $@ -I$(RAYLIB_CPP_DIR) -I$(RAYLIB_DIR) -I$(SOURCE_DIR) -I$(ENET_INCLUDE) -std=c++17 $(FLAGS)
+	$(CXX) -c $< -o $@ -I$(RAYLIB_CPP_DIR) -I$(RAYLIB_DIR) -I$(SOURCE_DIR) -I$(ENET_INCLUDE) -I$(ODE_INCLUDE) -std=c++17 $(FLAGS)
 
 $(RAYLIB_DIR)/libraylib.a:
 	cd $(RAYLIB_DIR) && $(MAKE) MACOSX_DEPLOYMENT_TARGET=10.9
@@ -65,4 +75,9 @@ $(RAYLIB_DIR)/libraylib.a:
 .PHONY: clean
 clean:
 	rm -rf $(BUILD_DIR)
+
+.PHONY: fresh
+fresh: clean
 	cd $(RAYLIB_DIR) && $(MAKE) clean
+	cd $(ENET_DIR) && $(MAKE) clean
+	cd $(ODE_DIR) && $(MAKE) clean
