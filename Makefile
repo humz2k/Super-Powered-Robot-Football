@@ -43,12 +43,6 @@ BUILD_DIR ?= build
 SOURCES := $(shell find $(SOURCE_DIR) -name '*.cpp')
 OBJECTS := $(SOURCES:%.cpp=$(BUILD_DIR)/%.o)
 
-# GAME_SOURCES := $(shell find $(SOURCE_DIR)/game -name '*.cpp')
-# GAME_OBJECTS := $(GAME_SOURCES:%.cpp=$(BUILD_DIR)/%.o)
-
-# SERVER_SOURCES := $(shell find $(SOURCE_DIR)/server -name '*.cpp')
-# SERVER_OBJECTS := $(SERVER_SOURCES:%.cpp=$(BUILD_DIR)/%.o)
-
 HEADERS := $(shell find $(SOURCE_DIR) -name '*.hpp')
 
 main: $(BUILD_DIR)/game $(BUILD_DIR)/server

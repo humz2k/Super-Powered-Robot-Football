@@ -2,6 +2,7 @@
 #include "base.hpp"
 
 #include <iostream>
+#include <mutex>
 
 namespace SPRF {
 
@@ -10,6 +11,8 @@ GameInfo game_info;
 LogManager log_manager;
 
 static std::string last_source = "NONE";
+
+static std::mutex log_mutex;
 
 void CustomLog(int msgType, const char* text, va_list args) {
     std::string log_type;

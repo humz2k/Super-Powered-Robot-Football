@@ -68,11 +68,14 @@ class Game : public Logger {
 
     bool running() { return (!m_window.ShouldClose()) && (!game_should_quit); }
 
-    template <class T, typename... Args> void load_scene(Args... args) {
+    template <class T, typename... Args>
+    std::shared_ptr<T> load_scene(Args... args) {
         log(LOG_INFO, "Loading scene %s", typeid(T).name());
         m_current_scene->destroy();
-        m_current_scene = std::make_shared<T>(this, args...);
+        auto out = std::make_shared<T>(this, args...);
+        m_current_scene = out;
         m_current_scene->init();
+        return out;
     }
 
     void draw() {
