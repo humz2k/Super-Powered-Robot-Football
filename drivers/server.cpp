@@ -9,6 +9,7 @@ int main() {
 
     while (true) {
         std::string command;
+        std::cout << "> ";
         std::getline(std::cin, command);
         if (command == "quit") {
             server.quit();

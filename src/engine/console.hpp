@@ -180,6 +180,7 @@ class DevConsole : public Component, public UITextInputBox {
     template <class T, typename... Args>
     void add_command(std::string name, Args... args) {
         m_commands[name] = std::make_shared<T>(*this, args...);
+        // return m_commands[name];
     }
 
     void update() {

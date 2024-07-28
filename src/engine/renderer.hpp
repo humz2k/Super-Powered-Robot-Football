@@ -256,6 +256,8 @@ class RenderModel : public Logger {
     /** @brief Visible instances of the model */
     Matrix* m_visible_instances = NULL;
 
+    raylib::Color m_tint = raylib::Color::White();
+
     bool m_clip = true;
 
     /**
@@ -294,6 +296,11 @@ class RenderModel : public Logger {
         free(m_bounding_boxes);
         free(m_instances);
         free(m_visible_instances);
+    }
+
+    raylib::Color tint(raylib::Color color) {
+        m_tint = color;
+        return m_tint;
     }
 
     /**
@@ -363,6 +370,7 @@ class RenderModel : public Logger {
 
             Mesh mesh = m_model->meshes[i];
             Material material = m_model->materials[m_model->meshMaterial[i]];
+            material.maps[MATERIAL_MAP_DIFFUSE].color = m_tint;
             material.shader = shader;
             DrawMeshInstanced(mesh, material, m_visible_instances,
                               m_n_visible_instances);
@@ -578,6 +586,7 @@ class Renderer : public Logger {
             // i->draw(m_shader, cam.GetMatrix());
             i->clear_instances();
         }
+        DrawGrid(10, 1);
         // cam.EndMode();
         camera->EndMode();
     }

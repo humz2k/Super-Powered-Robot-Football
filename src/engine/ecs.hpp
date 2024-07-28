@@ -30,15 +30,13 @@ class Component : public Logger {
     /** @brief Pointer to the parent entity */
     Entity* m_entity = NULL;
 
-  protected:
+  public:
+    Component() {}
     /**
      * @brief Get the parent entity of the component.
      * @return Pointer to the parent entity.
      */
     Entity* entity() { return m_entity; }
-
-  public:
-    Component() {}
     /**
      * @brief Set the parent entity of the component.
      * @param entity_ Pointer to the parent entity.
@@ -106,11 +104,11 @@ class Transform : public Logger {
     raylib::Matrix matrix() {
         auto [rotationAxis, rotationAngle] =
             raylib::Quaternion::FromEuler(rotation).ToAxisAngle();
-        auto mat_scale = raylib::Matrix::Scale(scale.x, scale.y, scale.z);
+        // auto mat_scale = raylib::Matrix::Scale(scale.x, scale.y, scale.z);
         auto mat_rotation = raylib::Matrix::Rotate(rotationAxis, rotationAngle);
         auto mat_translation =
             raylib::Matrix::Translate(position.x, position.y, position.z);
-        return (mat_scale * mat_rotation) * mat_translation;
+        return mat_rotation * mat_translation; // * mat_scale;
     }
 };
 
@@ -143,7 +141,7 @@ class Entity : public Logger {
      * @param parent_transform Transformation matrix of the parent.
      */
     void draw3D(raylib::Matrix parent_transform) {
-        raylib::Matrix transform = parent_transform * m_transform.matrix();
+        raylib::Matrix transform = m_transform.matrix() * parent_transform;
         for (const auto& [key, value] : m_components) {
             value->draw3D(transform);
         }
@@ -210,7 +208,7 @@ class Entity : public Logger {
         if (!m_parent) {
             return m_transform.matrix();
         }
-        return m_parent->global_transform() * m_transform.matrix();
+        return m_transform.matrix() * m_parent->global_transform();
     }
 
     /**
@@ -395,7 +393,10 @@ class Scene : public Logger {
 
     bool should_close() { return m_should_close; }
 
-    void close() { m_should_close = true; }
+    void close() {
+        TraceLog(LOG_INFO, "Closing scene...");
+        m_should_close = true;
+    }
 
     void set_background_color(raylib::Color color) {
         m_background_color = color;

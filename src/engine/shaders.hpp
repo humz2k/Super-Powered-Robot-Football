@@ -309,8 +309,8 @@ class Light : public Logger {
      * @param scale Scale of the light.
      * @param fov Field of view for the light.
      */
-    Light(raylib::Shader& shader, int shadowMapRes = 2048, float scale = 50.0f,
-          float fov = 90.0f)
+    Light(raylib::Shader& shader, int shadowMapRes = 2048, float scale = 20.0f,
+          float fov = 10.0f)
         : m_id(light_count), m_shader(shader),
           m_enabled("lights[" + std::to_string(m_id) + "].enabled", 0,
                     m_shader),

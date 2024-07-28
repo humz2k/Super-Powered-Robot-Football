@@ -33,6 +33,8 @@ class Client : public Component {
     bool m_left = false;
     bool m_right = false;
 
+    bool m_connected = false;
+
     void reset_inputs() {
         m_forward = false;
         m_backward = false;
@@ -56,7 +58,7 @@ class Client : public Component {
         }
     }
 
-    void connect() {
+    int connect() {
         m_client = enet_host_create(NULL, 1, 1, 0, 0);
         if (!m_client) {
             TraceLog(LOG_ERROR, "An error occurred while trying to create an "
@@ -94,6 +96,8 @@ class Client : public Component {
         if (!connection_succeeded) {
             enet_peer_reset(m_peer);
             TraceLog(LOG_ERROR, "Connection failed.");
+            // this->entity()->scene()->close();
+            return 0;
         }
 
         if (enet_host_service(m_client, &event, 5000) > 0 &&
@@ -109,10 +113,14 @@ class Client : public Component {
         } else {
             enet_peer_reset(m_peer);
             TraceLog(LOG_ERROR, "Server didn't assign an id.");
+            // this->entity()->scene()->close();
+            return 0;
         }
 
         // flush (shouldn't be necessary but why not)
         enet_host_flush(m_client);
+        m_connected = true;
+        return 1;
     }
 
     void disconnect() {
@@ -198,7 +206,10 @@ class Client : public Component {
 
   public:
     Client(std::string host, enet_uint16 port) : m_host(host), m_port(port) {
-        connect();
+        if (!connect()) {
+            TraceLog(LOG_ERROR, "Connection failed...");
+            return;
+        }
         enet_time_set(0);
         m_last_time = enet_time_get();
         m_time_per_update = 1000.0f / (float)m_tickrate;
@@ -206,14 +217,22 @@ class Client : public Component {
     }
 
     ~Client() {
+        if (!m_connected)
+            return;
         quit();
         m_client_thread.join();
         disconnect();
     }
 
-    void init() {}
+    void init() {
+        if (!m_connected) {
+            this->entity()->scene()->close();
+        }
+    }
 
     void update() {
+        if (!m_connected)
+            return;
         update_inputs();
         // ClientPacket
         // packet(IsKeyPressed(KEY_W),IsKeyPressed(KEY_S),IsKeyPressed(KEY_A),IsKeyPressed(KEY_D));
