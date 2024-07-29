@@ -1,3 +1,15 @@
+/** @file simulation.hpp
+ *
+ * This header file defines classes and functions for managing the physics
+ * simulation in a multiplayer game. The PlayerBody class handles the physical
+ * interactions of players, translating inputs into actions. The Simulation
+ * class manages the overall simulation, including running the simulation loop,
+ * updating game states, and handling collision detection. The near_callback
+ * function handles near collisions, creating contact joints to simulate
+ * physical interactions.
+ *
+ */
+
 #ifndef _SPRF_NETWORKING_SIMULATION_HPP_
 #define _SPRF_NETWORKING_SIMULATION_HPP_
 
@@ -18,13 +30,35 @@
 
 namespace SPRF {
 
+/**
+ * @brief Represents the physical body of a player in the simulation.
+ *
+ * This class extends PlayerBodyBase and includes additional logic to handle
+ * player movement, jumping, and collision with the ground. It is responsible
+ * for interpreting player inputs and applying the corresponding forces and
+ * velocities to the player's physical body.
+ */
 class PlayerBody : public PlayerBodyBase {
   private:
+    /** @brief Tracks if the last input was a jump */
     bool m_last_was_jump = false;
+    /** @brief Tracks if the player has jumped */
     bool m_jumped = false;
+    /** @brief Tracks if the player is grounded */
     bool m_is_grounded = false;
+    /** @brief Tracks if the player can jump */
     bool m_can_jump = false;
+    /** @brief Counter to track time spent on the ground */
     float m_ground_counter = 0;
+
+    /**
+     * @brief Calculates the movement direction based on player inputs.
+     *
+     * Uses the forward and left directions, modified by the player's rotation,
+     * to compute the movement direction.
+     *
+     * @return raylib::Vector3 The normalized movement direction.
+     */
     raylib::Vector3 move_direction() {
         raylib::Vector3 forward = Vector3RotateByAxisAngle(
             raylib::Vector3(0, 0, 1.0f), raylib::Vector3(0, 1.0f, 0),
@@ -39,13 +73,29 @@ class PlayerBody : public PlayerBodyBase {
             .Normalize();
     }
 
+    /**
+     * @brief Updates the grounded state of the player.
+     *
+     * Checks if the player is grounded and updates the jump-related states
+     * accordingly.
+     *
+     * When we land on the ground for the first time after jumping, we wait
+     * `bunny_hop_forgiveness` seconds before we actually say we are grounded.
+     * This makes bunnyhopping possible. NOTE: This has a weird (but makes
+     * sense) behavior where, because we aren't adding drag while in the air, we
+     * "skid" on the ground after landing for `bunny_hop_forgiveness` seconds.
+     *
+     * This sets the variables `m_is_grounded` and `m_can_jump`.
+     *
+     * @param ground The ground geometry ID.
+     */
     void update_grounded(dGeomID ground) {
         bool new_grounded = grounded(ground);
         if (!new_grounded) {
             m_ground_counter = 0;
         } else if ((!m_is_grounded) && (new_grounded)) {
             m_ground_counter += dt();
-            if (m_ground_counter < sim_params.bunny_hop_forgiveness) {
+            if (m_ground_counter < m_sim_params.bunny_hop_forgiveness) {
                 m_can_jump = true;
                 return;
             }
@@ -54,6 +104,15 @@ class PlayerBody : public PlayerBodyBase {
         m_can_jump = m_is_grounded;
     }
 
+    /**
+     * @brief Checks if the player can jump and applies the jump force if
+     * possible.
+     *
+     * Sets the variable `m_jump`, which will be `true` if the player jumped
+     * this tick, or `false` if it didn't.
+     *
+     * @return bool True if the player jumped, false otherwise.
+     */
     bool check_jump() {
         m_jumped = false;
         if (m_can_jump) {
@@ -61,7 +120,8 @@ class PlayerBody : public PlayerBodyBase {
                 if (!m_last_was_jump) {
                     m_last_was_jump = true;
                     m_jumped = true;
-                    add_force(raylib::Vector3(0, 1, 0) * sim_params.jump_force);
+                    add_force(raylib::Vector3(0, 1, 0) *
+                              m_sim_params.jump_force);
                 }
             } else {
                 m_last_was_jump = false;
@@ -72,15 +132,32 @@ class PlayerBody : public PlayerBodyBase {
         return false;
     }
 
+    /**
+     * @brief Updates the drag applied to the player when grounded.
+     *
+     * This will do *nothing* if the player is not grounded (as in, even if the
+     * player is on the ground but `m_is_grounded` is still `false`).
+     *
+     * @param drag The drag coefficient to apply.
+     */
     void update_drag(float drag) {
         if (m_is_grounded) {
-            set_xz_velocity(xz_velocity() * drag);
+            xz_velocity(xz_velocity() * drag);
         }
     }
 
   public:
     using PlayerBodyBase::PlayerBodyBase;
 
+    /**
+     * @brief Handles the player inputs and updates the player's physical state.
+     *
+     * This method interprets the player inputs, updates the grounded state,
+     * applies forces for movement and jumping, and ensures the player's
+     * velocity stays within defined limits.
+     *
+     * @param ground The ground geometry ID.
+     */
     void handle_inputs(dGeomID ground) {
         std::lock_guard<std::mutex> guard(m_player_mutex);
         update_grounded(ground);
@@ -89,35 +166,53 @@ class PlayerBody : public PlayerBodyBase {
 
         check_jump();
         if (m_is_grounded) {
-            add_force(direction * sim_params.ground_acceleration);
-            update_drag(sim_params.ground_drag);
-            clamp_xz_velocity(sim_params.max_ground_velocity);
+            add_force(direction * m_sim_params.ground_acceleration);
+            update_drag(m_sim_params.ground_drag);
+            clamp_xz_velocity(m_sim_params.max_ground_velocity);
         } else {
             raylib::Vector3 proj_vel = Vector3Project(velocity(), direction);
             float proj_vel_mag = proj_vel.Length();
             bool is_away = direction.DotProduct(proj_vel) <= 0.0f;
-            if ((proj_vel_mag < sim_params.max_air_velocity) || is_away) {
+            if ((proj_vel_mag < m_sim_params.max_air_velocity) || is_away) {
                 if (!is_away) {
-                    add_force(direction * sim_params.air_acceleration);
+                    add_force(direction * m_sim_params.air_acceleration);
                 } else {
-                    add_force(direction * sim_params.air_strafe_acceleration);
+                    add_force(direction * m_sim_params.air_strafe_acceleration);
                 }
             }
         }
-        clamp_xz_velocity(sim_params.max_all_velocity);
+        clamp_xz_velocity(m_sim_params.max_all_velocity);
     }
 };
 
+/**
+ * @brief Callback function for handling near collisions.
+ *
+ * This function is called whenever two geoms are near each other and a
+ * potential collision needs to be resolved. It creates contact joints between
+ * the colliding geoms to simulate physical interactions.
+ *
+ * @param data Pointer to user data (in this case, the Simulation object).
+ * @param o1 The first geometry ID.
+ * @param o2 The second geometry ID.
+ */
 static void near_callback(void* data, dGeomID o1, dGeomID o2);
 
 class Simulation {
   private:
+    /** @brief Mutex to protect simulation state */
     std::mutex simulation_mutex;
+    /** @brief Simulation tick rate */
     enet_uint32 m_tickrate;
+    /** @brief Time per tick in nanoseconds */
     long long m_time_per_tick;
+    /** @brief Current simulation tick */
     enet_uint32 m_tick = 0;
+    /** @brief Flag to indicate if the simulation should quit */
     bool m_should_quit = false;
+    /** @brief Ground friction coefficient */
     float m_ground_friction = 0.0;
+    /** @brief Time step per tick */
     float m_dt;
 
     /** @brief How much velocity objects inside each other will separate at
@@ -127,33 +222,68 @@ class Simulation {
     /** @brief dont do work if object is stationary */
     bool m_auto_disable = false;
 
+    /** @brief The ODE world */
     dWorldID m_world;
+    /** @brief The ODE contact group */
     dJointGroupID m_contact_group;
+    /** @brief The ODE collision space */
     dSpaceID m_space;
+    /** @brief The ground geometry */
     dGeomID m_ground_geom;
 
+    /** @brief Thread running the simulation loop */
     std::thread m_simulation_thread;
 
+    /** @brief Simulation parameters */
     SimulationParameters sim_params;
 
+    /** @brief Map of player IDs to PlayerBody objects */
     std::unordered_map<enet_uint32, PlayerBody*> m_players;
 
   public:
+    /**
+     * @brief Checks if the simulation should quit.
+     *
+     * Locks `simulation_mutex`.
+     *
+     * @return bool True if the simulation should quit, false otherwise.
+     */
     bool should_quit() {
         std::lock_guard<std::mutex> guard(simulation_mutex);
         return m_should_quit;
     }
 
+    /**
+     * @brief Sets the flag to quit the simulation.
+     *
+     * Locks `simulation_mutex`.
+     */
     void quit() {
         std::lock_guard<std::mutex> guard(simulation_mutex);
         m_should_quit = true;
     }
 
+    /**
+     * @brief Gets the current simulation tick.
+     *
+     * Locks `simulation_mutex`.
+     *
+     * @return enet_uint32 The current simulation tick.
+     */
     enet_uint32 tick() {
         std::lock_guard<std::mutex> guard(simulation_mutex);
         return m_tick;
     }
 
+    /**
+     * @brief Runs the simulation loop.
+     *
+     * FIXME: This is probably broken! If we have a particularly long step, we
+     * won't wait the correct amount of time! Please fix!
+     *
+     * This method continuously steps the simulation and sleeps for the
+     * remainder of the tick duration.
+     */
     void run() {
         while (!should_quit()) {
             step();
@@ -162,12 +292,27 @@ class Simulation {
         }
     }
 
+    /**
+     * @brief Launches the simulation in a separate thread.
+     */
     void launch() {
         m_simulation_thread = std::thread(&SPRF::Simulation::run, this);
     }
 
+    /**
+     * @brief Waits for the simulation thread to finish.
+     */
     void join() { m_simulation_thread.join(); }
 
+    /**
+     * @brief Construct a new Simulation object.
+     *
+     * Initializes the simulation with the given tick rate and optional server
+     * configuration file.
+     *
+     * @param tickrate The simulation tick rate.
+     * @param server_config The path to the server configuration file.
+     */
     Simulation(enet_uint32 tickrate, std::string server_config = "")
         : m_tickrate(tickrate), m_time_per_tick(1000000000L / m_tickrate),
           m_dt(1.0f / (float)m_tickrate), sim_params(server_config) {
@@ -198,6 +343,12 @@ class Simulation {
         dWorldSetAutoDisableFlag(m_world, m_auto_disable);
     }
 
+    /**
+     * @brief Destructor for the Simulation class.
+     *
+     * Cleans up the simulation resources, including deleting player bodies and
+     * destroying ODE objects.
+     */
     ~Simulation() {
         for (auto& i : m_players) {
             delete i.second;
@@ -214,6 +365,14 @@ class Simulation {
         TraceLog(LOG_INFO, "Closed ODE");
     }
 
+    /**
+     * @brief Creates a new player in the simulation.
+     *
+     * Locks `simulation_mutex`.
+     *
+     * @param id The unique identifier for the player.
+     * @return PlayerBody* Pointer to the created PlayerBody object.
+     */
     PlayerBody* create_player(enet_uint32 id) {
         std::lock_guard<std::mutex> guard(simulation_mutex);
         m_players[id] = new PlayerBody(sim_params, &simulation_mutex, id,
@@ -221,14 +380,42 @@ class Simulation {
         return m_players[id];
     }
 
+    /**
+     * @brief Gets the ground geometry ID.
+     *
+     * @return dGeomID The ground geometry ID.
+     */
     dGeomID ground_geom() { return m_ground_geom; }
 
+    /**
+     * @brief Gets the ground friction coefficient.
+     *
+     * @return float The ground friction coefficient.
+     */
     float ground_friction() { return m_ground_friction; }
 
+    /**
+     * @brief Gets the ODE world ID.
+     *
+     * @return dWorldID The ODE world ID.
+     */
     dWorldID world() { return m_world; }
 
+    /**
+     * @brief Gets the ODE contact group ID.
+     *
+     * @return dJointGroupID The ODE contact group ID.
+     */
     dJointGroupID contact_group() { return m_contact_group; }
 
+    /**
+     * @brief Steps the simulation.
+     *
+     * This method handles player inputs, performs collision detection, steps
+     * the simulation, and updates the contact joints.
+     *
+     * Called in `run`. Locks `simulation_mutex`.
+     */
     void step() {
         std::lock_guard<std::mutex> guard(simulation_mutex);
         for (auto& i : m_players) {
@@ -241,24 +428,33 @@ class Simulation {
         m_tick++;
     }
 
-    void update(enet_uint32* tick, std::vector<PlayerState>& states) {
+    /**
+     * @brief Updates the player states with the current simulation tick and
+     * player positions, rotations, and velocities.
+     *
+     * Locks `simulation_mutex`.
+     *
+     * @param tick Pointer to the current simulation tick.
+     * @param states Vector of PlayerStateData to be updated.
+     */
+    void update(enet_uint32* tick, std::vector<PlayerStateData>& states) {
         std::lock_guard<std::mutex> guard(simulation_mutex);
         *tick = m_tick;
         for (auto& i : states) {
             auto pos = m_players[i.id]->position();
-            i.position[0] = pos.x;
-            i.position[1] = pos.y;
-            i.position[2] = pos.z;
+            i.position_data[0] = pos.x;
+            i.position_data[1] = pos.y;
+            i.position_data[2] = pos.z;
 
             auto rot = m_players[i.id]->rotation();
-            i.rotation[0] = rot.x;
-            i.rotation[1] = rot.y;
-            i.rotation[2] = rot.z;
+            i.rotation_data[0] = rot.x;
+            i.rotation_data[1] = rot.y;
+            i.rotation_data[2] = rot.z;
 
             auto vel = m_players[i.id]->velocity();
-            i.velocity[0] = vel.x;
-            i.velocity[1] = vel.y;
-            i.velocity[2] = vel.z;
+            i.velocity_data[0] = vel.x;
+            i.velocity_data[1] = vel.y;
+            i.velocity_data[2] = vel.z;
         }
     }
 };

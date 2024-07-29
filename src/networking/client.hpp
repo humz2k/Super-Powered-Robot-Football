@@ -14,14 +14,29 @@
 
 namespace SPRF {
 
+/**
+ * @brief Class to handle networked data of a player.
+ *
+ * This class manages the interpolation and buffering of networked player data
+ * to provide smooth position and rotation updates.
+ */
 class PlayerNetworkedData {
   private:
+    /** @brief Buffer pointer for the current index */
     int m_buffer_ptr = 0;
+    /** @brief Time buffer for storing update times */
     float m_time_buffer[2];
+    /** @brief Position buffer */
     raylib::Vector3 m_position_buffer[2];
+    /** @brief Rotation buffer */
     raylib::Vector3 m_rotation_buffer[2];
+    /** @brief Velocity vector */
     raylib::Vector3 m_velocity;
 
+    /**
+     * @brief Get the index of the last buffer.
+     * @return int Index of the last buffer.
+     */
     int last_buffer() {
         if (m_buffer_ptr == 0) {
             return 1;
@@ -29,25 +44,58 @@ class PlayerNetworkedData {
         return 0;
     }
 
+    /**
+     * @brief Get the index of the latest buffer.
+     * @return int Index of the latest buffer.
+     */
     int latest_buffer() { return m_buffer_ptr; }
 
+    /**
+     * @brief Get the time of the last buffer.
+     * @return float Time of the last buffer.
+     */
     float last_time() { return m_time_buffer[last_buffer()]; }
 
+    /**
+     * @brief Get the time of the latest buffer.
+     * @return float Time of the latest buffer.
+     */
     float latest_time() { return m_time_buffer[latest_buffer()]; }
 
+    /**
+     * @brief Get the position from the last buffer.
+     * @return raylib::Vector3 Position from the last buffer.
+     */
     raylib::Vector3 last_position() { return m_position_buffer[last_buffer()]; }
 
+    /**
+     * @brief Get the position from the latest buffer.
+     * @return raylib::Vector3 Position from the latest buffer.
+     */
     raylib::Vector3 latest_position() {
         return m_position_buffer[latest_buffer()];
     }
 
   public:
+    /**
+     * @brief Constructor for PlayerNetworkedData.
+     *
+     * Initializes the buffers to zero.
+     */
     PlayerNetworkedData() {
         memset(m_time_buffer, 0, sizeof(m_time_buffer));
         memset(m_position_buffer, 0, sizeof(m_position_buffer));
         memset(m_rotation_buffer, 0, sizeof(m_rotation_buffer));
     }
 
+    /**
+     * @brief Update the buffer with new data.
+     *
+     * @param time Update time.
+     * @param position New position.
+     * @param velocity New velocity.
+     * @param rotation New rotation.
+     */
     void update_buffer(float time, raylib::Vector3 position,
                        raylib::Vector3 velocity, raylib::Vector3 rotation) {
         m_time_buffer[m_buffer_ptr] = time;
@@ -60,6 +108,10 @@ class PlayerNetworkedData {
         }
     }
 
+    /**
+     * @brief Get the interpolated position based on the current time.
+     * @return raylib::Vector3 Interpolated position.
+     */
     raylib::Vector3 position() {
         float current_time = enet_time_get();
         float lerp_amount =
@@ -67,41 +119,84 @@ class PlayerNetworkedData {
         return Vector3Lerp(last_position(), latest_position(), lerp_amount);
     }
 
+    /**
+     * @brief Get the latest rotation.
+     * @return raylib::Vector3 Latest rotation.
+     */
     raylib::Vector3 rotation() { return m_position_buffer[latest_buffer()]; }
 
+    /**
+     * @brief Get the latest velocity.
+     * @return raylib::Vector3 Latest velocity.
+     */
     raylib::Vector3 velocity() { return m_velocity; }
 };
 
+/**
+ * @brief Class to manage the client-side networking.
+ *
+ * This class handles connecting to the server, sending and receiving data
+ * packets, and updating player states.
+ */
 class Client : public Component {
   private:
+    /** @brief Mutex to protect client state */
     std::mutex m_client_mutex;
+    /** @brief Mutex to protect player data */
     std::mutex m_players_mutex;
+    /** @brief Server host address */
     std::string m_host;
+    /** @brief Server port */
     enet_uint16 m_port;
+    /** @brief ENet client host */
     ENetHost* m_client;
+    /** @brief ENet address */
     ENetAddress m_address;
+    /** @brief ENet peer */
     ENetPeer* m_peer;
+    /** @brief Tickrate of the client */
     int m_tickrate = 128;
+    /** @brief Time per update */
     float m_time_per_update;
+    /** @brief Time of the last update */
     float m_last_time;
+    /** @brief Last tick received from the server */
     enet_uint32 m_last_tick = 0;
+    /** @brief Flag indicating if the client should quit */
     bool m_should_quit = false;
+    /** @brief Thread for running the client */
     std::thread m_client_thread;
 
+    /** @brief Flag for moving forward */
     bool m_forward = false;
+    /** @brief Flag for moving backward */
     bool m_backward = false;
+    /** @brief Flag for moving left */
     bool m_left = false;
+    /** @brief Flag for moving right */
     bool m_right = false;
+    /** @brief Flag for jumping */
     bool m_jump = false;
 
+    /** @brief Flag indicating if the client is connected */
     bool m_connected = false;
 
+    /** @brief Array to store ping measurements */
     enet_uint32 m_pings[N_PING_AVERAGE] = {500, 500, 500, 500, 500};
+    /** @brief Index for the current ping measurement */
     int m_current_ping = 0;
+
+    /** @brief Map to store networked data of players */
     std::unordered_map<enet_uint32, PlayerNetworkedData> m_player_data;
 
+    /** @brief Unique ID of the client player */
     enet_uint32 m_id = -1;
 
+    /**
+     * @brief Add a ping measurement to the ping array.
+     *
+     * @param measurement The ping measurement to add.
+     */
     void add_ping_measurement(enet_uint32 measurement) {
         m_pings[m_current_ping] = measurement;
         m_current_ping++;
@@ -110,6 +205,9 @@ class Client : public Component {
         }
     }
 
+    /**
+     * @brief Reset the input flags.
+     */
     void reset_inputs() {
         m_forward = false;
         m_backward = false;
@@ -118,6 +216,11 @@ class Client : public Component {
         m_jump = false;
     }
 
+    /**
+     * @brief Update the input flags based on the current keyboard state.
+     *
+     * Locks `m_client_mutex`.
+     */
     void update_inputs() {
         std::lock_guard<std::mutex> guard(m_client_mutex);
         if (IsKeyDown(KEY_W)) {
@@ -137,7 +240,13 @@ class Client : public Component {
         }
     }
 
-    // returns 0 if connection failed, 1 if succeeded
+    /**
+     * @brief Connect to the server.
+     *
+     * Creates the ENet host and establishes a connection to the server.
+     *
+     * @return int 0 if connection failed, 1 if succeeded.
+     */
     int connect() {
         game->loading_screen.draw(0, "Creating ENet host...");
 
@@ -225,6 +334,14 @@ class Client : public Component {
         return 1;
     }
 
+    /**
+     * @brief Disconnect from the server.
+     *
+     * Sends a disconnect packet to the server and waits for a response.
+     *
+     * If no response is recieved, forcefully close the connection. Otherwise,
+     * close gracefully.
+     */
     void disconnect() {
         game->loading_screen.draw(0, "Disconnecting Peer...");
         enet_peer_disconnect(m_peer, 0);
@@ -259,30 +376,59 @@ class Client : public Component {
         game->loading_screen.draw(0.1, "Disconnected!");
     }
 
+    /**
+     * @brief Check if the client should quit.
+     *
+     * Locks `m_client_mutex`.
+     *
+     * @return bool True if the client should quit, false otherwise.
+     */
     bool should_quit() {
         std::lock_guard<std::mutex> guard(m_client_mutex);
         return m_should_quit;
     }
 
+    /**
+     * @brief Set the flag to quit the client.
+     *
+     * Locks `m_client_mutex`.
+     */
     void quit() {
         std::lock_guard<std::mutex> guard(m_client_mutex);
         m_should_quit = true;
     }
 
+    /**
+     * @brief Send the input packet to the server.
+     *
+     * Collects the current input states and sends them to the server as a
+     * packet.
+     *
+     * Locks `m_client_mutex`.
+     */
     void send_input_packet() {
         std::lock_guard<std::mutex> guard(m_client_mutex);
         ClientPacket send_packet(
             m_forward, m_backward, m_left, m_right, m_jump,
             this->entity()->get_child(0)->get_component<Transform>()->rotation);
-        RawClientPacket raw_packet = send_packet.get_raw();
+        ClientPacketRaw raw_packet = send_packet.get_raw();
         ENetPacket* packet = enet_packet_create(
-            &raw_packet, sizeof(RawClientPacket), ENET_PACKET_FLAG_RELIABLE);
+            &raw_packet, sizeof(ClientPacketRaw), ENET_PACKET_FLAG_RELIABLE);
         if (enet_peer_send(m_peer, 0, packet) != 0)
             TraceLog(LOG_ERROR, "Packet send failed?");
         enet_host_flush(m_client);
         reset_inputs();
     }
 
+    /**
+     * @brief Handle receiving a packet from the server.
+     *
+     * Processes the incoming packet and updates player states.
+     *
+     * Locks `m_players_mutex` when updating states.
+     *
+     * @param event Pointer to the ENetEvent containing the received packet.
+     */
     void handle_recieve(ENetEvent* event) {
         PlayerStatePacket player_states(event->packet->data);
         auto header = player_states.header();
@@ -299,11 +445,16 @@ class Client : public Component {
         std::lock_guard<std::mutex> guard(m_players_mutex);
         auto states = player_states.states();
         for (auto& i : states) {
-            m_player_data[i.id].update_buffer(send_time, i.pos(), i.vel(),
-                                              i.rot());
+            m_player_data[i.id].update_buffer(send_time, i.position(),
+                                              i.velocity(), i.rotation());
         }
     }
 
+    /**
+     * @brief Receive a packet from the server.
+     *
+     * Locks `m_client_mutex`.
+     */
     void recv_packet() {
         std::lock_guard<std::mutex> guard(m_client_mutex);
         ENetEvent event;
@@ -320,6 +471,11 @@ class Client : public Component {
         }
     }
 
+    /**
+     * @brief Main client loop.
+     *
+     * Continuously sends input packets and receives updates from the server.
+     */
     void run_client() {
         while (!should_quit()) {
             float time = enet_time_get();
@@ -332,6 +488,14 @@ class Client : public Component {
     }
 
   public:
+    /**
+     * @brief Constructor for Client.
+     *
+     * Initializes the client and connects to the server.
+     *
+     * @param host The server host address.
+     * @param port The server port.
+     */
     Client(std::string host, enet_uint16 port) : m_host(host), m_port(port) {
         if (!connect()) {
             TraceLog(LOG_ERROR, "Connection failed...");
@@ -343,6 +507,11 @@ class Client : public Component {
         m_client_thread = std::thread(&Client::run_client, this);
     }
 
+    /**
+     * @brief Destructor for Client.
+     *
+     * Disconnects from the server and cleans up resources.
+     */
     ~Client() {
         if (!m_connected)
             return;
@@ -351,6 +520,11 @@ class Client : public Component {
         disconnect();
     }
 
+    /**
+     * @brief Get the average ping.
+     *
+     * @return float The average ping.
+     */
     float ping() {
         float total = 0;
         for (int i = 0; i < N_PING_AVERAGE; i++) {
@@ -359,12 +533,22 @@ class Client : public Component {
         return total / (float)N_PING_AVERAGE;
     }
 
+    /**
+     * @brief Initialize the client.
+     *
+     * Closes the scene if not connected.
+     */
     void init() {
         if (!m_connected) {
             this->entity()->scene()->close();
         }
     }
 
+    /**
+     * @brief Update the client state.
+     *
+     * Updates inputs, player states, and game information.
+     */
     void update() {
         if (!m_connected)
             return;
@@ -382,11 +566,19 @@ class Client : public Component {
         game_info.velocity = m_player_data[m_id].velocity();
     }
 
+    /**
+     * @brief Draw 2D elements for the client.
+     */
     void draw2D() {
         if (!m_connected)
             return;
     }
 
+    /**
+     * @brief Draw debug information for the client.
+     *
+     * Draws player capsules and other debug information.
+     */
     void draw_debug() {
         if (!m_connected)
             return;
@@ -404,9 +596,12 @@ class Client : public Component {
         DrawGrid(100, 1);
     }
 
+    /**
+     * @brief Destroy the client.
+     */
     void destroy() {}
 };
 
 } // namespace SPRF
 
-#endif
+#endif // _SPRF_NETWORKING_CLIENT_HPP_
