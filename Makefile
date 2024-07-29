@@ -21,7 +21,7 @@ ENET_MAC_LIB ?= $(ENET_DIR)/.libs/libenet.a
 ENET_LIB ?= $(ENET_MAC_LIB)
 ENET_INCLUDE ?= $(ENET_DIR)/include
 
-ODE_DIR ?= ODE
+ODE_DIR ?= ode
 ODE_NIX_LIB ?= $(ODE_DIR)/ode/src/.libs/libode.a
 ODE_LIB ?=
 ODE_INCLUDE ?= $(ODE_DIR)/include
