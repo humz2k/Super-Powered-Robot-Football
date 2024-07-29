@@ -22,7 +22,6 @@
 #include <cassert>
 #include <enet/enet.h>
 #include <mutex>
-#include <ode/ode.h>
 #include <string>
 #include <thread>
 #include <unordered_map>

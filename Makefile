@@ -57,7 +57,10 @@ HEADERS := $(shell find $(SOURCE_DIR) -name '*.hpp') $(shell find $(DRIVERS_DIR)
 
 main: $(BUILD_DIR)/game $(BUILD_DIR)/server
 
-$(BUILD_DIR)/%: $(BUILD_DIR)/$(DRIVERS_DIR)/%.o $(OBJECTS) $(RAYLIB_DIR)/libraylib.a $(ENET_LIB) $(ODE_LIB)
+$(BUILD_DIR)/server: $(BUILD_DIR)/$(DRIVERS_DIR)/server.o $(OBJECTS) $(RAYLIB_DIR)/libraylib.a $(ENET_LIB) $(ODE_LIB)
+	$(CXX) $^ -o $@ $(RAYLIB_FLAGS) $(FLAGS)
+
+$(BUILD_DIR)/game: $(BUILD_DIR)/$(DRIVERS_DIR)/game.o $(OBJECTS) $(RAYLIB_DIR)/libraylib.a $(ENET_LIB)
 	$(CXX) $^ -o $@ $(RAYLIB_FLAGS) $(FLAGS)
 
 $(ENET_MAC_LIB):
