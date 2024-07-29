@@ -106,10 +106,11 @@ class Scene1 : public DefaultScene {
 
         auto floor = this->create_entity();
         auto floor_model = this->renderer()->create_render_model(
-            raylib::Mesh::Plane(20, 20, 10, 10));
+            raylib::Mesh::Plane(100, 100, 20, 20));
         floor_model->clip(false);
         floor_model->tint(BLACK);
         floor->add_component<SPRF::Model>(floor_model);
+        floor->get_component<Transform>()->position.y = -0.01;
 
         auto player = this->create_entity();
         player->add_component<Client>(host, port);
@@ -234,7 +235,8 @@ class TestScene : public DefaultScene {
 
 int main() {
 
-    SPRF::game = new SPRF::Game(900, 900, "test", 900 * 2, 900 * 2, 200);
+    SPRF::game = new SPRF::Game(1512, 982, "test", 1512 * 2, 982 * 2, 200);
+    ToggleFullscreen();
 
     SPRF::game->load_scene<SPRF::MenuScene>();
 

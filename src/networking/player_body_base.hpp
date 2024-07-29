@@ -13,11 +13,12 @@
 #include <thread>
 #include <unordered_map>
 
-namespace SPRF{
+namespace SPRF {
 
 class PlayerBodyBase {
   protected:
     SimulationParameters& sim_params;
+
   private:
     std::mutex* simulation_mutex;
     enet_uint32 m_id;
@@ -45,16 +46,17 @@ class PlayerBodyBase {
     bool m_jump = false;
 
   public:
-    PlayerBodyBase(SimulationParameters& sim_params_, std::mutex* simulation_mutex_, enet_uint32 id,
+    PlayerBodyBase(SimulationParameters& sim_params_,
+                   std::mutex* simulation_mutex_, enet_uint32 id,
                    dWorldID world, dSpaceID space, float dt,
                    raylib::Vector3 initial_position = raylib::Vector3(0, 5, 0),
                    float radius = PLAYER_RADIUS, float height = PLAYER_HEIGHT,
                    float foot_radius = PLAYER_FOOT_RADIUS,
                    float foot_offset = PLAYER_FOOT_OFFSET)
-        : sim_params(sim_params_), simulation_mutex(simulation_mutex_), m_id(id), m_world(world),
-          m_space(space), m_dt(dt), m_radius(radius), m_height(height),
-          m_foot_radius(foot_radius), m_total_mass(sim_params.mass),
-          m_foot_offset(foot_offset) {
+        : sim_params(sim_params_), simulation_mutex(simulation_mutex_),
+          m_id(id), m_world(world), m_space(space), m_dt(dt), m_radius(radius),
+          m_height(height), m_foot_radius(foot_radius),
+          m_total_mass(sim_params.mass), m_foot_offset(foot_offset) {
         TraceLog(LOG_INFO, "Creating player %u in world", m_id);
         m_body = dBodyCreate(m_world);
         m_geom = dCreateCapsule(m_space, m_radius, m_height);
@@ -76,6 +78,8 @@ class PlayerBodyBase {
     }
 
     virtual ~PlayerBodyBase() {}
+
+    float dt() { return m_dt; }
 
     void add_force(raylib::Vector3 force) {
         // std::lock_guard<std::mutex> guard(*simulation_mutex);
@@ -102,13 +106,13 @@ class PlayerBodyBase {
         return raylib::Vector3(v[0], v[1], v[2]);
     }
 
-    raylib::Vector3 xz_velocity(){
+    raylib::Vector3 xz_velocity() {
         auto out = velocity();
         out.y = 0;
         return out;
     }
 
-    void set_xz_velocity(raylib::Vector3 vel){
+    void set_xz_velocity(raylib::Vector3 vel) {
         vel.y = velocity().y;
         set_velocity(vel);
     }
@@ -151,9 +155,9 @@ class PlayerBodyBase {
         m_right |= packet.right;
         m_jump |= packet.jump;
         m_rotation = packet.rotation;
-        //dMatrix3 rotation;
-        //dRFromAxisAndAngle(rotation, 0, 1.0, 0, m_rotation.y);
-        //dBodySetRotation(m_body, rotation);
+        // dMatrix3 rotation;
+        // dRFromAxisAndAngle(rotation, 0, 1.0, 0, m_rotation.y);
+        // dBodySetRotation(m_body, rotation);
     }
 
     void reset_inputs() {

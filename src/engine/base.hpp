@@ -69,10 +69,13 @@ class GameInfo {
     void draw_debug() {
         draw_debug_var("pos", position, 0, 0);
         draw_debug_var("vel", velocity, 0, 20);
-        draw_debug_var("rot", rotation, 0, 40);
-        draw_debug_var("ping", ping, 0, 60);
-        draw_debug_var("visible_meshes", visible_meshes, 0, 80);
-        draw_debug_var("hidden_meshes", hidden_meshes, 0, 100);
+        draw_debug_var("xz_vel_mag",
+                       raylib::Vector3(velocity.x, 0, velocity.z).Length(), 0,
+                       40);
+        draw_debug_var("rot", rotation, 0, 60);
+        draw_debug_var("ping", ping, 0, 80);
+        draw_debug_var("visible_meshes", visible_meshes, 0, 100);
+        draw_debug_var("hidden_meshes", hidden_meshes, 0, 120);
     }
 
     void unload_debug_font() { m_font.Unload(); }

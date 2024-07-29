@@ -132,7 +132,7 @@ class Client : public Component {
         if (IsKeyDown(KEY_D)) {
             m_right = true;
         }
-        if (IsKeyDown(KEY_SPACE)){
+        if (IsKeyDown(KEY_SPACE)) {
             m_jump = true;
         }
     }
@@ -375,7 +375,8 @@ class Client : public Component {
         std::lock_guard<std::mutex> guard(m_players_mutex);
         this->entity()->get_component<Transform>()->position =
             m_player_data[m_id].position();
-        this->entity()->get_component<Transform>()->position.y += (PLAYER_HEIGHT/2.0f) * 0.8;
+        this->entity()->get_component<Transform>()->position.y +=
+            (PLAYER_HEIGHT / 2.0f) * 0.8;
         game_info.position =
             this->entity()->get_component<Transform>()->position;
         game_info.velocity = m_player_data[m_id].velocity();

@@ -2,9 +2,9 @@
 #define _SPRF_NETWORKING_SIMULATION_HPP_
 
 #include "packet.hpp"
+#include "player_body_base.hpp"
 #include "player_stats.hpp"
 #include "raylib-cpp.hpp"
-#include "player_body_base.hpp"
 #include "sim_params.hpp"
 #include <cassert>
 #include <enet/enet.h>
@@ -21,12 +21,11 @@ namespace SPRF {
 class PlayerBody : public PlayerBodyBase {
   private:
     bool m_last_was_jump = false;
-  public:
-    using PlayerBodyBase::PlayerBodyBase;
-
-    void handle_inputs(dGeomID ground) {
-        std::lock_guard<std::mutex> guard(m_player_mutex);
-
+    bool m_jumped = false;
+    bool m_is_grounded = false;
+    bool m_can_jump = false;
+    float m_ground_counter = 0;
+    raylib::Vector3 move_direction() {
         raylib::Vector3 forward = Vector3RotateByAxisAngle(
             raylib::Vector3(0, 0, 1.0f), raylib::Vector3(0, 1.0f, 0),
             this->rotation().y);
@@ -35,22 +34,36 @@ class PlayerBody : public PlayerBodyBase {
             raylib::Vector3(1.0f, 0, 0), raylib::Vector3(0, 1.0f, 0),
             this->rotation().y);
 
-        auto direction = (forward * (this->m_forward - this->m_backward) +
-                          left * (this->m_left - this->m_right))
-                             .Normalize();
+        return (forward * (this->m_forward - this->m_backward) +
+                left * (this->m_left - this->m_right))
+            .Normalize();
+    }
 
-        float acceleration = sim_params.air_acceleration;
-        float drag = sim_params.air_drag;
-        float jump_force = 0.0f;
-        bool jumped = false;
-        if (grounded(ground)){
-            acceleration = sim_params.ground_acceleration;
-            drag = sim_params.ground_drag;
-            if (m_jump){
-                if (!m_last_was_jump){
+    void update_grounded(dGeomID ground) {
+        bool new_grounded = grounded(ground);
+        if (!new_grounded) {
+            m_ground_counter = 0;
+        } else if ((!m_is_grounded) && (new_grounded)) {
+            m_ground_counter += dt();
+            if (m_ground_counter < sim_params.bunny_hop_forgiveness) {
+                TraceLog(LOG_INFO, "bunny hop forgiveness = %g",
+                         m_ground_counter);
+                m_can_jump = true;
+                return;
+            }
+        }
+        m_is_grounded = new_grounded;
+        m_can_jump = m_is_grounded;
+    }
+
+    bool check_jump() {
+        m_jumped = false;
+        if (m_can_jump) {
+            if (m_jump) {
+                if (!m_last_was_jump) {
                     m_last_was_jump = true;
-                    jumped = true;
-                    jump_force = sim_params.jump_force;
+                    m_jumped = true;
+                    add_force(raylib::Vector3(0, 1, 0) * sim_params.jump_force);
                 }
             } else {
                 m_last_was_jump = false;
@@ -58,15 +71,44 @@ class PlayerBody : public PlayerBodyBase {
         } else {
             m_last_was_jump = false;
         }
+        return false;
+    }
 
-        add_force(raylib::Vector3(0,1,0) * jump_force);
-        add_force(direction * acceleration);
-        //add_force(-(xz_velocity()).Normalize() * drag);
-
-        if (!jumped){
-            clamp_xz_velocity(sim_params.max_velocity);
+    void update_drag(float drag) {
+        if (m_is_grounded) {
             set_xz_velocity(xz_velocity() * drag);
         }
+    }
+
+  public:
+    using PlayerBodyBase::PlayerBodyBase;
+
+    void handle_inputs(dGeomID ground) {
+        std::lock_guard<std::mutex> guard(m_player_mutex);
+        update_grounded(ground);
+
+        auto direction = move_direction();
+
+        check_jump();
+        if (m_is_grounded) {
+            add_force(direction * sim_params.ground_acceleration);
+            update_drag(sim_params.ground_drag);
+            clamp_xz_velocity(sim_params.max_ground_velocity);
+        } else {
+            raylib::Vector3 proj_vel = Vector3Project(velocity(), direction);
+            float proj_vel_mag = proj_vel.Length();
+            bool is_away = direction.DotProduct(proj_vel) <= 0.0f;
+            if ((proj_vel_mag < sim_params.max_air_velocity) || is_away) {
+                if (!is_away) {
+                    TraceLog(LOG_INFO, "is not away!");
+                    add_force(direction * sim_params.air_acceleration);
+                } else {
+                    TraceLog(LOG_INFO, "is away!");
+                    add_force(direction * sim_params.air_strafe_acceleration);
+                }
+            }
+        }
+        clamp_xz_velocity(sim_params.max_all_velocity);
     }
 };
 
@@ -79,7 +121,7 @@ class Simulation {
     long long m_time_per_tick;
     enet_uint32 m_tick = 0;
     bool m_should_quit = false;
-    //float m_gravity = -5.0;
+    // float m_gravity = -5.0;
     float m_ground_friction = 0.0;
     float m_dt;
 
@@ -152,7 +194,8 @@ class Simulation {
         TraceLog(LOG_INFO, "Setting gravity = %g", sim_params.gravity);
         dWorldSetGravity(m_world, 0, sim_params.gravity, 0);
 
-        TraceLog(LOG_INFO, "Setting ERP %g and CFM %g", sim_params.erp, sim_params.cfm);
+        TraceLog(LOG_INFO, "Setting ERP %g and CFM %g", sim_params.erp,
+                 sim_params.cfm);
         dWorldSetERP(m_world, sim_params.erp);
         dWorldSetCFM(m_world, sim_params.cfm);
 
@@ -178,8 +221,8 @@ class Simulation {
 
     PlayerBody* create_player(enet_uint32 id) {
         std::lock_guard<std::mutex> guard(simulation_mutex);
-        m_players[id] =
-            new PlayerBody(sim_params,&simulation_mutex, id, m_world, m_space, m_dt);
+        m_players[id] = new PlayerBody(sim_params, &simulation_mutex, id,
+                                       m_world, m_space, m_dt);
         return m_players[id];
     }
 
