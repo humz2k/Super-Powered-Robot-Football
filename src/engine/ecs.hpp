@@ -68,6 +68,7 @@ class Component : public Logger {
      * @param transform Transformation matrix for drawing.
      */
     virtual void draw3D(raylib::Matrix transform) {}
+    virtual void draw_debug() {}
     /**
      * @brief Draw2D.
      */
@@ -200,6 +201,12 @@ class Entity : public Logger {
         }
     }
 
+    Entity* get_child(int idx){
+        assert(idx >= 0);
+        assert(idx < m_children.size());
+        return m_children[idx];
+    }
+
     /**
      * @brief Get the global transformation matrix.
      * @return Global transformation matrix.
@@ -281,6 +288,18 @@ class Entity : public Logger {
         }
         for (auto i : m_children) {
             i->destroy();
+        }
+    }
+
+    /**
+     * @brief Call draw_debug on components.
+     */
+    void draw_debug() {
+        for (const auto& [key, value] : m_components) {
+            value->draw_debug();
+        }
+        for (auto i : m_children) {
+            i->draw_debug();
         }
     }
 
@@ -368,6 +387,15 @@ class Scene : public Logger {
     void draw3D() {
         for (auto i : m_entities) {
             i->draw3D();
+        }
+    }
+
+    /**
+     * @brief Call draw3D on entity components.
+     */
+    void draw_debug() {
+        for (auto i : m_entities) {
+            i->draw_debug();
         }
     }
 
@@ -467,6 +495,8 @@ class Scene : public Logger {
         get_active_camera()->BeginMode();
 
         m_renderer.render(get_active_camera(), m_background_color);
+
+        draw_debug();
 
         get_active_camera()->EndMode();
 

@@ -28,6 +28,14 @@ struct PlayerState {
                  position[0], position[1], position[2], rotation[0],
                  rotation[1], rotation[2], health);
     }
+
+    raylib::Vector3 pos(){
+        return raylib::Vector3(position[0],position[1],position[2]);
+    }
+
+    raylib::Vector3 rot(){
+        return raylib::Vector3(rotation[0],rotation[1],rotation[2]);
+    }
 };
 
 struct PlayerStateHeader {
@@ -99,18 +107,20 @@ struct HandshakePacket {
 struct RawClientPacket {
     enet_uint32 ping;
     enet_uint32 raw;
+    float rotation[3];
 };
 
 struct ClientPacket {
 
     enet_uint32 ping_send;
+    raylib::Vector3 rotation;
     bool forward;
     bool backward;
     bool left;
     bool right;
 
-    ClientPacket(bool forward_, bool backward_, bool left_, bool right_)
-        : ping_send(enet_time_get()), forward(forward_), backward(backward_),
+    ClientPacket(bool forward_, bool backward_, bool left_, bool right_, raylib::Vector3 rotation_)
+        : ping_send(enet_time_get()), rotation(rotation_), forward(forward_), backward(backward_),
           left(left_), right(right_) {}
 
     ClientPacket(RawClientPacket raw) {
@@ -119,6 +129,9 @@ struct ClientPacket {
         backward = raw.raw & (1 << 1);
         left = raw.raw & (1 << 2);
         right = raw.raw & (1 << 3);
+        rotation.x = raw.rotation[0];
+        rotation.y = raw.rotation[1];
+        rotation.z = raw.rotation[2];
     }
 
     RawClientPacket get_raw() {
@@ -126,13 +139,16 @@ struct ClientPacket {
         out.ping = ping_send;
         out.raw =
             0 | (forward << 0) | (backward << 1) | (left << 2) | (right << 3);
+        out.rotation[0] = rotation.x;
+        out.rotation[1] = rotation.y;
+        out.rotation[2] = rotation.z;
         return out;
     }
 
     void print() {
-        TraceLog(LOG_INFO, "Packet: %u | %s %s %s %s", ping_send,
+        TraceLog(LOG_INFO, "Packet: %u | %s %s %s %s | %g %g %g", ping_send,
                  forward ? "+forward" : "", backward ? "+backward" : "",
-                 left ? "+left" : "", right ? "+right" : "");
+                 left ? "+left" : "", right ? "+right" : "",rotation.x,rotation.y,rotation.z);
     }
 };
 

@@ -6,14 +6,13 @@
 #include <cassert>
 #include <enet/enet.h>
 #include <mutex>
+#include <ode/ode.h>
 #include <string>
 #include <thread>
+#include <unordered_map>
+#include "simulation.hpp"
 
-namespace SPRF {
-
-class Simulation{
-
-};
+namespace SPRF{
 
 class Server {
   private:
@@ -34,13 +33,17 @@ class Server {
     // int m_n_players = 0;
     std::vector<PlayerState> m_player_states;
 
-    int m_tickrate = 128;
-    int m_tick = 0;
+    enet_uint32 m_tickrate;
+    enet_uint32 m_tick = 0;
     enet_uint32 m_next_id = 0;
+
+    Simulation m_simulation;
 
     void handle_recieve(ENetEvent* event) {
         RawClientPacket* in_packet = (RawClientPacket*)event->packet->data;
         ClientPacket client_packet(*in_packet);
+        PlayerBody* body = (PlayerBody*)event->peer->data;
+        body->update_inputs(client_packet);
         enet_uint32 timestamp = enet_time_get();
         PlayerStatePacket state_packet(
             m_tick, timestamp, client_packet.ping_send, m_player_states);
@@ -53,9 +56,9 @@ class Server {
     void handle_connect(ENetEvent* event) {
         TraceLog(LOG_INFO, "Peer Connected");
         m_player_states.push_back(PlayerState(m_next_id));
-        enet_uint32* id = (enet_uint32*)malloc(sizeof(enet_uint32));
-        *id = m_next_id;
-        event->peer->data = id;
+        auto player = m_simulation.create_player(m_next_id);
+        player->enable();
+        event->peer->data = player;
         HandshakePacket out(m_next_id, m_tickrate, enet_time_get());
         m_next_id++;
         ENetPacket* packet = enet_packet_create(&out, sizeof(HandshakePacket),
@@ -64,23 +67,24 @@ class Server {
     }
 
     void handle_disconnect(ENetEvent* event) {
-        enet_uint32 id = *((enet_uint32*)event->peer->data);
-        TraceLog(LOG_INFO, "ID %d disconnected", id);
+        PlayerBody* player = (PlayerBody*)event->peer->data;
+        player->disable();
+        TraceLog(LOG_INFO, "ID %d disconnected", player->id());
         int to_delete = -1;
         for (int i = 0; i < m_player_states.size(); i++) {
-            if (m_player_states[i].id == id) {
+            if (m_player_states[i].id == player->id()) {
                 to_delete = i;
                 break;
             }
         }
         assert(to_delete >= 0);
         m_player_states.erase(m_player_states.begin() + to_delete);
-        free(event->peer->data);
     }
 
     void get_event() {
         ENetEvent event;
         if (enet_host_service(m_enet_server, &event, 1000) > 0) {
+            m_simulation.update(&m_tick,m_player_states);
             switch (event.type) {
             case ENET_EVENT_TYPE_CONNECT:
                 handle_connect(&event);
@@ -118,13 +122,13 @@ class Server {
         m_server_should_quit = true;
     }
 
-    void join() { server_thread.join(); }
+    void join() { server_thread.join();m_simulation.quit();m_simulation.join(); }
 
     Server(std::string host, enet_uint16 port, size_t peer_count = 4,
            size_t channel_count = 2, enet_uint32 iband = 0,
-           enet_uint32 oband = 0)
+           enet_uint32 oband = 0, enet_uint32 tickrate = 64)
         : m_host(host), m_port(port), m_peer_count(peer_count),
-          m_channel_count(channel_count), m_iband(iband), m_oband(oband) {
+          m_channel_count(channel_count), m_iband(iband), m_oband(oband), m_tickrate(tickrate), m_simulation(m_tickrate) {
         if (enet_initialize() != 0) {
             TraceLog(LOG_ERROR, "Initializing Enet failed");
             exit(EXIT_FAILURE);
@@ -149,6 +153,7 @@ class Server {
         TraceLog(LOG_INFO, "ENet server host created");
         enet_time_set(0);
         server_thread = std::thread(&SPRF::Server::run, this);
+        m_simulation.launch();
     }
 
     ~Server() {

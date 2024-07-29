@@ -3,6 +3,7 @@
 
 #include "engine/engine.hpp"
 #include "packet.hpp"
+#include "player_stats.hpp"
 #include <enet/enet.h>
 #include <functional>
 #include <mutex>
@@ -13,13 +14,72 @@
 
 namespace SPRF {
 
-// class PlayerData{
+class PlayerNetworkedData{
+    private:
+        int m_buffer_ptr = 0;
+        float m_time_buffer[2];
+        raylib::Vector3 m_position_buffer[2];
+        raylib::Vector3 m_rotation_buffer[2];
 
-//};
+        int last_buffer(){
+            if (m_buffer_ptr == 0){
+                return 1;
+            }
+            return 0;
+        }
+
+        int latest_buffer(){
+            return m_buffer_ptr;
+        }
+
+        float last_time(){
+            return m_time_buffer[last_buffer()];
+        }
+
+        float latest_time(){
+            return m_time_buffer[latest_buffer()];
+        }
+
+        raylib::Vector3 last_position(){
+            return m_position_buffer[last_buffer()];
+        }
+
+        raylib::Vector3 latest_position(){
+            return m_position_buffer[latest_buffer()];
+        }
+
+    public:
+        PlayerNetworkedData(){
+            memset(m_time_buffer,0,sizeof(m_time_buffer));
+            memset(m_position_buffer,0,sizeof(m_position_buffer));
+            memset(m_rotation_buffer,0,sizeof(m_rotation_buffer));
+        }
+
+        void update_buffer(float time, raylib::Vector3 position, raylib::Vector3 rotation){
+            m_time_buffer[m_buffer_ptr] = time;
+            m_position_buffer[m_buffer_ptr] = position;
+            m_rotation_buffer[m_buffer_ptr] = rotation;
+            m_buffer_ptr++;
+            if (m_buffer_ptr >= 2){
+                m_buffer_ptr = 0;
+            }
+        }
+
+        raylib::Vector3 position(){
+            float current_time = enet_time_get();
+            float lerp_amount = (current_time - last_time())/(latest_time() - last_time());
+            return Vector3Lerp(last_position(),latest_position(),lerp_amount);
+        }
+
+        raylib::Vector3 rotation(){
+            return m_position_buffer[latest_buffer()];
+        }
+};
 
 class Client : public Component {
   private:
     std::mutex m_client_mutex;
+    std::mutex m_players_mutex;
     std::string m_host;
     enet_uint16 m_port;
     ENetHost* m_client;
@@ -28,6 +88,7 @@ class Client : public Component {
     int m_tickrate = 128;
     float m_time_per_update;
     float m_last_time;
+    enet_uint32 m_last_tick = 0;
     bool m_should_quit = false;
     std::thread m_client_thread;
 
@@ -40,6 +101,9 @@ class Client : public Component {
 
     enet_uint32 m_pings[N_PING_AVERAGE] = {500, 500, 500, 500, 500};
     int m_current_ping = 0;
+    std::unordered_map<enet_uint32,PlayerNetworkedData> m_player_data;
+
+    enet_uint32 m_id = -1;
 
     void add_ping_measurement(enet_uint32 measurement) {
         m_pings[m_current_ping] = measurement;
@@ -140,6 +204,7 @@ class Client : public Component {
                     handshake->current_time);
                 enet_time_set(handshake->current_time);
                 m_last_time = enet_time_get();
+                m_id = handshake->id;
                 enet_packet_destroy(event.packet);
                 handshake_succeeded = true;
                 break;
@@ -205,7 +270,7 @@ class Client : public Component {
 
     void send_input_packet() {
         std::lock_guard<std::mutex> guard(m_client_mutex);
-        ClientPacket send_packet(m_forward, m_backward, m_left, m_right);
+        ClientPacket send_packet(m_forward, m_backward, m_left, m_right, this->entity()->get_child(0)->get_component<Transform>()->rotation);
         RawClientPacket raw_packet = send_packet.get_raw();
         ENetPacket* packet = enet_packet_create(
             &raw_packet, sizeof(RawClientPacket), ENET_PACKET_FLAG_RELIABLE);
@@ -217,15 +282,22 @@ class Client : public Component {
 
     void handle_recieve(ENetEvent* event) {
         PlayerStatePacket player_states(event->packet->data);
-        add_ping_measurement(enet_time_get() -
-                             player_states.header().ping_return);
-        // if (player_states.header().timestamp > enet_time_get()) {
-        //     enet_time_set(player_states.header().timestamp);
-        // }
-        // auto states = player_states.states();
-        // for (auto& i : states) {
-        //     i.print();
-        // }
+        auto header = player_states.header();
+        auto current_time = enet_time_get();
+        auto this_ping = current_time - header.ping_return;
+        add_ping_measurement(this_ping);
+
+        if (header.tick <= m_last_tick){
+            return;
+        }
+        auto send_time = current_time - (this_ping/2);
+
+        //TraceLog(LOG_INFO,"tick = %u",header.tick);
+        std::lock_guard<std::mutex> guard(m_players_mutex);
+        auto states = player_states.states();
+        for (auto& i : states) {
+            m_player_data[i.id].update_buffer(send_time,i.pos(),i.rot());
+        }
     }
 
     void recv_packet() {
@@ -293,13 +365,35 @@ class Client : public Component {
         if (!m_connected)
             return;
         update_inputs();
+        std::lock_guard<std::mutex> guard(m_players_mutex);
+        this->entity()->get_component<Transform>()->position = m_player_data[m_id].position();
         // game_info.draw_debug()
         //  ClientPacket
         //  packet(IsKeyPressed(KEY_W),IsKeyPressed(KEY_S),IsKeyPressed(KEY_A),IsKeyPressed(KEY_D));
     }
 
     void draw2D() {
+        if (!m_connected)return;
         game_info.draw_debug_var("ping", (int)ping(), 100, 100, GREEN);
+    }
+
+    void draw3D(raylib::Matrix transform){
+        if (!m_connected)return;
+        //std::lock_guard<std::mutex> guard(m_players_mutex);
+        //this->entity()->get_component<Transform>()->position = m_player_data[m_id].position();
+        //this->entity()->get_component<Transform>()->rotation = m_player_data[m_id].rotation();
+    }
+
+    void draw_debug(){
+        if (!m_connected)return;
+        std::lock_guard<std::mutex> guard(m_players_mutex);
+        for (auto& i : m_player_data){
+            if (i.first == m_id)continue;
+            auto pos = i.second.position();
+            DrawCapsuleWires(pos - raylib::Vector3(0,PLAYER_HEIGHT/2.0f,0),pos + raylib::Vector3(0,PLAYER_HEIGHT/2.0f,0),PLAYER_RADIUS,10,10,GREEN);
+            DrawSphereWires(pos - raylib::Vector3(0,PLAYER_FOOT_OFFSET,0),PLAYER_FOOT_RADIUS,10,10,GREEN);
+        }
+        DrawGrid(100,1);
     }
 
     void destroy() {}

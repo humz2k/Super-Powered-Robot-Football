@@ -575,7 +575,7 @@ class Renderer : public Logger {
         m_camera_position.value(camera->GetPosition());
         ViewFrustrum frustrum(*camera);
         // auto cam = m_lights[0]->light_cam(camera);
-        camera->BeginMode();
+        //camera->BeginMode();
         // cam.BeginMode();
         ClearBackground(background_color);
         game_info.visible_meshes = 0;
@@ -588,7 +588,7 @@ class Renderer : public Logger {
         }
         DrawGrid(10, 1);
         // cam.EndMode();
-        camera->EndMode();
+        //camera->EndMode();
     }
 
     /**
