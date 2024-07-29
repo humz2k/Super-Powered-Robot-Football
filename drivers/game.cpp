@@ -103,6 +103,14 @@ class Scene1 : public DefaultScene {
   public:
     Scene1(Game* game, std::string host, enet_uint32 port)
         : DefaultScene(game) {
+
+        auto floor = this->create_entity();
+        auto floor_model = this->renderer()->create_render_model(
+            raylib::Mesh::Plane(20, 20, 10, 10));
+        floor_model->clip(false);
+        floor_model->tint(BLACK);
+        floor->add_component<SPRF::Model>(floor_model);
+
         auto player = this->create_entity();
         player->add_component<Client>(host, port);
         player->create_child()->add_component<Camera>()->set_active();
@@ -226,7 +234,7 @@ class TestScene : public DefaultScene {
 
 int main() {
 
-    SPRF::game = new SPRF::Game(900, 900, "test", 900 * 2, 900 * 2, 500);
+    SPRF::game = new SPRF::Game(900, 900, "test", 900 * 2, 900 * 2, 200);
 
     SPRF::game->load_scene<SPRF::MenuScene>();
 
