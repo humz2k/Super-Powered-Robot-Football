@@ -19,24 +19,16 @@ class Rotation : public Component {
 class RotationKeysY : public Component {
   public:
     void update() {
-        // if (!IsKeyDown(KEY_Z)){
-        // this->entity()->get_component<Transform>()->rotation.x +=
-        // GetFrameTime() * 0.5 * (IsKeyDown(KEY_W) - IsKeyDown(KEY_S));
         this->entity()->get_component<Transform>()->rotation.y +=
             GetFrameTime() * 1 * (IsKeyDown(KEY_A) - IsKeyDown(KEY_D));
-        //}
     }
 };
 
 class RotationKeysX : public Component {
   public:
     void update() {
-        // if (!IsKeyDown(KEY_Z)){
         this->entity()->get_component<Transform>()->rotation.x +=
             GetFrameTime() * 1 * (IsKeyDown(KEY_W) - IsKeyDown(KEY_S));
-        // this->entity()->get_component<Transform>()->rotation.y +=
-        // GetFrameTime() * 0.5 * (IsKeyDown(KEY_A) - IsKeyDown(KEY_D));
-        //}
     }
 };
 
@@ -120,15 +112,6 @@ class Scene1 : public DefaultScene {
         std::function<void()> callback = [this]() { disconnect(); };
         dev_console()->add_command<DisconnectCommand>("disconnect", callback);
 
-        /*auto origin = this->create_entity();
-        origin->add_component<Rotation>();
-        origin->get_component<Transform>()->position.y = 0.5;
-        auto camera = origin->create_child();
-        camera->add_component<Zoom>();
-        camera->get_component<Transform>()->position.z = -10;
-        camera->get_component<Transform>()->position.y = 0;
-        camera->add_component<Camera>();
-        camera->get_component<Camera>()->set_active();*/
         auto light = this->renderer()->add_light();
         light->enabled(1);
         light->L(raylib::Vector3(0, 0, -1));
