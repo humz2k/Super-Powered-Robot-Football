@@ -5,7 +5,7 @@
 #include "player_body_base.hpp"
 #include "player_stats.hpp"
 #include "raylib-cpp.hpp"
-#include "sim_params.hpp"
+#include "server_params.hpp"
 #include <cassert>
 #include <enet/enet.h>
 #include <mutex>
@@ -46,8 +46,6 @@ class PlayerBody : public PlayerBodyBase {
         } else if ((!m_is_grounded) && (new_grounded)) {
             m_ground_counter += dt();
             if (m_ground_counter < sim_params.bunny_hop_forgiveness) {
-                TraceLog(LOG_INFO, "bunny hop forgiveness = %g",
-                         m_ground_counter);
                 m_can_jump = true;
                 return;
             }
@@ -100,10 +98,8 @@ class PlayerBody : public PlayerBodyBase {
             bool is_away = direction.DotProduct(proj_vel) <= 0.0f;
             if ((proj_vel_mag < sim_params.max_air_velocity) || is_away) {
                 if (!is_away) {
-                    TraceLog(LOG_INFO, "is not away!");
                     add_force(direction * sim_params.air_acceleration);
                 } else {
-                    TraceLog(LOG_INFO, "is away!");
                     add_force(direction * sim_params.air_strafe_acceleration);
                 }
             }
@@ -121,7 +117,6 @@ class Simulation {
     long long m_time_per_tick;
     enet_uint32 m_tick = 0;
     bool m_should_quit = false;
-    // float m_gravity = -5.0;
     float m_ground_friction = 0.0;
     float m_dt;
 

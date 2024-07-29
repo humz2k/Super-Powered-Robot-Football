@@ -4,7 +4,7 @@
 #include "packet.hpp"
 #include "player_stats.hpp"
 #include "raylib-cpp.hpp"
-#include "sim_params.hpp"
+#include "server_params.hpp"
 #include <cassert>
 #include <enet/enet.h>
 #include <mutex>

@@ -235,9 +235,9 @@ class TestScene : public DefaultScene {
 
 int main() {
 
-    //SPRF::game = new SPRF::Game(1512, 982, "test", 1512 * 2, 982 * 2, 200);
+    // SPRF::game = new SPRF::Game(1512, 982, "test", 1512 * 2, 982 * 2, 200);
     SPRF::game = new SPRF::Game(900, 900, "test", 900 * 2, 900 * 2, 200);
-    //ToggleFullscreen();
+    // ToggleFullscreen();
 
     SPRF::game->load_scene<SPRF::MenuScene>();
 
