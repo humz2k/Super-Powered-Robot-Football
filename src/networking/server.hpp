@@ -12,10 +12,57 @@
 #include <thread>
 #include <unordered_map>
 
+#define STRINGIFY(x) #x
+#define TOSTRING(x) STRINGIFY(x)
+
 namespace SPRF {
+
+class ServerConfig{
+    public:
+        std::string host = "127.0.0.1";
+        enet_uint16 port = 9999;
+        size_t peer_count = 4;
+        size_t channel_count = 2;
+        size_t iband = 0;
+        size_t oband = 0;
+        enet_uint32 tickrate = 64;
+        ServerConfig(std::string filename){
+            if (filename == "")return;
+
+        TraceLog(LOG_INFO,"Reading file %s",filename.c_str());
+
+        #define DUMB_HACK(field,token) if (field.has(TOSTRING(token))){ \
+                token = std::stoi(field[TOSTRING(token)]); \
+                TraceLog(LOG_INFO,"Server Config: %s = %g",TOSTRING(token),token);\
+                field[TOSTRING(token)] = std::to_string(token); \
+            }
+
+        mINI::INIFile file(filename);
+        mINI::INIStructure ini;
+        assert(file.read(ini));
+        if (ini.has("physics")){
+            auto& server = ini["server"];
+            if (server.has("host")){
+                host = server["host"];
+                server["host"] = host;
+            }
+            DUMB_HACK(server,port)
+            DUMB_HACK(server,peer_count)
+            DUMB_HACK(server,channel_count)
+            DUMB_HACK(server,iband)
+            DUMB_HACK(server,oband)
+            DUMB_HACK(server,tickrate)
+        }
+
+        file.write(ini);
+
+        #undef DUMB_HACK
+        }
+};
 
 class Server {
   private:
+    ServerConfig config;
     std::mutex server_mutex;
     bool m_server_should_quit = false;
     std::thread server_thread;
@@ -128,26 +175,27 @@ class Server {
         m_simulation.join();
     }
 
-    Server(std::string host, enet_uint16 port, size_t peer_count = 4,
-           size_t channel_count = 2, enet_uint32 iband = 0,
-           enet_uint32 oband = 0, enet_uint32 tickrate = 64)
-        : m_host(host), m_port(port), m_peer_count(peer_count),
-          m_channel_count(channel_count), m_iband(iband), m_oband(oband),
-          m_tickrate(tickrate), m_simulation(m_tickrate) {
+    //Server(std::string host, enet_uint16 port, std::string server_config = "", size_t peer_count = 4,
+    //       size_t channel_count = 2, enet_uint32 iband = 0,
+    //       enet_uint32 oband = 0, enet_uint32 tickrate = 64)
+    Server(std::string server_config)
+        : config(server_config), m_host(config.host), m_port(config.port), m_peer_count(config.peer_count),
+          m_channel_count(config.channel_count), m_iband(config.iband), m_oband(config.oband),
+          m_tickrate(config.tickrate), m_simulation(m_tickrate, server_config) {
         if (enet_initialize() != 0) {
             TraceLog(LOG_ERROR, "Initializing Enet failed");
             exit(EXIT_FAILURE);
         }
         TraceLog(LOG_INFO, "Enet initialized");
-        enet_address_set_host(&m_address, host.c_str());
-        m_address.port = port;
+        enet_address_set_host(&m_address, m_host.c_str());
+        m_address.port = m_port;
         TraceLog(LOG_INFO,
                  "setting server.address.host = %s, server.address.port = %u",
-                 host.c_str(), port);
+                 m_host.c_str(), m_port);
         TraceLog(LOG_INFO,
                  "creating host with peer_count %lu, channel_count %lu, iband "
                  "%u, oband %u",
-                 peer_count, channel_count, iband, oband);
+                 m_peer_count, m_channel_count, m_iband, m_oband);
 
         m_enet_server = enet_host_create(&m_address, m_peer_count,
                                          m_channel_count, m_iband, m_oband);

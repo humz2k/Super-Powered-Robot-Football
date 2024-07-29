@@ -173,9 +173,9 @@ class Simulation {
 
     void join() { m_simulation_thread.join(); }
 
-    Simulation(enet_uint32 tickrate)
+    Simulation(enet_uint32 tickrate, std::string server_config = "")
         : m_tickrate(tickrate), m_time_per_tick(1000000000L / m_tickrate),
-          m_dt(1.0f / (float)m_tickrate) {
+          m_dt(1.0f / (float)m_tickrate), sim_params(server_config) {
         TraceLog(LOG_INFO, "Initializing ODE");
         dInitODE();
 
