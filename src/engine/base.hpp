@@ -34,6 +34,10 @@ class GameInfo {
     int visible_meshes = 0;
     int hidden_meshes = 0;
     float frame_time = 0;
+    raylib::Vector3 position;
+    raylib::Vector3 rotation;
+    raylib::Vector3 velocity;
+    int ping;
     bool dev_console_active = false;
     GameInfo() {}
 
@@ -41,7 +45,19 @@ class GameInfo {
     void draw_debug_var(std::string name, T var, int x, int y,
                         Color color = RED) {
         DrawTextEx(m_font, (name + ": " + std::to_string(var)),
-                   raylib::Vector2(x, y), 10, 1, color);
+                   raylib::Vector2(x, y), 20, 1, color);
+    }
+
+    void draw_debug_var(std::string name, std::string var, int x, int y,
+                        Color color = RED) {
+        DrawTextEx(m_font, (name + ": " + var),
+                   raylib::Vector2(x, y), 20, 1, color);
+    }
+
+    void draw_debug_var(std::string name, raylib::Vector3 var, int x, int y,
+                        Color color = RED) {
+        DrawTextEx(m_font, (name + ": " + var.ToString()),
+                   raylib::Vector2(x, y), 20, 1, color);
     }
 
     void load_debug_font() {
@@ -51,8 +67,12 @@ class GameInfo {
     }
 
     void draw_debug() {
-        draw_debug_var("visible_meshes", visible_meshes, 50, 50);
-        draw_debug_var("hidden_meshes", hidden_meshes, 50, 60);
+        draw_debug_var("pos",position,0,0);
+        draw_debug_var("vel",velocity,0,20);
+        draw_debug_var("rot",rotation,0,40);
+        draw_debug_var("ping",ping,0,60);
+        draw_debug_var("visible_meshes", visible_meshes, 0, 80);
+        draw_debug_var("hidden_meshes", hidden_meshes, 0, 100);
     }
 
     void unload_debug_font() { m_font.Unload(); }

@@ -20,6 +20,7 @@ class PlayerNetworkedData{
         float m_time_buffer[2];
         raylib::Vector3 m_position_buffer[2];
         raylib::Vector3 m_rotation_buffer[2];
+        raylib::Vector3 m_velocity;
 
         int last_buffer(){
             if (m_buffer_ptr == 0){
@@ -55,10 +56,11 @@ class PlayerNetworkedData{
             memset(m_rotation_buffer,0,sizeof(m_rotation_buffer));
         }
 
-        void update_buffer(float time, raylib::Vector3 position, raylib::Vector3 rotation){
+        void update_buffer(float time, raylib::Vector3 position, raylib::Vector3 velocity, raylib::Vector3 rotation){
             m_time_buffer[m_buffer_ptr] = time;
             m_position_buffer[m_buffer_ptr] = position;
             m_rotation_buffer[m_buffer_ptr] = rotation;
+            m_velocity = velocity;
             m_buffer_ptr++;
             if (m_buffer_ptr >= 2){
                 m_buffer_ptr = 0;
@@ -73,6 +75,10 @@ class PlayerNetworkedData{
 
         raylib::Vector3 rotation(){
             return m_position_buffer[latest_buffer()];
+        }
+
+        raylib::Vector3 velocity(){
+            return m_velocity;
         }
 };
 
@@ -296,7 +302,7 @@ class Client : public Component {
         std::lock_guard<std::mutex> guard(m_players_mutex);
         auto states = player_states.states();
         for (auto& i : states) {
-            m_player_data[i.id].update_buffer(send_time,i.pos(),i.rot());
+            m_player_data[i.id].update_buffer(send_time,i.pos(),i.vel(),i.rot());
         }
     }
 
@@ -365,23 +371,21 @@ class Client : public Component {
         if (!m_connected)
             return;
         update_inputs();
+        game_info.ping = ping();
+        game_info.rotation = this->entity()->get_child(0)->get_component<Transform>()->rotation;
         std::lock_guard<std::mutex> guard(m_players_mutex);
         this->entity()->get_component<Transform>()->position = m_player_data[m_id].position();
-        // game_info.draw_debug()
-        //  ClientPacket
-        //  packet(IsKeyPressed(KEY_W),IsKeyPressed(KEY_S),IsKeyPressed(KEY_A),IsKeyPressed(KEY_D));
+        game_info.position = this->entity()->get_component<Transform>()->position;
+        game_info.velocity = m_player_data[m_id].velocity();
     }
 
     void draw2D() {
         if (!m_connected)return;
-        game_info.draw_debug_var("ping", (int)ping(), 100, 100, GREEN);
-    }
-
-    void draw3D(raylib::Matrix transform){
-        if (!m_connected)return;
+        //game_info.draw_debug_var("ping", (int)ping(), 50, 100, GREEN);
         //std::lock_guard<std::mutex> guard(m_players_mutex);
-        //this->entity()->get_component<Transform>()->position = m_player_data[m_id].position();
-        //this->entity()->get_component<Transform>()->rotation = m_player_data[m_id].rotation();
+        //game_info.draw_debug_var("vel",m_player_data[m_id].velocity().ToString(),50,150,GREEN);
+        //game_info.draw_debug_var("pos",this->entity()->get_component<Transform>()->position.ToString(),50,170,GREEN);
+        //game_info.draw_debug_var("rot",this->entity()->get_child(0)->get_component<Transform>()->rotation.ToString(),50,190,GREEN);
     }
 
     void draw_debug(){

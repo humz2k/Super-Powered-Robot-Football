@@ -12,11 +12,13 @@ namespace SPRF {
 struct PlayerState {
     enet_uint32 id;
     float position[3];
+    float velocity[3];
     float rotation[3];
     float health;
 
     PlayerState(enet_uint32 id_) : id(id_) {
         memset(position, 0, sizeof(position));
+        memset(velocity, 0, sizeof(velocity));
         memset(rotation, 0, sizeof(rotation));
         health = 100;
     }
@@ -24,8 +26,8 @@ struct PlayerState {
     PlayerState() {}
 
     void print() {
-        TraceLog(LOG_INFO, "Player %u: %g %g %g | %g %g %g | %g", id,
-                 position[0], position[1], position[2], rotation[0],
+        TraceLog(LOG_INFO, "Player %u: %g %g %g | %g %g %g | %g %g %g | %g", id,
+                 position[0], position[1], position[2], velocity[0], velocity[1], velocity[2], rotation[0],
                  rotation[1], rotation[2], health);
     }
 
@@ -35,6 +37,10 @@ struct PlayerState {
 
     raylib::Vector3 rot(){
         return raylib::Vector3(rotation[0],rotation[1],rotation[2]);
+    }
+
+    raylib::Vector3 vel(){
+        return raylib::Vector3(velocity[0],velocity[1],velocity[2]);
     }
 };
 
