@@ -1,3 +1,10 @@
+/** @file client.hpp
+ *
+ * PlayerNetworkedData for lerping recieved ticks. Client for client side
+ * networking.
+ *
+ */
+
 #ifndef _SPRF_NETWORKING_CLIENT_HPP_
 #define _SPRF_NETWORKING_CLIENT_HPP_
 
