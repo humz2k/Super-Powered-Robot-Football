@@ -19,6 +19,7 @@
 #include "raylib-cpp.hpp"
 #include "server_params.hpp"
 #include <cassert>
+#include <chrono>
 #include <enet/enet.h>
 #include <mutex>
 #include <ode/ode.h>
@@ -205,7 +206,7 @@ class Simulation {
     /** @brief Simulation tick rate */
     enet_uint32 m_tickrate;
     /** @brief Time per tick in nanoseconds */
-    long long m_time_per_tick;
+    std::chrono::nanoseconds m_time_per_tick;
     /** @brief Current simulation tick */
     enet_uint32 m_tick = 0;
     /** @brief Flag to indicate if the simulation should quit */
@@ -278,17 +279,20 @@ class Simulation {
     /**
      * @brief Runs the simulation loop.
      *
-     * FIXME: This is probably broken! If we have a particularly long step, we
-     * won't wait the correct amount of time! Please fix!
+     * WARNING: No idea if this is smart...
      *
      * This method continuously steps the simulation and sleeps for the
      * remainder of the tick duration.
      */
     void run() {
         while (!should_quit()) {
+            auto start = std::chrono::high_resolution_clock::now();
             step();
+            auto finish = std::chrono::high_resolution_clock::now();
             std::this_thread::sleep_for(
-                std::chrono::nanoseconds(m_time_per_tick));
+                m_time_per_tick -
+                std::chrono::duration_cast<std::chrono::nanoseconds>(finish -
+                                                                     start));
         }
     }
 
