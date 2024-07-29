@@ -3,6 +3,7 @@
 
 #include "packet.hpp"
 #include "raylib-cpp.hpp"
+#include "simulation.hpp"
 #include <cassert>
 #include <enet/enet.h>
 #include <mutex>
@@ -10,9 +11,8 @@
 #include <string>
 #include <thread>
 #include <unordered_map>
-#include "simulation.hpp"
 
-namespace SPRF{
+namespace SPRF {
 
 class Server {
   private:
@@ -84,7 +84,7 @@ class Server {
     void get_event() {
         ENetEvent event;
         if (enet_host_service(m_enet_server, &event, 1000) > 0) {
-            m_simulation.update(&m_tick,m_player_states);
+            m_simulation.update(&m_tick, m_player_states);
             switch (event.type) {
             case ENET_EVENT_TYPE_CONNECT:
                 handle_connect(&event);
@@ -122,13 +122,18 @@ class Server {
         m_server_should_quit = true;
     }
 
-    void join() { server_thread.join();m_simulation.quit();m_simulation.join(); }
+    void join() {
+        server_thread.join();
+        m_simulation.quit();
+        m_simulation.join();
+    }
 
     Server(std::string host, enet_uint16 port, size_t peer_count = 4,
            size_t channel_count = 2, enet_uint32 iband = 0,
            enet_uint32 oband = 0, enet_uint32 tickrate = 64)
         : m_host(host), m_port(port), m_peer_count(peer_count),
-          m_channel_count(channel_count), m_iband(iband), m_oband(oband), m_tickrate(tickrate), m_simulation(m_tickrate) {
+          m_channel_count(channel_count), m_iband(iband), m_oband(oband),
+          m_tickrate(tickrate), m_simulation(m_tickrate) {
         if (enet_initialize() != 0) {
             TraceLog(LOG_ERROR, "Initializing Enet failed");
             exit(EXIT_FAILURE);

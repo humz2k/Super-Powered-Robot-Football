@@ -27,20 +27,21 @@ struct PlayerState {
 
     void print() {
         TraceLog(LOG_INFO, "Player %u: %g %g %g | %g %g %g | %g %g %g | %g", id,
-                 position[0], position[1], position[2], velocity[0], velocity[1], velocity[2], rotation[0],
-                 rotation[1], rotation[2], health);
+                 position[0], position[1], position[2], velocity[0],
+                 velocity[1], velocity[2], rotation[0], rotation[1],
+                 rotation[2], health);
     }
 
-    raylib::Vector3 pos(){
-        return raylib::Vector3(position[0],position[1],position[2]);
+    raylib::Vector3 pos() {
+        return raylib::Vector3(position[0], position[1], position[2]);
     }
 
-    raylib::Vector3 rot(){
-        return raylib::Vector3(rotation[0],rotation[1],rotation[2]);
+    raylib::Vector3 rot() {
+        return raylib::Vector3(rotation[0], rotation[1], rotation[2]);
     }
 
-    raylib::Vector3 vel(){
-        return raylib::Vector3(velocity[0],velocity[1],velocity[2]);
+    raylib::Vector3 vel() {
+        return raylib::Vector3(velocity[0], velocity[1], velocity[2]);
     }
 };
 
@@ -124,10 +125,12 @@ struct ClientPacket {
     bool backward;
     bool left;
     bool right;
+    bool jump;
 
-    ClientPacket(bool forward_, bool backward_, bool left_, bool right_, raylib::Vector3 rotation_)
-        : ping_send(enet_time_get()), rotation(rotation_), forward(forward_), backward(backward_),
-          left(left_), right(right_) {}
+    ClientPacket(bool forward_, bool backward_, bool left_, bool right_, bool jump_,
+                 raylib::Vector3 rotation_)
+        : ping_send(enet_time_get()), rotation(rotation_), forward(forward_),
+          backward(backward_), left(left_), right(right_), jump(jump_){}
 
     ClientPacket(RawClientPacket raw) {
         ping_send = raw.ping;
@@ -135,6 +138,7 @@ struct ClientPacket {
         backward = raw.raw & (1 << 1);
         left = raw.raw & (1 << 2);
         right = raw.raw & (1 << 3);
+        jump = raw.raw & (1 << 4);
         rotation.x = raw.rotation[0];
         rotation.y = raw.rotation[1];
         rotation.z = raw.rotation[2];
@@ -144,7 +148,7 @@ struct ClientPacket {
         RawClientPacket out;
         out.ping = ping_send;
         out.raw =
-            0 | (forward << 0) | (backward << 1) | (left << 2) | (right << 3);
+            0 | (forward << 0) | (backward << 1) | (left << 2) | (right << 3) | (jump << 4);
         out.rotation[0] = rotation.x;
         out.rotation[1] = rotation.y;
         out.rotation[2] = rotation.z;
@@ -154,7 +158,8 @@ struct ClientPacket {
     void print() {
         TraceLog(LOG_INFO, "Packet: %u | %s %s %s %s | %g %g %g", ping_send,
                  forward ? "+forward" : "", backward ? "+backward" : "",
-                 left ? "+left" : "", right ? "+right" : "",rotation.x,rotation.y,rotation.z);
+                 left ? "+left" : "", right ? "+right" : "", jump ? "+jump" : "", rotation.x,
+                 rotation.y, rotation.z);
     }
 };
 

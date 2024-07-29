@@ -201,7 +201,7 @@ class Entity : public Logger {
         }
     }
 
-    Entity* get_child(int idx){
+    Entity* get_child(int idx) {
         assert(idx >= 0);
         assert(idx < m_children.size());
         return m_children[idx];

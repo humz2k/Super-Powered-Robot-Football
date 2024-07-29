@@ -127,8 +127,6 @@ class Scene1 : public DefaultScene {
             "/Users/humzaqureshi/GitHub/Super-Powered-Robot-Football/src/"
             "defaultskybox.png");
         this->renderer()->enable_skybox();
-
-
     }
     void disconnect() { this->close(); }
     void on_close() { game()->load_scene<MenuScene>(); }
