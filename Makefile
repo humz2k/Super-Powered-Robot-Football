@@ -52,7 +52,14 @@ OBJECTS := $(OBJECTS:%.c=$(BUILD_DIR)/%.o)
 
 HEADERS := $(shell find $(SOURCE_DIR) -name '*.hpp') $(shell find $(DRIVERS_DIR) -name '*.hpp')
 
+.PHONY: main
 main: $(BUILD_DIR)/game $(BUILD_DIR)/server
+
+.PHONY: game
+game: $(BUILD_DIR)/game
+
+.PHONY: server
+server: $(BUILD_DIR)/server
 
 $(BUILD_DIR)/server: $(BUILD_DIR)/$(DRIVERS_DIR)/server.o $(OBJECTS) $(RAYLIB_DIR)/libraylib.a $(ODE_LIB)
 	$(CXX) $^ -o $@ $(RAYLIB_FLAGS) $(FLAGS) $(ENET_FLAGS)

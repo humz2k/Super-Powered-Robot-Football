@@ -506,6 +506,8 @@ class Client : public Component {
     Client(std::string host, enet_uint16 port) : m_host(host), m_port(port) {
         if (!connect()) {
             TraceLog(LOG_ERROR, "Connection failed...");
+            TraceLog(LOG_INFO, "destroying enet client");
+            enet_host_destroy(m_client);
             return;
         }
         enet_time_set(0);
