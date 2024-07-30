@@ -1,9 +1,3 @@
-[submodule "raylib"]
-	path = raylib
-	url = https://github.com/raysan5/raylib.git
-[submodule "raylib-cpp"]
-	path = raylib-cpp
-	url = https://github.com/RobLoach/raylib-cpp.git
 [submodule "ode"]
 	path = ode
 	url = https://bitbucket.org/odedevs/ode.git
