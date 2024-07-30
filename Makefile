@@ -31,10 +31,13 @@ MINI_INCLUDE ?= $(MINI_DIR)/include
 
 DRIVERS_DIR ?= drivers
 
+ENET_FLAGS ?=
+
 RAYLIB_FLAGS ?= UNSUPPORTED_PLATFORM
 ifeq ($(PLATFORM_OS), WINDOWS)
 	RAYLIB_FLAGS = $(RAYLIB_WINDOWS_FLAGS)
 	ENET_LIB = $(ENET_DIR)/enet64.lib
+	ENET_FLAGS = -lws2_32
 endif
 ifeq ($(PLATFORM_OS), OSX)
 	RAYLIB_FLAGS = $(RAYLIB_OSX_FLAGS)
@@ -58,10 +61,10 @@ HEADERS := $(shell find $(SOURCE_DIR) -name '*.hpp') $(shell find $(DRIVERS_DIR)
 main: $(BUILD_DIR)/game $(BUILD_DIR)/server
 
 $(BUILD_DIR)/server: $(BUILD_DIR)/$(DRIVERS_DIR)/server.o $(OBJECTS) $(RAYLIB_DIR)/libraylib.a $(ENET_LIB) $(ODE_LIB)
-	$(CXX) $^ -o $@ $(RAYLIB_FLAGS) $(FLAGS)
+	$(CXX) $^ -o $@ $(RAYLIB_FLAGS) $(FLAGS) $(ENET_FLAGS)
 
 $(BUILD_DIR)/game: $(BUILD_DIR)/$(DRIVERS_DIR)/game.o $(OBJECTS) $(RAYLIB_DIR)/libraylib.a $(ENET_LIB)
-	$(CXX) $^ -o $@ $(RAYLIB_FLAGS) $(FLAGS)
+	$(CXX) $^ -o $@ $(RAYLIB_FLAGS) $(FLAGS) $(ENET_FLAGS)
 
 $(ENET_MAC_LIB):
 	cd $(ENET_DIR) && $(MAKE)
