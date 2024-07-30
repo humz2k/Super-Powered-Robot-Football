@@ -21,6 +21,7 @@ int main(int argc, char** argv) {
                  config_file.c_str());
         return 1;
     }
+    assert(enet_initialize() == 0);
     SPRF::Server server(config_file);
 
     while (true) {
@@ -34,5 +35,6 @@ int main(int argc, char** argv) {
     }
 
     server.join();
+    enet_deinitialize();
     return 0;
 }
