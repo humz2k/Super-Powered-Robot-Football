@@ -126,7 +126,7 @@
 //----------------------------------------------------------------------------------
 #if defined(SUPPORT_DEFAULT_FONT)
 // Default font provided by raylib
-// NOTE: Default font is loaded on InitWindow() and disposed on CloseWindow() [module: core]
+// NOTE: Default font is loaded on InitWindow() and disposed on rlCloseWindow() [module: core]
 static Font defaultFont = { 0 };
 #endif
 
@@ -258,7 +258,7 @@ extern void LoadFontDefault(void)
     //------------------------------------------------------------------------------
 
     // Allocate space for our characters info data
-    // NOTE: This memory must be freed at end! --> Done by CloseWindow()
+    // NOTE: This memory must be freed at end! --> Done by rlCloseWindow()
     defaultFont.glyphs = (GlyphInfo *)RL_MALLOC(defaultFont.glyphCount*sizeof(GlyphInfo));
     defaultFont.recs = (rlRectangle *)RL_MALLOC(defaultFont.glyphCount*sizeof(rlRectangle));
 

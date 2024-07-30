@@ -51,7 +51,7 @@
 #endif
 
 void ShowCursor(void);
-void CloseWindow(void);
+void rlCloseWindow(void);
 
 #if defined(__linux__)
     #define _INPUT_EVENT_CODES_H
@@ -243,7 +243,7 @@ bool WindowShouldClose(void)
 
 // Toggle fullscreen mode
 void ToggleFullscreen(void)
-{   
+{
     RGFW_window_maximize(platform.window);
     ToggleBorderlessWindowed();
 }
@@ -1167,7 +1167,7 @@ void PollInputEvents(void)
                         int button = (axis == GAMEPAD_AXIS_LEFT_TRIGGER)? GAMEPAD_BUTTON_LEFT_TRIGGER_2 : GAMEPAD_BUTTON_RIGHT_TRIGGER_2;
                         int pressed = (value > 0.1f);
                         CORE.Input.Gamepad.currentButtonState[event->joystick][button] = pressed;
-                        
+
                         if (pressed) CORE.Input.Gamepad.lastButtonPressed = button;
                         else if (CORE.Input.Gamepad.lastButtonPressed == button) CORE.Input.Gamepad.lastButtonPressed = 0;
                     }
@@ -1260,8 +1260,8 @@ int InitPlatform(void)
     RGFW_area screenSize = RGFW_getScreenSize();
     CORE.Window.display.width = screenSize.w;
     CORE.Window.display.height = screenSize.h;
-    /* 
-        I think this is needed by Raylib now ? 
+    /*
+        I think this is needed by Raylib now ?
         If so, rcore_destkop_sdl should be updated too
     */
     SetupFramebuffer(CORE.Window.display.width, CORE.Window.display.height);

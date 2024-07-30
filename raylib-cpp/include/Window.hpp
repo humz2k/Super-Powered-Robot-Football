@@ -88,7 +88,7 @@ class Window {
      */
     void Close() {
         if (::IsWindowReady()) {
-            ::CloseWindow();
+            ::rlCloseWindow();
         }
     }
 
