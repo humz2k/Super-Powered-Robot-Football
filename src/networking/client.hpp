@@ -421,8 +421,10 @@ class Client : public Component {
         ClientPacketRaw raw_packet = send_packet.get_raw();
         ENetPacket* packet = enet_packet_create(
             &raw_packet, sizeof(ClientPacketRaw), ENET_PACKET_FLAG_RELIABLE);
-        if (enet_peer_send(m_peer, 0, packet) != 0)
+        if (enet_peer_send(m_peer, 0, packet) != 0){
+            enet_packet_destroy(packet);
             TraceLog(LOG_ERROR, "Packet send failed?");
+        }
         enet_host_flush(m_client);
         reset_inputs();
     }
