@@ -160,21 +160,21 @@ class Color : public ::Color {
     }
 
     void DrawText(const char* text, int posX = 0, int posY = 0, int fontSize = 10.0f) const {
-        ::DrawText(text, posX, posY, fontSize, *this);
+        ::rlDrawText(text, posX, posY, fontSize, *this);
     }
 
     void DrawText(const std::string& text, int posX = 0, int posY = 0, int fontSize = 10.0f) const {
-        ::DrawText(text.c_str(), posX, posY, fontSize, *this);
+        ::rlDrawText(text.c_str(), posX, posY, fontSize, *this);
     }
 
     void DrawText(const ::Font& font, const char* text, ::Vector2 position,
             float fontSize, float spacing) const {
-        ::DrawTextEx(font, text, position, fontSize, spacing, *this);
+        ::rlDrawTextEx(font, text, position, fontSize, spacing, *this);
     }
 
     void DrawText(const ::Font& font, const std::string& text, ::Vector2 position,
             float fontSize, float spacing) const {
-        ::DrawTextEx(font, text.c_str(), position, fontSize, spacing, *this);
+        ::rlDrawTextEx(font, text.c_str(), position, fontSize, spacing, *this);
     }
 
     void DrawText(

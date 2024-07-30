@@ -212,7 +212,7 @@ class Image : public ::Image {
      * @see ::LoadImage()
      */
     void Load(const std::string& fileName) {
-        set(::LoadImage(fileName.c_str()));
+        set(::rlLoadImage(fileName.c_str()));
         if (!IsReady()) {
             throw RaylibException("Failed to load Image from file: " + fileName);
         }

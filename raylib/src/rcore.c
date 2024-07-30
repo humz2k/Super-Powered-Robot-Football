@@ -557,7 +557,7 @@ const char *TextFormat(const char *text, ...);              // Formatting of tex
 //void SetClipboardText(const char *text)
 //const char *GetClipboardText(void)
 
-//void ShowCursor(void)
+//void rlShowCursor(void)
 //void HideCursor(void)
 //void EnableCursor(void)
 //void DisableCursor(void)
@@ -882,7 +882,7 @@ void EndDrawing(void)
         if ((int)(GetTime()/0.5)%2 == 1)
         {
             DrawCircle(30, CORE.Window.screen.height - 20, 10, MAROON);                 // WARNING: Module required: rshapes
-            DrawText("GIF RECORDING", 50, CORE.Window.screen.height - 25, 10, RED);     // WARNING: Module required: rtext
+            rlDrawText("GIF RECORDING", 50, CORE.Window.screen.height - 25, 10, RED);     // WARNING: Module required: rtext
         }
     #endif
 

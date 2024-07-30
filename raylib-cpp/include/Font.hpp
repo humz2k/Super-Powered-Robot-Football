@@ -215,7 +215,7 @@ class Font : public ::Font {
      */
     void DrawText(const char* text, ::Vector2 position, float fontSize,
             float spacing, ::Color tint = WHITE) const {
-        ::DrawTextEx(*this, text, position,  fontSize,  spacing,  tint);
+        ::rlDrawTextEx(*this, text, position,  fontSize,  spacing,  tint);
     }
 
     /**
@@ -223,7 +223,7 @@ class Font : public ::Font {
      */
     void DrawText(const std::string& text, ::Vector2 position, float fontSize,
             float spacing, ::Color tint = WHITE) const {
-        ::DrawTextEx(*this, text.c_str(), position,  fontSize,  spacing,  tint);
+        ::rlDrawTextEx(*this, text.c_str(), position,  fontSize,  spacing,  tint);
     }
 
     /**
@@ -231,7 +231,7 @@ class Font : public ::Font {
      */
     void DrawText(const char* text, int posX, int posY, float fontSize,
             float spacing, ::Color tint = WHITE) const {
-        ::DrawTextEx(*this, text,
+        ::rlDrawTextEx(*this, text,
             { static_cast<float>(posX), static_cast<float>(posY) },
             fontSize, spacing, tint);
     }
@@ -241,7 +241,7 @@ class Font : public ::Font {
      */
     void DrawText(const std::string& text, int posX, int posY, float fontSize,
             float spacing, ::Color tint = WHITE) const {
-        ::DrawTextEx(*this, text.c_str(),
+        ::rlDrawTextEx(*this, text.c_str(),
             { static_cast<float>(posX), static_cast<float>(posY) },
             fontSize, spacing, tint);
     }

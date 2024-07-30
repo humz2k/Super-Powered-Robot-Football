@@ -94,14 +94,14 @@ class Text {
      * Draw text with values in class.
      */
     void Draw(const ::Vector2& position) const {
-        ::DrawTextEx(font, text.c_str(), position, fontSize, spacing, color);
+        ::rlDrawTextEx(font, text.c_str(), position, fontSize, spacing, color);
     }
 
     /**
      * Draw text with values in class.
      */
     void Draw(int posX, int posY) const {
-        ::DrawTextEx(font,
+        ::rlDrawTextEx(font,
             text.c_str(),
             { static_cast<float>(posX), static_cast<float>(posY) },
             fontSize,
@@ -157,7 +157,7 @@ class Text {
             const int posY,
             const int fontSize,
             const ::Color& color) {
-        ::DrawText(text.c_str(), posX, posY, fontSize, color);
+        ::rlDrawText(text.c_str(), posX, posY, fontSize, color);
     }
 
     /**
@@ -170,7 +170,7 @@ class Text {
             const ::Vector2& pos,
             const int fontSize,
             const ::Color& color) {
-        ::DrawText(text.c_str(), static_cast<int>(pos.x), static_cast<int>(pos.y), fontSize, color);
+        ::rlDrawText(text.c_str(), static_cast<int>(pos.x), static_cast<int>(pos.y), fontSize, color);
     }
 
     /**
@@ -185,7 +185,7 @@ class Text {
             const float fontSize,
             const float spacing,
             const ::Color& color) {
-        ::DrawTextEx(font, text.c_str(), position, fontSize, spacing, color);
+        ::rlDrawTextEx(font, text.c_str(), position, fontSize, spacing, color);
     }
 
     /**

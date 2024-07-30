@@ -859,7 +859,7 @@ const char *GetClipboardText(void)
 }
 
 // Show mouse cursor
-void ShowCursor(void)
+void rlShowCursor(void)
 {
     SDL_ShowCursor(SDL_ENABLE);
 
@@ -1589,8 +1589,8 @@ int InitPlatform(void)
     // Initialize storage system
     //----------------------------------------------------------------------------
     // Define base path for storage
-    CORE.Storage.basePath = SDL_GetBasePath(); // Alternative: GetWorkingDirectory();  
-    CHDIR(CORE.Storage.basePath); 
+    CORE.Storage.basePath = SDL_GetBasePath(); // Alternative: GetWorkingDirectory();
+    CHDIR(CORE.Storage.basePath);
     //----------------------------------------------------------------------------
 
     TRACELOG(LOG_INFO, "PLATFORM: DESKTOP (SDL): Initialized successfully");

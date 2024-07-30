@@ -106,7 +106,7 @@ class Sound : public ::Sound {
      * Play a sound
      */
     Sound& Play() {
-        ::PlaySound(*this);
+        ::rlPlaySound(*this);
         return *this;
     }
 

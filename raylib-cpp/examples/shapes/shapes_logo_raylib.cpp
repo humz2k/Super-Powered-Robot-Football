@@ -42,7 +42,7 @@ int main() {
             foreground.DrawText("raylib", screenWidth/2 - 44, screenHeight/2 + 24, 50);
             foreground.DrawText("cpp", screenWidth/2 - 74, screenHeight/2 + 54, 50);
 
-            DrawText("this is NOT a texture!", 350, 370, 10, GRAY);
+            rlDrawText("this is NOT a texture!", 350, 370, 10, GRAY);
         }
         EndDrawing();
         //----------------------------------------------------------------------------------

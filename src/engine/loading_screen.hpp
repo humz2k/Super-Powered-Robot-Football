@@ -10,15 +10,15 @@ namespace SPRF {
 static void DrawOutlinedText(const char* text, int posX, int posY, int fontSize,
                              Color color, int outlineSize = 1,
                              Color outlineColor = BLACK) {
-    DrawText(text, posX - outlineSize, posY - outlineSize, fontSize,
+    rlDrawText(text, posX - outlineSize, posY - outlineSize, fontSize,
              outlineColor);
-    DrawText(text, posX + outlineSize, posY - outlineSize, fontSize,
+    rlDrawText(text, posX + outlineSize, posY - outlineSize, fontSize,
              outlineColor);
-    DrawText(text, posX - outlineSize, posY + outlineSize, fontSize,
+    rlDrawText(text, posX - outlineSize, posY + outlineSize, fontSize,
              outlineColor);
-    DrawText(text, posX + outlineSize, posY + outlineSize, fontSize,
+    rlDrawText(text, posX + outlineSize, posY + outlineSize, fontSize,
              outlineColor);
-    DrawText(text, posX, posY, fontSize, color);
+    rlDrawText(text, posX, posY, fontSize, color);
 }
 
 class LoadingScreen {

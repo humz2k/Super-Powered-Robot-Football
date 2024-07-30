@@ -96,7 +96,7 @@ class Game : public Logger {
         m_render_view.GetTexture().Draw(render_rect(), window_rect());
         m_current_scene->draw2D();
         std::string fps_string = std::to_string(GetFPS()) + " fps";
-        DrawText(fps_string.c_str(),
+        rlDrawText(fps_string.c_str(),
                  GetDisplayWidth() - MeasureText(fps_string.c_str(), 20), 0, 20,
                  GREEN);
         game_info.draw_debug();
