@@ -120,9 +120,8 @@ class Scene1 : public DefaultScene {
         light2->enabled(1);
         light2->L(raylib::Vector3(0, 2, 5));
 
-        this->renderer()->load_skybox(
-            "/Users/humzaqureshi/GitHub/Super-Powered-Robot-Football/src/"
-            "defaultskybox.png");
+        this->renderer()->load_skybox("src/"
+                                      "defaultskybox.png");
         this->renderer()->disable_skybox();
         this->renderer()->enable_skybox();
     }
@@ -139,10 +138,9 @@ class MainMenu : public DefaultScene {
 
   public:
     MainMenu(Game* game)
-        : DefaultScene(game),
-          m_font("/Users/humzaqureshi/GitHub/Super-Powered-Robot-Football/src/"
-                 "JetBrainsMono-Regular.ttf",
-                 128) {
+        : DefaultScene(game), m_font("src/"
+                                     "JetBrainsMono-Regular.ttf",
+                                     128) {
         set_background_color(BLACK);
         this->create_entity()->add_component<UITextComponent>(
             &m_font, raylib::Vector2(0, 0.01), 0.25,

@@ -115,9 +115,8 @@ class Scene1 : public DefaultScene {
         auto light = this->renderer()->add_light();
         light->enabled(1);
         light->L(raylib::Vector3(0, 0, -1));
-        this->renderer()->load_skybox(
-            "/Users/humzaqureshi/GitHub/Super-Powered-Robot-Football/src/"
-            "defaultskybox.png");
+        this->renderer()->load_skybox("src/"
+                                      "defaultskybox.png");
         this->renderer()->enable_skybox();
     }
     void disconnect() { this->close(); }
@@ -170,9 +169,8 @@ class TestScene : public DefaultScene {
         auto light = this->renderer()->add_light();
         light->enabled(1);
         light->L(raylib::Vector3(0, 0, -1));
-        this->renderer()->load_skybox(
-            "/Users/humzaqureshi/GitHub/Super-Powered-Robot-Football/src/"
-            "defaultskybox.png");
+        this->renderer()->load_skybox("src/"
+                                      "defaultskybox.png");
         this->renderer()->enable_skybox();
 
         auto head_model = this->renderer()->create_render_model(
