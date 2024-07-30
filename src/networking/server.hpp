@@ -229,11 +229,6 @@ class Server {
           m_channel_count(config.channel_count), m_iband(config.iband),
           m_oband(config.oband), m_tickrate(config.tickrate),
           m_simulation(m_tickrate, server_config) {
-        if (enet_initialize() != 0) {
-            TraceLog(LOG_ERROR, "Initializing Enet failed");
-            exit(EXIT_FAILURE);
-        }
-        TraceLog(LOG_INFO, "Enet initialized");
         enet_address_set_host(&m_address, m_host.c_str());
         m_address.port = m_port;
         TraceLog(LOG_INFO,
@@ -264,8 +259,6 @@ class Server {
     ~Server() {
         enet_host_destroy(m_enet_server);
         TraceLog(LOG_INFO, "ENet server host destroyed");
-        enet_deinitialize();
-        TraceLog(LOG_INFO, "Enet deinitialized");
     }
 };
 
