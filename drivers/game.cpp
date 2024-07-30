@@ -1,6 +1,7 @@
 #include "engine/engine.hpp"
 #include "networking/client.hpp"
 #include <string>
+#include <cassert>
 
 namespace SPRF {
 
@@ -215,7 +216,7 @@ class TestScene : public DefaultScene {
 } // namespace SPRF
 
 int main() {
-
+    assert(enet_initialize() == 0);
     // SPRF::game = new SPRF::Game(1512, 982, "test", 1512 * 2, 982 * 2, 200);
     SPRF::game = new SPRF::Game(900, 900, "test", 900 * 2, 900 * 2, 200);
     // ToggleFullscreen();
@@ -227,6 +228,6 @@ int main() {
     }
 
     delete SPRF::game;
-
+    enet_deinitialize();
     return 0;
 }
