@@ -97,8 +97,8 @@ class Game : public Logger {
         m_current_scene->draw2D();
         std::string fps_string = std::to_string(GetFPS()) + " fps";
         rlDrawText(fps_string.c_str(),
-                 GetDisplayWidth() - MeasureText(fps_string.c_str(), 20), 0, 20,
-                 GREEN);
+                   GetDisplayWidth() - MeasureText(fps_string.c_str(), 20), 0,
+                   20, GREEN);
         game_info.draw_debug();
         EndDrawing();
         game_info.frame_time = GetFrameTime();

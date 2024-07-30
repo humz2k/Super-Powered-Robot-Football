@@ -11,13 +11,13 @@ static void DrawOutlinedText(const char* text, int posX, int posY, int fontSize,
                              Color color, int outlineSize = 1,
                              Color outlineColor = BLACK) {
     rlDrawText(text, posX - outlineSize, posY - outlineSize, fontSize,
-             outlineColor);
+               outlineColor);
     rlDrawText(text, posX + outlineSize, posY - outlineSize, fontSize,
-             outlineColor);
+               outlineColor);
     rlDrawText(text, posX - outlineSize, posY + outlineSize, fontSize,
-             outlineColor);
+               outlineColor);
     rlDrawText(text, posX + outlineSize, posY + outlineSize, fontSize,
-             outlineColor);
+               outlineColor);
     rlDrawText(text, posX, posY, fontSize, color);
 }
 
