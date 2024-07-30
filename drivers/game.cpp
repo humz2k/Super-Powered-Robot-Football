@@ -68,6 +68,15 @@ class MouseLook : public Component {
     void init() {}
 
     void update() {
+        if (IsKeyPressed(KEY_Q)){
+            if (mouse_locked){
+                EnableCursor();
+                mouse_locked = false;
+            } else {
+                DisableCursor();
+                mouse_locked = true;
+            }
+        }
         if (game_info.dev_console_active) {
             if (mouse_locked) {
                 EnableCursor();
@@ -75,10 +84,15 @@ class MouseLook : public Component {
             }
             return;
         }
-        if (!mouse_locked) {
-            DisableCursor();
-            mouse_locked = true;
+        if (!mouse_locked){
+            return;
         }
+        //else {
+            //if (!mouse_locked) {
+            //    DisableCursor();
+            //    mouse_locked = true;
+            //}
+        //}
         auto mouse_delta = raylib::Vector2(GetMouseDelta()) * sense;
         this->entity()->get_component<Transform>()->rotation.x += mouse_delta.y;
         this->entity()->get_component<Transform>()->rotation.y -= mouse_delta.x;
@@ -91,6 +105,66 @@ class MouseLook : public Component {
                   -M_PI * 0.5f + 0.5, M_PI * 0.5f - 0.5);
     }
 };
+
+class PlayerComponent : public Component{
+    private:
+        Transform* m_transform;
+        Transform* m_head_transform;
+        NetworkEntity* m_network_entity;
+    public:
+        void init(){
+            m_transform = this->entity()->get_component<Transform>();
+            m_head_transform = this->entity()->get_child(0)->get_component<Transform>();
+            m_network_entity = this->entity()->get_component<NetworkEntity>();
+        }
+
+        void update(){
+            m_transform->position = m_network_entity->position;
+            m_transform->rotation.y = m_network_entity->rotation.y;
+            m_head_transform->rotation.x = m_network_entity->rotation.x;
+        }
+
+        void draw2D(){
+            game_info.draw_debug_var("net_rotation",m_network_entity->rotation,300,300);
+        }
+};
+
+void init_player(Entity* player){
+    TraceLog(LOG_INFO,"initializing player");
+    auto head_model = player->scene()->renderer()->create_render_model(
+        raylib::Mesh::Sphere(0.2, 30, 30));
+    head_model->tint(raylib::Color::Red());
+    auto body_model = player->scene()->renderer()->create_render_model(
+        raylib::Mesh::Cone(0.2, 0.6, 100));
+    body_model->tint(raylib::Color::Red());
+    auto eye_model = player->scene()->renderer()->create_render_model(
+        raylib::Mesh::Cube(0.2, 0.1, 0.1));
+    eye_model->tint(raylib::Color::Black());
+    auto arm_model = player->scene()->renderer()->create_render_model(
+        raylib::Mesh::Cylinder(0.05, 0.4, 100));
+    arm_model->tint(raylib::Color::Gray());
+
+    player->add_component<PlayerComponent>();
+    player->get_component<Transform>()->position.y = 0;
+    auto head = player->create_child();
+    head->get_component<Transform>()->position.y = 0.3;
+    head->add_component<Model>(head_model);
+    auto eye = head->create_child();
+    eye->get_component<Transform>()->position.z = 0.15;
+    eye->add_component<Model>(eye_model);
+    auto body = player->create_child();
+    body->add_component<Model>(body_model);
+    body->get_component<Transform>()->position.y = 0.1;
+    body->get_component<Transform>()->rotation.x = -M_PI;
+    auto gun_parent = body->create_child();
+    auto gun = gun_parent->create_child();
+    gun->add_component<Model>(arm_model);
+    gun->get_component<Transform>()->position.z = -0.023;
+    gun->get_component<Transform>()->position.x = 0.11;
+    gun->get_component<Transform>()->position.y = 0.05;
+    gun->get_component<Transform>()->rotation.x = -M_PI / 2;
+    gun->get_component<Transform>()->rotation.y = 0.05;
+}
 
 class Scene1 : public DefaultScene {
   public:
@@ -106,7 +180,7 @@ class Scene1 : public DefaultScene {
         floor->get_component<Transform>()->position.y = -0.01;
 
         auto player = this->create_entity();
-        player->add_component<Client>(host, port);
+        player->add_component<Client>(host, port,init_player);
         player->create_child()->add_component<Camera>()->set_active();
         player->get_child(0)->add_component<MouseLook>();
 
@@ -178,7 +252,7 @@ class TestScene : public DefaultScene {
             raylib::Mesh::Sphere(0.2, 30, 30));
         head_model->tint(raylib::Color::Red());
         auto body_model = this->renderer()->create_render_model(
-            raylib::Mesh::Cone(0.2, 0.6, 100));
+            raylib::Mesh::Cone(0.2, 0.8, 100));
         body_model->tint(raylib::Color::Red());
         auto eye_model = this->renderer()->create_render_model(
             raylib::Mesh::Cube(0.2, 0.1, 0.1));

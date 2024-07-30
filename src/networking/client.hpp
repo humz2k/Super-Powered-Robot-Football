@@ -21,6 +21,16 @@
 
 namespace SPRF {
 
+class NetworkEntity : public Component{
+    public:
+        raylib::Vector3 position;
+        raylib::Vector3 rotation;
+        raylib::Vector3 velocity;
+        float health = 100;
+        bool active = false;
+        NetworkEntity(){}
+};
+
 /**
  * @brief Class to handle networked data of a player.
  *
@@ -39,6 +49,8 @@ class PlayerNetworkedData {
     raylib::Vector3 m_rotation_buffer[2];
     /** @brief Velocity vector */
     raylib::Vector3 m_velocity;
+
+    bool m_active = true;
 
     /**
      * @brief Get the index of the last buffer.
@@ -130,13 +142,22 @@ class PlayerNetworkedData {
      * @brief Get the latest rotation.
      * @return raylib::Vector3 Latest rotation.
      */
-    raylib::Vector3 rotation() { return m_position_buffer[latest_buffer()]; }
+    raylib::Vector3 rotation() { return m_rotation_buffer[latest_buffer()]; }
 
     /**
      * @brief Get the latest velocity.
      * @return raylib::Vector3 Latest velocity.
      */
     raylib::Vector3 velocity() { return m_velocity; }
+
+    bool active(){
+        return m_active;
+    }
+
+    bool active(bool new_active){
+        m_active = new_active;
+        return m_active;
+    }
 };
 
 /**
@@ -198,6 +219,10 @@ class Client : public Component {
 
     /** @brief Unique ID of the client player */
     enet_uint32 m_id = -1;
+
+    std::unordered_map<enet_uint32, Entity*> m_entities;
+
+    std::function<void(Entity*)> m_init_player;
 
     /**
      * @brief Add a ping measurement to the ping array.
@@ -452,10 +477,14 @@ class Client : public Component {
 
         // TraceLog(LOG_INFO,"tick = %u",header.tick);
         std::lock_guard<std::mutex> guard(m_players_mutex);
+        for (auto& i : m_player_data){
+            i.second.active(false);
+        }
         auto states = player_states.states();
         for (auto& i : states) {
             m_player_data[i.id].update_buffer(send_time, i.position(),
                                               i.velocity(), i.rotation());
+            m_player_data[i.id].active(true);
         }
     }
 
@@ -505,7 +534,7 @@ class Client : public Component {
      * @param host The server host address.
      * @param port The server port.
      */
-    Client(std::string host, enet_uint16 port) : m_host(host), m_port(port) {
+    Client(std::string host, enet_uint16 port, std::function<void(Entity*)> init_player_) : m_host(host), m_port(port), m_init_player(init_player_) {
         if (!connect()) {
             TraceLog(LOG_ERROR, "Connection failed...");
             TraceLog(LOG_INFO, "destroying enet client");
@@ -552,6 +581,7 @@ class Client : public Component {
     void init() {
         if (!m_connected) {
             this->entity()->scene()->close();
+            return;
         }
     }
 
@@ -563,18 +593,51 @@ class Client : public Component {
     void update() {
         if (!m_connected)
             return;
+
+        // update inputs
         update_inputs();
+
+        // store information in game info
         game_info.ping = ping();
         game_info.rotation =
             this->entity()->get_child(0)->get_component<Transform>()->rotation;
+
+        // update position of the client
         std::lock_guard<std::mutex> guard(m_players_mutex);
         this->entity()->get_component<Transform>()->position =
             m_player_data[m_id].position();
         this->entity()->get_component<Transform>()->position.y +=
-            (PLAYER_HEIGHT / 2.0f) * 0.8;
+            (PLAYER_HEIGHT / 2.0f) * 0.95;
+
+        // update more game info (because we locked mutex)
         game_info.position =
             this->entity()->get_component<Transform>()->position;
         game_info.velocity = m_player_data[m_id].velocity();
+
+        // loop through player data
+        for (auto& i : m_player_data){
+            // if this data is for us, then continue
+            if (i.first == m_id){
+                continue;
+            }
+            // if this data does not have an associated entity
+            if (m_entities[i.first] == NULL){
+                // create a new entity and assign it a NetworkEntity component
+                auto new_entity = this->entity()->scene()->create_entity();
+                new_entity->add_component<NetworkEntity>();
+                m_init_player(new_entity);
+                new_entity->init();
+                // store in m_entities
+                m_entities[i.first] = new_entity;
+            }
+            // grab the associated NetworkEntity of this player data
+            auto network_entity = m_entities[i.first]->get_component<NetworkEntity>();
+            // update its values
+            network_entity->position = i.second.position();
+            network_entity->rotation = i.second.rotation();
+            network_entity->velocity = i.second.velocity();
+            network_entity->active = i.second.active();
+        }
     }
 
     /**

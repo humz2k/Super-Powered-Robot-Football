@@ -41,7 +41,7 @@ endif
 
 DEBUG_FLAGS ?= -g -fsanitize=address -fsanitize=undefined -fno-omit-frame-pointer -fno-inline
 
-FLAGS ?= -O3 -Wall -Wpedantic -Wno-newline-eof -Wno-c99-extensions -Wno-format-security -Wno-unused-function -Wno-unused-private-field -fPIC # $(DEBUG_FLAGS)
+FLAGS ?= -O3 -Wall -Wpedantic -Wno-newline-eof -Wno-c99-extensions -Wno-format-security -Wno-unused-function -Wno-unused-private-field -fPIC $(DEBUG_FLAGS)
 
 SOURCE_DIR ?= src
 BUILD_DIR ?= build

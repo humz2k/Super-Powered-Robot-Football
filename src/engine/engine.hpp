@@ -76,7 +76,7 @@ class Game : public Logger {
         log(LOG_INFO, "Closed game");
     }
 
-    bool running() { return (!m_window.ShouldClose()) && (!game_should_quit); }
+    bool running() { return (!game_should_quit); }
 
     template <class T, typename... Args> void load_scene(Args... args) {
         m_load_next = [this, args...]() {
