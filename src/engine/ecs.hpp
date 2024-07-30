@@ -330,17 +330,17 @@ class Entity : public Logger {
     }
 
     /**
-     * @brief Specialization for getting the Transform component.
-     * @return Pointer to the Transform component.
-     */
-    template <> Transform* get_component<Transform>() { return &m_transform; }
-
-    /**
      * @brief Get the scene the entity belongs to.
      * @return Pointer to the scene.
      */
     Scene* scene() { return m_scene; }
 };
+
+/**
+ * @brief Specialization for getting the Transform component.
+ * @return Pointer to the Transform component.
+ */
+template <> Transform* Entity::get_component<Transform>();
 
 /**
  * @brief Class representing a scene containing entities.
