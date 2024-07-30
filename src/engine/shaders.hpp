@@ -255,9 +255,10 @@ class ShaderUniform<raylib::Vector4>
  * @brief Class representing a light source in the scene.
  */
 class Light : public Logger {
-  private:
-    /** @brief Static counter for light instances */
+  public:
+    /** @brief Static counter for light instances. Is reset on renderer instantiation (so only one renderer at a time!!!). */
     inline static int light_count = 0;
+  private:
     /** @brief ID of the light */
     int m_id;
     /** @brief Reference to the shader */

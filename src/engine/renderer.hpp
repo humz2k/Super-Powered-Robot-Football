@@ -487,6 +487,8 @@ class Renderer : public Logger {
           m_camera_position("camPos", raylib::Vector3(0, 0, 0), m_shader),
           m_ka("ka", ka, m_shader),
           m_shadow_map_res("shadowMapRes", shadow_scale, m_shader) {
+        // reset light count from last scene. This is hacky and bad.
+        Light::light_count = 0;
         m_shader.locs[SHADER_LOC_MATRIX_MVP] =
             GetShaderLocation(m_shader, "mvp");
         m_shader.locs[SHADER_LOC_MATRIX_MODEL] =
