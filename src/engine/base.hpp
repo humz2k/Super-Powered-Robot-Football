@@ -65,9 +65,8 @@ class GameInfo {
     }
 
     void load_debug_font() {
-        m_font = raylib::Font(
-            "/Users/humzaqureshi/GitHub/Super-Powered-Robot-Football/src/"
-            "JetBrainsMono-Regular.ttf");
+        m_font = raylib::Font("src/"
+                              "JetBrainsMono-Regular.ttf");
     }
 
     void draw_debug() {
