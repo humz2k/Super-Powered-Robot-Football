@@ -16,11 +16,6 @@ RAYLIB_CPP_DIR ?= raylib-cpp/include
 RAYLIB_OSX_FLAGS ?= -framework CoreVideo -framework IOKit -framework Cocoa -framework GLUT -framework OpenGL
 RAYLIB_WINDOWS_FLAGS ?= -lopengl32 -lgdi32 -lwinmm
 
-# ENET_DIR ?= enet
-# ENET_MAC_LIB ?= $(ENET_DIR)/.libs/libenet.a
-# ENET_LIB ?= $(ENET_MAC_LIB)
-# ENET_INCLUDE ?= $(ENET_DIR)/include
-
 ODE_DIR ?= ode
 ODE_NIX_LIB ?= $(ODE_DIR)/ode/src/.libs/libode.a
 ODE_LIB ?=
@@ -36,12 +31,10 @@ ENET_FLAGS ?=
 RAYLIB_FLAGS ?= UNSUPPORTED_PLATFORM
 ifeq ($(PLATFORM_OS), WINDOWS)
 	RAYLIB_FLAGS = $(RAYLIB_WINDOWS_FLAGS)
-#	ENET_LIB = $(ENET_DIR)/enet64.lib
 	ENET_FLAGS = -lws2_32 -lwinmm
 endif
 ifeq ($(PLATFORM_OS), OSX)
 	RAYLIB_FLAGS = $(RAYLIB_OSX_FLAGS)
-#	ENET_LIB = $(ENET_MAC_LIB)
 	ODE_LIB = $(ODE_NIX_LIB)
 endif
 
@@ -67,9 +60,6 @@ $(BUILD_DIR)/server: $(BUILD_DIR)/$(DRIVERS_DIR)/server.o $(OBJECTS) $(RAYLIB_DI
 $(BUILD_DIR)/game: $(BUILD_DIR)/$(DRIVERS_DIR)/game.o $(OBJECTS) $(RAYLIB_DIR)/libraylib.a
 	$(CXX) $^ -o $@ $(RAYLIB_FLAGS) $(FLAGS) $(ENET_FLAGS)
 
-#$(ENET_MAC_LIB):
-#	cd $(ENET_DIR) && $(MAKE)
-
 $(ODE_NIX_LIB):
 	cd $(ODE_DIR) && $(MAKE)
 
@@ -94,5 +84,4 @@ clean:
 .PHONY: fresh
 fresh: clean
 	cd $(RAYLIB_DIR) && $(MAKE) clean
-	cd $(ENET_DIR) && $(MAKE) clean
 	cd $(ODE_DIR) && $(MAKE) clean
