@@ -207,11 +207,11 @@ class Color : public ::Color {
         ::DrawRectangleV(position, size, *this);
     }
 
-    void DrawRectangle(::Rectangle rec) const {
+    void DrawRectangle(::rlRectangle rec) const {
         ::DrawRectangleRec(rec, *this);
     }
 
-    void DrawRectangle(::Rectangle rec, ::Vector2 origin, float rotation) const {
+    void DrawRectangle(::rlRectangle rec, ::Vector2 origin, float rotation) const {
         ::DrawRectanglePro(rec, origin, rotation, *this);
     }
 
@@ -219,7 +219,7 @@ class Color : public ::Color {
         ::DrawRectangleLines(posX, posY, width, height, *this);
     }
 
-    void DrawRectangleLines(::Rectangle rec, float lineThick) const {
+    void DrawRectangleLines(::rlRectangle rec, float lineThick) const {
         ::DrawRectangleLinesEx(rec, lineThick, *this);
     }
 

@@ -150,7 +150,7 @@ class TextureUnmanaged : public ::Texture {
     /**
      * Update GPU texture rectangle with new data
      */
-    TextureUnmanaged& Update(::Rectangle rec, const void *pixels) {
+    TextureUnmanaged& Update(::rlRectangle rec, const void *pixels) {
         UpdateTextureRec(*this, rec, pixels);
         return *this;
     }
@@ -226,7 +226,7 @@ class TextureUnmanaged : public ::Texture {
      *
      * @see ::DrawTextureRec()
      */
-    void Draw(::Rectangle sourceRec, ::Vector2 position = {0, 0},
+    void Draw(::rlRectangle sourceRec, ::Vector2 position = {0, 0},
             ::Color tint = {255, 255, 255, 255}) const {
         ::DrawTextureRec(*this, sourceRec, position, tint);
     }
@@ -236,7 +236,7 @@ class TextureUnmanaged : public ::Texture {
      *
      * @see ::DrawTexturePro()
      */
-    void Draw(::Rectangle sourceRec, ::Rectangle destRec, ::Vector2 origin = {0, 0},
+    void Draw(::rlRectangle sourceRec, ::rlRectangle destRec, ::Vector2 origin = {0, 0},
             float rotation = 0, ::Color tint = {255, 255, 255, 255}) const {
         ::DrawTexturePro(*this, sourceRec, destRec, origin, rotation, tint);
     }
@@ -246,7 +246,7 @@ class TextureUnmanaged : public ::Texture {
      *
      * @see ::DrawTextureNPatch()
      */
-    void Draw(::NPatchInfo nPatchInfo, ::Rectangle destRec, ::Vector2 origin = {0, 0},
+    void Draw(::NPatchInfo nPatchInfo, ::rlRectangle destRec, ::Vector2 origin = {0, 0},
             float rotation = 0, ::Color tint = {255, 255, 255, 255}) const {
         ::DrawTextureNPatch(*this, nPatchInfo, destRec, origin, rotation, tint);
     }
@@ -268,7 +268,7 @@ class TextureUnmanaged : public ::Texture {
      * @see ::DrawBillboardRec()
      */
     void DrawBillboard(const ::Camera& camera,
-            ::Rectangle source, ::Vector3 position, ::Vector2 size,
+            ::rlRectangle source, ::Vector3 position, ::Vector2 size,
             ::Color tint = {255, 255, 255, 255}) const {
         DrawBillboardRec(camera, *this, source, position, size, tint);
     }
@@ -279,7 +279,7 @@ class TextureUnmanaged : public ::Texture {
      * @see ::DrawBillboardPro()
      */
     void DrawBillboard(const ::Camera& camera,
-            ::Rectangle source, Vector3 position,
+            ::rlRectangle source, Vector3 position,
             ::Vector3 up, Vector2 size, Vector2 origin, float rotation = 0.0f,
             ::Color tint = {255, 255, 255, 255}) const {
         DrawBillboardPro(camera, *this, source, position, up, size, origin, rotation, tint);
@@ -301,7 +301,7 @@ class TextureUnmanaged : public ::Texture {
     /**
      * Set texture and rectangle to be used on shapes drawing.
      */
-    TextureUnmanaged& SetShapes(const ::Rectangle& source) {
+    TextureUnmanaged& SetShapes(const ::rlRectangle& source) {
         ::SetShapesTexture(*this, source);
         return *this;
     }

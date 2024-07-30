@@ -426,14 +426,14 @@ void DrawSphereEx(Vector3 centerPos, float radius, int rings, int slices, Color 
 {
 #if 0
     // Basic implementation, do not use it!
-    // For a sphere with 16 rings and 16 slices it requires 8640 cos()/sin() function calls! 
+    // For a sphere with 16 rings and 16 slices it requires 8640 cos()/sin() function calls!
     // New optimized version below only requires 4 cos()/sin() calls
-    
+
     rlPushMatrix();
         // NOTE: Transformation is applied in inverse order (scale -> translate)
         rlTranslatef(centerPos.x, centerPos.y, centerPos.z);
         rlScalef(radius, radius, radius);
-        
+
         rlBegin(RL_TRIANGLES);
             rlColor4ub(color.r, color.g, color.b, color.a);
 
@@ -488,7 +488,7 @@ void DrawSphereEx(Vector3 centerPos, float radius, int rings, int slices, Color 
 
             for (int i = 0; i < rings + 1; i++)
             {
-                for (int j = 0; j < slices; j++) 
+                for (int j = 0; j < slices; j++)
                 {
                     vertices[0] = vertices[2]; // Rotate around y axis to set up vertices for next face
                     vertices[1] = vertices[3];
@@ -3634,13 +3634,13 @@ void DrawModelWiresEx(Model model, Vector3 position, Vector3 rotationAxis, float
 // Draw a billboard
 void DrawBillboard(Camera camera, Texture2D texture, Vector3 position, float scale, Color tint)
 {
-    Rectangle source = { 0.0f, 0.0f, (float)texture.width, (float)texture.height };
+    rlRectangle source = { 0.0f, 0.0f, (float)texture.width, (float)texture.height };
 
     DrawBillboardRec(camera, texture, source, position, (Vector2) { scale*fabsf((float)source.width/source.height), scale }, tint);
 }
 
 // Draw a billboard (part of a texture defined by a rectangle)
-void DrawBillboardRec(Camera camera, Texture2D texture, Rectangle source, Vector3 position, Vector2 size, Color tint)
+void DrawBillboardRec(Camera camera, Texture2D texture, rlRectangle source, Vector3 position, Vector2 size, Color tint)
 {
     // NOTE: Billboard locked on axis-Y
     Vector3 up = { 0.0f, 1.0f, 0.0f };
@@ -3649,7 +3649,7 @@ void DrawBillboardRec(Camera camera, Texture2D texture, Rectangle source, Vector
 }
 
 // Draw a billboard with additional parameters
-void DrawBillboardPro(Camera camera, Texture2D texture, Rectangle source, Vector3 position, Vector3 up, Vector2 size, Vector2 origin, float rotation, Color tint)
+void DrawBillboardPro(Camera camera, Texture2D texture, rlRectangle source, Vector3 position, Vector3 up, Vector2 size, Vector2 origin, float rotation, Color tint)
 {
     // Compute the up vector and the right vector
     Matrix matView = MatrixLookAt(camera.position, camera.target, camera.up);

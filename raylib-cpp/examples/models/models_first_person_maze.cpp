@@ -73,7 +73,7 @@ int main(void)
             {
                 if ((mapPixels[y*cubicmap.width + x].r == 255) &&       // Collision: white pixel, only check R channel
                     (playerPos.CheckCollisionCircle(playerRadius,
-                    Rectangle{ mapPosition.x - 0.5f + x*1.0f, mapPosition.z - 0.5f + y*1.0f, 1.0f, 1.0f })))
+                    rlRectangle{ mapPosition.x - 0.5f + x*1.0f, mapPosition.z - 0.5f + y*1.0f, 1.0f, 1.0f })))
                 {
                     // Collision detected, reset camera position
                     camera.position = oldCamPos;

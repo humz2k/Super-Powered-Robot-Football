@@ -2,7 +2,7 @@
 #include "raylib-cpp.hpp"
 
 Player::Player() {
-    position = Rectangle{
+    position = rlRectangle{
         GetScreenWidth() / 2.0f - 50,
         GetScreenHeight() / 2.0f - 50,
         100,

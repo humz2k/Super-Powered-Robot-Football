@@ -9,27 +9,27 @@ namespace raylib {
 /**
  * Rectangle type
  */
-class Rectangle : public ::Rectangle {
+class Rectangle : public ::rlRectangle {
  public:
-    Rectangle(const ::Rectangle& rect) : ::Rectangle{rect.x, rect.y, rect.width, rect.height} {}
+    Rectangle(const ::rlRectangle& rect) : ::rlRectangle{rect.x, rect.y, rect.width, rect.height} {}
 
-    Rectangle(float x, float y, float width, float height) : ::Rectangle{x, y, width, height} {}
-    Rectangle(float x, float y, float width) : ::Rectangle{x, y, width, 0} {}
-    Rectangle(float x, float y) : ::Rectangle{x, y, 0, 0} {}
-    Rectangle(float x) : ::Rectangle{x, 0, 0, 0} {}
-    Rectangle() : ::Rectangle{0, 0, 0, 0} {}
+    Rectangle(float x, float y, float width, float height) : ::rlRectangle{x, y, width, height} {}
+    Rectangle(float x, float y, float width) : ::rlRectangle{x, y, width, 0} {}
+    Rectangle(float x, float y) : ::rlRectangle{x, y, 0, 0} {}
+    Rectangle(float x) : ::rlRectangle{x, 0, 0, 0} {}
+    Rectangle() : ::rlRectangle{0, 0, 0, 0} {}
 
     Rectangle(::Vector2 position, ::Vector2 size)
-            : ::Rectangle{position.x, position.y, size.x, size.y} {}
-    Rectangle(::Vector2 size) : ::Rectangle{0, 0, size.x, size.y} {}
-    Rectangle(::Vector4 rect) : ::Rectangle{rect.x, rect.y, rect.z, rect.w} {}
+            : ::rlRectangle{position.x, position.y, size.x, size.y} {}
+    Rectangle(::Vector2 size) : ::rlRectangle{0, 0, size.x, size.y} {}
+    Rectangle(::Vector4 rect) : ::rlRectangle{rect.x, rect.y, rect.z, rect.w} {}
 
     GETTERSETTER(float, X, x)
     GETTERSETTER(float, Y, y)
     GETTERSETTER(float, Width, width)
     GETTERSETTER(float, Height, height)
 
-    Rectangle& operator=(const ::Rectangle& rect) {
+    Rectangle& operator=(const ::rlRectangle& rect) {
         set(rect);
         return *this;
     }
@@ -100,14 +100,14 @@ class Rectangle : public ::Rectangle {
     /**
      * Check collision between two rectangles
      */
-    bool CheckCollision(::Rectangle rec2) const {
+    bool CheckCollision(::rlRectangle rec2) const {
         return ::CheckCollisionRecs(*this, rec2);
     }
 
     /**
      * Get collision rectangle for two rectangles collision
      */
-    ::Rectangle GetCollision(::Rectangle rec2) const {
+    ::rlRectangle GetCollision(::rlRectangle rec2) const {
         return ::GetCollisionRec(*this, rec2);
     }
 
@@ -159,7 +159,7 @@ class Rectangle : public ::Rectangle {
     }
 
  protected:
-    void set(const ::Rectangle& rect) {
+    void set(const ::rlRectangle& rect) {
         x = rect.x;
         y = rect.y;
         width = rect.width;

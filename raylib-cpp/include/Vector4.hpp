@@ -25,7 +25,7 @@ class Vector4 : public ::Vector4 {
     Vector4(float x, float y) : ::Vector4{x, y, 0, 0} {}
     Vector4(float x) : ::Vector4{x, 0, 0, 0} {}
     Vector4() : ::Vector4{0, 0, 0, 0} {}
-    Vector4(::Rectangle rectangle) : ::Vector4{rectangle.x, rectangle.y, rectangle.width, rectangle.height} {}
+    Vector4(::rlRectangle rectangle) : ::Vector4{rectangle.x, rectangle.y, rectangle.width, rectangle.height} {}
 
     Vector4(::Color color) {
         set(ColorNormalize(color));
@@ -52,11 +52,11 @@ class Vector4 : public ::Vector4 {
         return !(*this == other);
     }
 
-    ::Rectangle ToRectangle() const {
+    ::rlRectangle ToRectangle() const {
         return {x, y, z, w};
     }
 
-    operator ::Rectangle() const {
+    operator ::rlRectangle() const {
         return {x, y, z, w};
     }
 

@@ -357,7 +357,7 @@ class Image : public ::Image {
     /**
      * Create an image from another image piece
      */
-    ::Image FromImage(::Rectangle rec) const {
+    ::Image FromImage(::rlRectangle rec) const {
         return ::ImageFromImage(*this, rec);
     }
 
@@ -380,7 +380,7 @@ class Image : public ::Image {
     /**
      * Crop an image to area defined by a rectangle
      */
-    Image& Crop(::Rectangle crop) {
+    Image& Crop(::rlRectangle crop) {
         ::ImageCrop(this, crop);
         return *this;
     }
@@ -435,7 +435,7 @@ class Image : public ::Image {
      * Crop an image to area defined by a rectangle
      */
     Image& Crop(int offsetX, int offsetY, int newWidth, int newHeight) {
-        ::Rectangle rect{
+        ::rlRectangle rect{
             static_cast<float>(offsetX),
             static_cast<float>(offsetY),
             static_cast<float>(newWidth),
@@ -583,7 +583,7 @@ class Image : public ::Image {
      *
      * @param threshold Threshold is defined as a percentatge: 0.0f -> 1.0f
      */
-    Rectangle GetAlphaBorder(float threshold) const {
+    rlRectangle GetAlphaBorder(float threshold) const {
         return ::GetImageAlphaBorder(*this, threshold);
     }
 
@@ -649,16 +649,16 @@ class Image : public ::Image {
         ::ImageDrawRectangleV(this, position, size, color);
     }
 
-    void DrawRectangle(::Rectangle rec, ::Color color = {255, 255, 255, 255}) {
+    void DrawRectangle(::rlRectangle rec, ::Color color = {255, 255, 255, 255}) {
         ::ImageDrawRectangleRec(this, rec, color);
     }
 
-    void DrawRectangleLines(::Rectangle rec, int thick = 1,
+    void DrawRectangleLines(::rlRectangle rec, int thick = 1,
             ::Color color = {255, 255, 255, 255}) {
         ::ImageDrawRectangleLines(this, rec, thick, color);
     }
 
-    void Draw(const ::Image& src, ::Rectangle srcRec, ::Rectangle dstRec,
+    void Draw(const ::Image& src, ::rlRectangle srcRec, ::rlRectangle dstRec,
             ::Color tint = {255, 255, 255, 255}) {
         ::ImageDraw(this, src, srcRec, dstRec, tint);
     }

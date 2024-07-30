@@ -18,7 +18,7 @@ class Font : public ::Font {
             int glyphCount,
             int glyphPadding,
             ::Texture2D texture,
-            ::Rectangle *recs = nullptr,
+            ::rlRectangle *recs = nullptr,
             ::GlyphInfo *glyphs = nullptr) : ::Font{baseSize, glyphCount, glyphPadding, texture, recs, glyphs} {
         // Nothing.
     }
@@ -111,7 +111,7 @@ class Font : public ::Font {
     GETTER(int, BaseSize, baseSize)
     GETTER(int, GlyphCount, glyphCount)
     GETTER(int, GlyphPadding, glyphPadding)
-    GETTER(::Rectangle*, Recs, recs)
+    GETTER(::rlRectangle*, Recs, recs)
     GETTER(::GlyphInfo*, Glyphs, glyphs)
 
     /**
