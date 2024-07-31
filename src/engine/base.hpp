@@ -14,7 +14,11 @@
 #define CSGO_MAGIC_SENSE_MULTIPLIER (1.0f/16363.6364f)
 
 #ifndef M_PI
-#define M_PI 3.14159265358979323846
+#define M_PI (3.14159265358979323846)
+#endif
+
+#ifndef M_PI_2
+#define M_PI_2 (3.14159265358979323846*0.5)
 #endif
 
 namespace SPRF {
