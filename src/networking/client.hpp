@@ -468,13 +468,16 @@ class Client : public Component {
     void handle_recieve(ENetEvent* event) {
         PlayerStatePacket player_states(event->packet->data);
         auto header = player_states.header();
+
+        if (header.tick <= m_last_tick) {
+            TraceLog(LOG_INFO,"out of order packet...");
+            return;
+        }
+
         auto current_time = enet_time_get();
         auto this_ping = current_time - header.ping_return;
         add_ping_measurement(this_ping);
 
-        if (header.tick <= m_last_tick) {
-            return;
-        }
         auto send_time = current_time - (this_ping / 2);
 
         // TraceLog(LOG_INFO,"tick = %u",header.tick);
