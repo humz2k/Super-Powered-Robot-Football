@@ -33,6 +33,11 @@ class Rotation : public Component {
         if (IsKeyDown(KEY_D)){
             transform->position.x -= game_info.frame_time * speed;
         }
+        if (!game_info.dev_console_active){
+            DisableCursor();
+        } else {
+            EnableCursor();
+        }
     }
 };
 

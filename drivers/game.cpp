@@ -92,7 +92,7 @@ class MouseLook : public Component {
         if (!mouse_locked){
             return;
         }
-        
+
         //float aspect = ((float)GetDisplayWidth())/((float)GetDisplayHeight());
         //float fovx = 2 * atan(tan(DEFAULT_FOVY * 0.5) * aspect);
         //float deg_per_pix = fovx/((float)GetDisplayWidth());

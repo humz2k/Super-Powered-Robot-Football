@@ -54,6 +54,8 @@
 #include "GLFW/glfw3.h"         // GLFW3 library: Windows, OpenGL context and Input management
                                 // NOTE: GLFW3 already includes gl.h (OpenGL) headers
 
+#include <stdio.h>
+
 // Support retrieving native window handlers
 #if defined(_WIN32)
     typedef void *PVOID;
@@ -988,7 +990,10 @@ void DisableCursor(void)
     // Set cursor position in the middle
     SetMousePosition(CORE.Window.screen.width/2, CORE.Window.screen.height/2);
 
-    if (glfwRawMouseMotionSupported()) glfwSetInputMode(platform.handle, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
+    if (glfwRawMouseMotionSupported()){
+        printf("RawMouseMotionSupported");
+        glfwSetInputMode(platform.handle, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
+    }
 
     CORE.Input.Mouse.cursorHidden = true;
 }
