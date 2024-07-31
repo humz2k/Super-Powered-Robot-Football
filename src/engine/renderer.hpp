@@ -241,6 +241,9 @@ class RenderModel : public Logger {
   private:
     /** @brief Pointer to the model */
     raylib::Model* m_model;
+    /** @brief Pointer to texture */
+    Texture2D m_texture;
+    bool m_texture_loaded = false;
     /** @brief Bounding boxes of meshes of the model */
     BBoxCorners* m_bounding_boxes = NULL;
     /** @brief Transformation matrix of the model */
@@ -293,9 +296,17 @@ class RenderModel : public Logger {
 
     ~RenderModel() {
         delete m_model;
+        if (m_texture_loaded)UnloadTexture(m_texture);
         free(m_bounding_boxes);
         free(m_instances);
         free(m_visible_instances);
+    }
+
+    void add_texture(std::string path){
+        m_texture_loaded = true;
+        m_texture = LoadTexture(path.c_str());
+        //SetTextureFilter(m_texture, TEXTURE_FILTER_TRILINEAR);
+        m_model->materials[0].maps[MATERIAL_MAP_DIFFUSE].texture = m_texture;
     }
 
     raylib::Color tint(raylib::Color color) {
@@ -576,20 +587,23 @@ class Renderer : public Logger {
                 raylib::Color background_color = raylib::Color::White()) {
         m_camera_position.value(camera->GetPosition());
         ViewFrustrum frustrum(*camera);
-        // auto cam = m_lights[0]->light_cam(camera);
+        //raylib::Camera3D cam;
+        //if (m_lights.size() > 0){
+        //cam = m_lights[0]->light_cam(camera);
+        //}
         // camera->BeginMode();
-        // cam.BeginMode();
+        //cam.BeginMode();
         ClearBackground(background_color);
         game_info.visible_meshes = 0;
         game_info.hidden_meshes = 0;
         draw_skybox(camera->GetPosition());
         for (auto& i : m_render_models) {
             i->draw(m_shader, camera->GetMatrix(), frustrum);
-            // i->draw(m_shader, cam.GetMatrix());
+            //i->draw(m_shader, cam.GetMatrix());
             i->clear_instances();
         }
-        DrawGrid(10, 1);
-        // cam.EndMode();
+        //DrawGrid(100, 1);
+        //cam.EndMode();
         // camera->EndMode();
     }
 

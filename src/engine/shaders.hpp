@@ -267,6 +267,8 @@ class Light : public Logger {
     ShaderUniform<int> m_enabled;
     /** @brief Uniform variable for light type */
     ShaderUniform<int> m_type;
+    /** @brief Uniform variable for light type */
+    //ShaderUniform<int> m_shadowMapRes;
     /** @brief Uniform variable for diffuse coefficient */
     ShaderUniform<float> m_kd;
     /** @brief Uniform variable for specular coefficient */
@@ -291,6 +293,8 @@ class Light : public Logger {
     /** @brief Field of view for the light */
     float m_fov;
 
+    raylib::Vector3 m_target = raylib::Vector3(0,0,0);
+
     /** @brief Location of the shadow map in the shader */
     int m_shadow_mapLoc;
     /** @brief Location of the light view-projection matrix in the shader */
@@ -310,8 +314,8 @@ class Light : public Logger {
      * @param scale Scale of the light.
      * @param fov Field of view for the light.
      */
-    Light(raylib::Shader& shader, int shadowMapRes = 2048, float scale = 20.0f,
-          float fov = 10.0f)
+    Light(raylib::Shader& shader, int shadowMapRes = 2048, float scale = 40.0f,
+          float fov = 80.0f)
         : m_id(light_count), m_shader(shader),
           m_enabled("lights[" + std::to_string(m_id) + "].enabled", 0,
                     m_shader),
@@ -486,6 +490,8 @@ class Light : public Logger {
      */
     float fov() const { return m_fov; }
 
+    float fov(float new_fov) { m_fov = new_fov; return m_fov; }
+
     /**
      * @brief Get the ID of the light.
      *
@@ -498,16 +504,26 @@ class Light : public Logger {
      */
     ~Light() { UnloadShadowmapRenderTexture(m_shadow_map); }
 
+    raylib::Vector3 target() const{
+      return m_target;
+    }
+
+    raylib::Vector3 target(raylib::Vector3 new_target){
+      m_target = new_target;
+      return m_target;
+    }
+
     /**
      * @brief Get the camera representation of the light.
      *
      * @return Camera representation of the light.
      */
     raylib::Camera3D light_cam(raylib::Camera* camera) const {
+
         raylib::Camera3D out;
-        out.position = L() * scale(); // + camera->GetPosition();
+        out.target = m_target; // camera->GetPosition();//
+        out.position = L() * scale() + m_target; // + camera->GetPosition();
         out.projection = CAMERA_ORTHOGRAPHIC;
-        out.target = raylib::Vector3(0, 0, 0); // camera->GetPosition();//
         out.fovy = fov();
         out.up = raylib::Vector3(0.0f, 1.0f, 0.0f);
         return out;

@@ -1,5 +1,6 @@
 #include "engine/engine.hpp"
 #include "networking/client.hpp"
+#include "custom_mesh.hpp"
 #include <string>
 #include <cassert>
 
@@ -171,13 +172,72 @@ class Scene1 : public DefaultScene {
     Scene1(Game* game, std::string host, enet_uint32 port)
         : DefaultScene(game) {
 
-        auto floor = this->create_entity();
-        auto floor_model = this->renderer()->create_render_model(
-            raylib::Mesh::Plane(100, 100, 20, 20));
-        floor_model->clip(false);
-        floor_model->tint(BLACK);
-        floor->add_component<SPRF::Model>(floor_model);
-        floor->get_component<Transform>()->position.y = -0.01;
+        int map_x_size = 70;
+        int map_z_size = 60;
+
+        auto plane = this->renderer()->create_render_model(WrappedMesh(map_x_size,map_z_size,10,10));
+        plane->add_texture("assets/prototype_texture/grey4.png");
+        plane->clip(false);
+        auto plane_entity = this->create_entity();
+        plane_entity->add_component<Model>(plane);
+
+        auto cube = this->renderer()->create_render_model(raylib::Mesh::Cube(1,1,1));
+        cube->add_texture("assets/prototype_texture/orange-cube.png");
+
+        auto sphere = this->renderer()->create_render_model(raylib::Mesh::Sphere(0.5,30,30));
+        //cube->add_texture("assets/prototype_texture/orange-cube.png");
+
+        auto sphere1 = this->create_entity();
+            sphere1->get_component<Transform>()->position.y = 0.5;
+            sphere1->get_component<Transform>()->position.z = 0.5;// + (float)10;
+            sphere1->get_component<Transform>()->rotation.y = 0;
+            sphere1->add_component<Model>(sphere);
+
+        auto sphere2 = this->create_entity();
+            sphere2->get_component<Transform>()->position.y = 0.5;
+            sphere2->get_component<Transform>()->position.z = 0.5 + (float)2;
+            sphere2->get_component<Transform>()->rotation.y = M_PI_2;
+            sphere2->add_component<Model>(sphere);
+
+        for (int i = -(map_z_size/2); i < (map_z_size/2); i++){
+            for (int y = 0; y < 5; y++){
+                auto cube_entity = this->create_entity();
+                cube_entity->get_component<Transform>()->position.y = 0.5 + (float)y;
+                cube_entity->get_component<Transform>()->position.z = 0.5 + (float)i;
+                cube_entity->get_component<Transform>()->position.x = 0.5 + -((float)map_x_size)*0.5;
+                cube_entity->add_component<Model>(cube);
+
+                auto cube_entity2 = this->create_entity();
+                cube_entity2->get_component<Transform>()->position.y = 0.5 + (float)y;
+                cube_entity2->get_component<Transform>()->position.z = 0.5 + (float)i;
+                cube_entity2->get_component<Transform>()->position.x = 0.5 + ((float)map_x_size)*0.5;
+                cube_entity2->add_component<Model>(cube);
+            }
+        }
+
+        for (int i = -(map_x_size/2)+1; i < (map_x_size/2); i++){
+            for (int y = 0; y < 5; y++){
+                auto cube_entity = this->create_entity();
+                cube_entity->get_component<Transform>()->position.y = 0.5 + (float)y;
+                cube_entity->get_component<Transform>()->position.x = 0.5 + (float)i;
+                cube_entity->get_component<Transform>()->position.z = 0.5 + -((float)map_z_size/2);
+                cube_entity->add_component<Model>(cube);
+
+                auto cube_entity2 = this->create_entity();
+                cube_entity2->get_component<Transform>()->position.y = 0.5 + (float)y;
+                cube_entity2->get_component<Transform>()->position.x = 0.5 + (float)i;
+                cube_entity2->get_component<Transform>()->position.z = 0.5 + ((float)map_z_size/2)-1.0;
+                cube_entity2->add_component<Model>(cube);
+            }
+        }
+
+        //auto floor = this->create_entity();
+        //auto floor_model = this->renderer()->create_render_model(
+        //    raylib::Mesh::Plane(100, 100, 20, 20));
+        //floor_model->clip(false);
+        //floor_model->tint(BLACK);
+        //floor->add_component<SPRF::Model>(floor_model);
+        //floor->get_component<Transform>()->position.y = -0.01;
 
         auto player = this->create_entity();
         player->add_component<Client>(host, port,init_player);
@@ -189,7 +249,9 @@ class Scene1 : public DefaultScene {
 
         auto light = this->renderer()->add_light();
         light->enabled(1);
-        light->L(raylib::Vector3(0, 0, -1));
+        light->L(raylib::Vector3(1, 2, 0.02));
+        light->target(raylib::Vector3(2.5,0,0));
+        light->fov(70);
         this->renderer()->load_skybox("src/"
                                       "defaultskybox.png");
         this->renderer()->enable_skybox();
@@ -226,64 +288,6 @@ class MenuScene : public DefaultScene {
     void connect(std::string host, enet_uint32 port) {
         TraceLog(LOG_INFO, "MenuScene connect called...");
         game()->load_scene<Scene1>(host, port);
-    }
-};
-
-class TestScene : public DefaultScene {
-  public:
-    TestScene(Game* game) : DefaultScene(game) {
-        auto origin = this->create_entity();
-        origin->add_component<Rotation>();
-        origin->get_component<Transform>()->position.y = 0.5;
-        auto camera = origin->create_child();
-        camera->add_component<Zoom>();
-        camera->get_component<Transform>()->position.z = -10;
-        camera->get_component<Transform>()->position.y = 0;
-        camera->add_component<Camera>();
-        camera->get_component<Camera>()->set_active();
-        auto light = this->renderer()->add_light();
-        light->enabled(1);
-        light->L(raylib::Vector3(0, 0, -1));
-        this->renderer()->load_skybox("src/"
-                                      "defaultskybox.png");
-        this->renderer()->enable_skybox();
-
-        auto head_model = this->renderer()->create_render_model(
-            raylib::Mesh::Sphere(0.2, 30, 30));
-        head_model->tint(raylib::Color::Red());
-        auto body_model = this->renderer()->create_render_model(
-            raylib::Mesh::Cone(0.2, 0.8, 100));
-        body_model->tint(raylib::Color::Red());
-        auto eye_model = this->renderer()->create_render_model(
-            raylib::Mesh::Cube(0.2, 0.1, 0.1));
-        eye_model->tint(raylib::Color::Black());
-        auto arm_model = this->renderer()->create_render_model(
-            raylib::Mesh::Cylinder(0.05, 0.4, 100));
-        arm_model->tint(raylib::Color::Gray());
-
-        auto player = this->create_entity();
-        player->add_component<RotationKeysY>();
-        player->get_component<Transform>()->position.y = 0;
-        auto head = player->create_child();
-        head->add_component<RotationKeysX>();
-        head->get_component<Transform>()->position.y = 0.8;
-        head->add_component<Model>(head_model);
-        auto eye = head->create_child();
-        eye->get_component<Transform>()->position.z = 0.15;
-        eye->add_component<Model>(eye_model);
-        auto body = player->create_child();
-        body->add_component<Model>(body_model);
-        body->get_component<Transform>()->position.y = 0.6;
-        body->get_component<Transform>()->rotation.x = -M_PI;
-        auto gun_parent = body->create_child();
-        gun_parent->add_component<RotationKeysX>();
-        auto gun = gun_parent->create_child();
-        gun->add_component<Model>(arm_model);
-        gun->get_component<Transform>()->position.z = -0.023;
-        gun->get_component<Transform>()->position.x = 0.11;
-        gun->get_component<Transform>()->position.y = 0.05;
-        gun->get_component<Transform>()->rotation.x = -M_PI / 2;
-        gun->get_component<Transform>()->rotation.y = 0.05;
     }
 };
 

@@ -83,7 +83,8 @@ const char* lights_vs =
     "out vec3 fragPosition;out vec2 fragTexCoord;out vec4 fragColor;out vec3 "
     "fragNormal;"
     "void main(){fragPosition = vec3(instanceTransform*vec4(vertexPosition, "
-    "1.0));fragTexCoord = vertexTexCoord;fragColor = vertexColor;fragNormal = "
-    "normalize(vec3(matNormal*instanceTransform*vec4(vertexNormal, "
+    "1.0));fragTexCoord = vertexTexCoord;fragColor = vertexColor;"
+    "mat4 rot = instanceTransform; rot[3] = vec4(0,0,0,1);"
+    "fragNormal = normalize(vec3(rot*matNormal*vec4(vertexNormal, "
     "1.0)));gl_Position = "
     "mvp*instanceTransform*vec4(vertexPosition, 1.0);}\n";

@@ -65,14 +65,14 @@ class ServerConfig {
 #define DUMB_HACK(field, token)                                                \
     if (field.has(TOSTRING(token))) {                                          \
         token = std::stoi(field[TOSTRING(token)]);                             \
-        TraceLog(LOG_INFO, "Server Config: %s = %g", TOSTRING(token), token);  \
+        TraceLog(LOG_INFO, "Server Config: %s = %d", TOSTRING(token), token);  \
         field[TOSTRING(token)] = std::to_string(token);                        \
     }
 
         mINI::INIFile file(filename);
         mINI::INIStructure ini;
         assert(file.read(ini)); // Ensure the INI file is successfully read
-        if (ini.has("physics")) {
+        if (ini.has("server")) {
             auto& server = ini["server"];
             if (server.has("host")) {
                 host = server["host"];
@@ -173,7 +173,7 @@ class SimulationParameters {
             DUMB_HACK(physics, bunny_hop_forgiveness)
         }
         if (ini.has("error_correction")) {
-            auto& error_correction = ini["physics"];
+            auto& error_correction = ini["error_correction"];
             DUMB_HACK(error_correction, erp)
             DUMB_HACK(error_correction, cfm)
         }

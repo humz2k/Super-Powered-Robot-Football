@@ -31,8 +31,8 @@ void main()
     fragPosition = vec3(instanceTransform*vec4(vertexPosition, 1.0));
     fragTexCoord = vertexTexCoord;
     fragColor = vertexColor;
-    fragNormal = normalize(vec3(matNormal*vec4(vertexNormal, 1.0)));
-
+    mat4 rot = instanceTransform; rot[3] = vec4(0,0,0,1); ;//rot[0][3] = 0; rot[1][3] = 0; rot[2][3] = 0; rot[3][3] = 1;
+    fragNormal = normalize(vec3(rot*matNormal*vec4(vertexNormal, 1.0)));
     // Calculate final vertex position, note that we multiply mvp by instanceTransform
     gl_Position = mvp*instanceTransform*vec4(vertexPosition, 1.0);
     // Send vertex attributes to fragment shader
