@@ -94,7 +94,7 @@ class Server {
         PlayerStatePacket state_packet(
             m_tick, timestamp, client_packet.ping_send, m_player_states);
         ENetPacket* packet = enet_packet_create(
-            state_packet.raw, state_packet.size, ENET_PACKET_FLAG_UNSEQUENCED);
+            state_packet.raw, state_packet.size, ENET_PACKET_FLAG_UNSEQUENCED | ENET_PACKET_FLAG_UNRELIABLE_FRAGMENT);
         assert(enet_peer_send(event->peer, 0, packet) == 0);
         enet_host_flush(m_enet_server);
     }
@@ -116,7 +116,7 @@ class Server {
         HandshakePacket out(m_next_id, m_tickrate, enet_time_get());
         m_next_id++;
         ENetPacket* packet = enet_packet_create(&out, sizeof(HandshakePacket),
-                                                ENET_PACKET_FLAG_UNSEQUENCED);
+                                                ENET_PACKET_FLAG_RELIABLE);
         assert(enet_peer_send(event->peer, 0, packet) == 0);
     }
 

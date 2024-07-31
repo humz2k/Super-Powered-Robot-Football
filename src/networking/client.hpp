@@ -256,7 +256,7 @@ class Client : public Component {
      * Locks `m_client_mutex`.
      */
     void update_inputs() {
-        std::lock_guard<std::mutex> guard(m_client_mutex);
+        //std::lock_guard<std::mutex> guard(m_client_mutex);
         if (IsKeyDown(KEY_W)) {
             m_forward = true;
         }
@@ -447,7 +447,7 @@ class Client : public Component {
             this->entity()->get_child(0)->get_component<Transform>()->rotation);
         ClientPacketRaw raw_packet = send_packet.get_raw();
         ENetPacket* packet = enet_packet_create(
-            &raw_packet, sizeof(ClientPacketRaw), ENET_PACKET_FLAG_UNSEQUENCED);
+            &raw_packet, sizeof(ClientPacketRaw), ENET_PACKET_FLAG_UNSEQUENCED | ENET_PACKET_FLAG_UNRELIABLE_FRAGMENT);
         if (enet_peer_send(m_peer, 0, packet) != 0){
             enet_packet_destroy(packet);
             TraceLog(LOG_ERROR, "Packet send failed?");
