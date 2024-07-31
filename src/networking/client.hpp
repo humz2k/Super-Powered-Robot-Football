@@ -214,6 +214,8 @@ class Client : public Component {
     /** @brief Index for the current ping measurement */
     int m_current_ping = 0;
 
+    int m_uprate = 64;
+
     /** @brief Map to store networked data of players */
     std::unordered_map<enet_uint32, PlayerNetworkedData> m_player_data;
 
@@ -496,7 +498,7 @@ class Client : public Component {
     void recv_packet() {
         std::lock_guard<std::mutex> guard(m_client_mutex);
         ENetEvent event;
-        if (enet_host_service(m_client, &event, 5) > 0) {
+        if (enet_host_service(m_client, &event, 1000/(m_uprate)) > 0) {
             switch (event.type) {
             case ENET_EVENT_TYPE_RECEIVE:
                 handle_recieve(&event);
@@ -506,6 +508,8 @@ class Client : public Component {
                 TraceLog(LOG_INFO, "Unknown Event Recieved");
                 break;
             }
+        } else {
+            TraceLog(LOG_INFO,"packet expected but failed...");
         }
     }
 
