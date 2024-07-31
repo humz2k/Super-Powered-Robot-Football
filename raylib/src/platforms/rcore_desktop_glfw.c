@@ -991,7 +991,7 @@ void DisableCursor(void)
     SetMousePosition(CORE.Window.screen.width/2, CORE.Window.screen.height/2);
 
     if (glfwRawMouseMotionSupported()){
-        printf("RawMouseMotionSupported");
+        //printf("RawMouseMotionSupported");
         glfwSetInputMode(platform.handle, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
     }
 
