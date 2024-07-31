@@ -96,7 +96,7 @@ class MouseLook : public Component {
         //float aspect = ((float)GetDisplayWidth())/((float)GetDisplayHeight());
         //float fovx = 2 * atan(tan(DEFAULT_FOVY * 0.5) * aspect);
         //float deg_per_pix = fovx/((float)GetDisplayWidth());
-        auto mouse_delta = raylib::Vector2(GetMouseDelta())*(1/0.2765)*(360.0f/16363.6364)*DEG2RAD*sense;// * game_info.mouse_sense_ratio * sense;// * (deg_per_pix);
+        auto mouse_delta = GetRawMouseDelta();//*(1/0.2765)*(360.0f/16363.6364)*DEG2RAD*sense;// * game_info.mouse_sense_ratio * sense;// * (deg_per_pix);
         this->entity()->get_component<Transform>()->rotation.x += mouse_delta.y;
         this->entity()->get_component<Transform>()->rotation.y -= mouse_delta.x;
 

@@ -37,6 +37,10 @@ static int GetDisplayHeight() {
     return GetScreenHeight();
 }
 
+static inline raylib::Vector2 GetDisplaySize(){
+  return raylib::Vector2(GetDisplayWidth(),GetDisplayHeight());
+}
+
 class GameInfo {
   private:
     raylib::Font m_font;
@@ -45,6 +49,7 @@ class GameInfo {
     int visible_meshes = 0;
     int hidden_meshes = 0;
     float frame_time = 0;
+    raylib::Vector2 monitor_size; // inches
     raylib::Vector3 position;
     raylib::Vector3 rotation;
     raylib::Vector3 velocity;
@@ -93,6 +98,11 @@ class GameInfo {
 };
 
 extern GameInfo game_info;
+
+static inline raylib::Vector2 GetRawMouseDelta(){
+  raylib::Vector2 sc = (raylib::Vector2(GetMouseDelta())/GetDisplaySize()) * game_info.monitor_size * 400 * 0.022;
+  return sc;
+}
 
 class Logger {
   private:
