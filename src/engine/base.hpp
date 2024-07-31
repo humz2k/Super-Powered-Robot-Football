@@ -11,7 +11,7 @@
 #include <unordered_map>
 
 #define DEFAULT_FOVY (59.0f)
-#define CSGO_MAGIC_SENSE_MULTIPLIER (1.0f/16363.6364f)
+#define CSGO_MAGIC_SENSE_MULTIPLIER (360.0f/16363.6364f)
 
 #ifndef M_PI
 #define M_PI (3.14159265358979323846)
@@ -50,7 +50,7 @@ class GameInfo {
     raylib::Vector3 velocity;
     int ping;
     bool dev_console_active = false;
-    raylib::Vector2 mouse_sense_ratio = raylib::Vector2(1,1);
+    raylib::Vector2 mouse_sense_ratio = raylib::Vector2(0.0165,0.022);
     GameInfo() {}
 
     template <class T>

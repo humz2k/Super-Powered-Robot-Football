@@ -64,11 +64,15 @@ class MouseLook : public Component {
   private:
     float sense = 2;
     bool mouse_locked = false;
+    float m_display_w;
+    float m_display_h;
 
   public:
     void init() {}
 
     void update() {
+        m_display_w = GetRenderWidth();
+        m_display_h = GetRenderHeight();
         if (IsKeyPressed(KEY_Q)){
             if (mouse_locked){
                 EnableCursor();
@@ -88,10 +92,11 @@ class MouseLook : public Component {
         if (!mouse_locked){
             return;
         }
-        float aspect = ((float)GetDisplayWidth())/((float)GetDisplayHeight());
-        float fovx = 2 * atan(tan(DEFAULT_FOVY * 0.5) * aspect);
-        float deg_per_pix = fovx/((float)GetDisplayWidth());
-        auto mouse_delta = raylib::Vector2(GetMouseDelta()) * deg_per_pix * game_info.mouse_sense_ratio * sense * CSGO_MAGIC_SENSE_MULTIPLIER;
+        
+        //float aspect = ((float)GetDisplayWidth())/((float)GetDisplayHeight());
+        //float fovx = 2 * atan(tan(DEFAULT_FOVY * 0.5) * aspect);
+        //float deg_per_pix = fovx/((float)GetDisplayWidth());
+        auto mouse_delta = raylib::Vector2(GetMouseDelta())*(1/0.2765)*(360.0f/16363.6364)*DEG2RAD*sense;// * game_info.mouse_sense_ratio * sense;// * (deg_per_pix);
         this->entity()->get_component<Transform>()->rotation.x += mouse_delta.y;
         this->entity()->get_component<Transform>()->rotation.y -= mouse_delta.x;
 
@@ -101,6 +106,10 @@ class MouseLook : public Component {
         this->entity()->get_component<Transform>()->rotation.x =
             Clamp(this->entity()->get_component<Transform>()->rotation.x,
                   -M_PI * 0.5f + 0.5, M_PI * 0.5f - 0.5);
+    }
+
+    void draw2D(){
+        game_info.draw_debug_var("display",raylib::Vector3(GetWindowScaleDPI().x,GetWindowScaleDPI().y,0),500,500);
     }
 };
 
@@ -288,7 +297,7 @@ int main() {
     assert(enet_initialize() == 0);
     // SPRF::game = new SPRF::Game(1512, 982, "test", 1512 * 2, 982 * 2, 200);
     SPRF::game = new SPRF::Game(0, 0, "test", 1024 * 2, 768 * 2, 200);
-    // ToggleFullscreen();
+    ToggleFullscreen();
 
     SPRF::game->load_scene<SPRF::Scene1>("192.168.1.73",9999);
 
