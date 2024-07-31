@@ -100,7 +100,7 @@ class GameInfo {
 extern GameInfo game_info;
 
 static inline raylib::Vector2 GetRawMouseDelta(){
-  raylib::Vector2 sc = (raylib::Vector2(GetMouseDelta())/GetDisplaySize()) * game_info.monitor_size * 400 * 0.022;
+  raylib::Vector2 sc = raylib::Vector2(GetMouseDelta()) * DEG2RAD;// * game_info.monitor_size * 400 * 0.022;
   return sc;
 }
 
