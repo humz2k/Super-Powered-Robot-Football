@@ -62,7 +62,7 @@ class DisconnectCommand : public DevConsoleCommand {
 
 class MouseLook : public Component {
   private:
-    raylib::Vector2 sense = raylib::Vector2(0.005, 0.005);
+    float sense = 2;
     bool mouse_locked = false;
 
   public:
@@ -88,13 +88,10 @@ class MouseLook : public Component {
         if (!mouse_locked){
             return;
         }
-        //else {
-            //if (!mouse_locked) {
-            //    DisableCursor();
-            //    mouse_locked = true;
-            //}
-        //}
-        auto mouse_delta = raylib::Vector2(GetMouseDelta()) * sense;
+        float aspect = ((float)GetDisplayWidth())/((float)GetDisplayHeight());
+        float fovx = 2 * atan(tan(DEFAULT_FOVY * 0.5) * aspect);
+        float deg_per_pix = fovx/((float)GetDisplayWidth());
+        auto mouse_delta = raylib::Vector2(GetMouseDelta()) * deg_per_pix * game_info.mouse_sense_ratio * sense * CSGO_MAGIC_SENSE_MULTIPLIER;
         this->entity()->get_component<Transform>()->rotation.x += mouse_delta.y;
         this->entity()->get_component<Transform>()->rotation.y -= mouse_delta.x;
 
@@ -231,17 +228,11 @@ class Scene1 : public DefaultScene {
             }
         }
 
-        //auto floor = this->create_entity();
-        //auto floor_model = this->renderer()->create_render_model(
-        //    raylib::Mesh::Plane(100, 100, 20, 20));
-        //floor_model->clip(false);
-        //floor_model->tint(BLACK);
-        //floor->add_component<SPRF::Model>(floor_model);
-        //floor->get_component<Transform>()->position.y = -0.01;
-
         auto player = this->create_entity();
         player->add_component<Client>(host, port,init_player);
-        player->create_child()->add_component<Camera>()->set_active();
+        auto camera = player->create_child()->add_component<Camera>();
+        camera->set_active();
+
         player->get_child(0)->add_component<MouseLook>();
 
         std::function<void()> callback = [this]() { disconnect(); };
@@ -296,7 +287,7 @@ class MenuScene : public DefaultScene {
 int main() {
     assert(enet_initialize() == 0);
     // SPRF::game = new SPRF::Game(1512, 982, "test", 1512 * 2, 982 * 2, 200);
-    SPRF::game = new SPRF::Game(900, 900, "test", 900 * 2, 900 * 2, 200);
+    SPRF::game = new SPRF::Game(0, 0, "test", 1024 * 2, 768 * 2, 200);
     // ToggleFullscreen();
 
     SPRF::game->load_scene<SPRF::Scene1>("192.168.1.73",9999);

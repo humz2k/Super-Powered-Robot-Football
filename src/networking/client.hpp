@@ -267,7 +267,7 @@ class Client : public Component {
         if (IsKeyDown(KEY_D)) {
             m_right = true;
         }
-        if (IsKeyDown(KEY_SPACE)) {
+        if (IsKeyDown(KEY_SPACE) || (GetMouseWheelMove() != 0.0f)) {
             m_jump = true;
         }
     }

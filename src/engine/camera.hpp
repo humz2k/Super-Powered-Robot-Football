@@ -28,7 +28,7 @@ class Camera : public Component {
     /**
      * @brief Construct a new Camera object.
      */
-    Camera(float fovy = 45.0f, CameraProjection projection = CAMERA_PERSPECTIVE)
+    Camera(float fovy = DEFAULT_FOVY, CameraProjection projection = CAMERA_PERSPECTIVE)
         : m_camera(raylib::Vector3(0, 0, 0), raylib::Vector3(0, 0, 0),
                    raylib::Vector3(0, 1, 0), fovy, projection) {}
 
