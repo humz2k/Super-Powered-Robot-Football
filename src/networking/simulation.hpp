@@ -133,22 +133,20 @@ class PlayerBody : public PlayerBodyBase {
         return false;
     }
 
-    /**
-     * @brief Updates the drag applied to the player when grounded.
-     *
-     * This will do *nothing* if the player is not grounded (as in, even if the
-     * player is on the ground but `m_is_grounded` is still `false`).
-     *
-     * @param drag The drag coefficient to apply.
-     */
-    void update_drag(float drag) {
-        if (m_is_grounded) {
-            xz_velocity(xz_velocity() * drag);
-        }
-    }
-
   public:
     using PlayerBodyBase::PlayerBodyBase;
+
+    raylib::Vector3 get_forward(){
+        return Vector3RotateByAxisAngle(
+                raylib::Vector3(0, 0, 1.0f), raylib::Vector3(0, 1.0f, 0),
+                this->rotation().y);
+    }
+
+    raylib::Vector3 get_left(){
+        return Vector3RotateByAxisAngle(
+                raylib::Vector3(1.0f, 0, 0), raylib::Vector3(0, 1.0f, 0),
+                this->rotation().y);
+    }
 
     /**
      * @brief Handles the player inputs and updates the player's physical state.
@@ -163,26 +161,43 @@ class PlayerBody : public PlayerBodyBase {
         std::lock_guard<std::mutex> guard(m_player_mutex);
         update_grounded(ground);
 
-        auto direction = move_direction();
+        //auto direction = move_direction();
+
+        raylib::Vector3 forward = get_forward();
+
+        raylib::Vector3 left = get_left();
+
+        raylib::Vector3 direction = raylib::Vector3(0,0,0);
+
+        raylib::Vector3 xz_v_delta = raylib::Vector3(0,0,0);
+
+        if ((m_forward && m_backward) || ((!m_forward) && (!m_backward))){
+            xz_v_delta -= xz_velocity().Project(forward);
+        } else {
+            direction += forward * (m_forward - m_backward);
+        }
+
+        if ((m_left && m_right) || ((!m_left) && (!m_right))){
+            xz_v_delta -= xz_velocity().Project(left);
+        } else {
+            direction += left * (m_left - m_right);
+        }
+
+        direction = direction.Normalize();
 
         check_jump();
-        if (m_is_grounded) {
+        if (m_is_grounded){
             add_force(direction * m_sim_params.ground_acceleration);
-            update_drag(m_sim_params.ground_drag);
+            xz_velocity(xz_velocity() + xz_v_delta * (m_sim_params.ground_drag));
             clamp_xz_velocity(m_sim_params.max_ground_velocity);
         } else {
             raylib::Vector3 proj_vel = Vector3Project(velocity(), direction);
-            float proj_vel_mag = proj_vel.Length();
-            bool is_away = direction.DotProduct(proj_vel) <= 0.0f;
-            if ((proj_vel_mag < m_sim_params.max_air_velocity) || is_away) {
-                if (!is_away) {
-                    add_force(direction * m_sim_params.air_acceleration);
-                } else {
-                    add_force(direction * m_sim_params.air_strafe_acceleration);
-                }
+            if ((proj_vel.Length() < m_sim_params.max_air_velocity) || (direction.DotProduct(proj_vel) <= 0.0f)) {
+                add_force(direction * m_sim_params.air_acceleration);
             }
+            xz_velocity(xz_velocity() + xz_v_delta * (m_sim_params.air_drag));
+            clamp_xz_velocity(m_sim_params.max_all_velocity);
         }
-        clamp_xz_velocity(m_sim_params.max_all_velocity);
     }
 };
 

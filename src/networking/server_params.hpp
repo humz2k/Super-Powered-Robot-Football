@@ -104,8 +104,6 @@ class SimulationParameters {
   public:
     /** @brief Default ground acceleration */
     float ground_acceleration = 50.0f;
-    /** @brief Default air strafe acceleration */
-    float air_strafe_acceleration = 5.0f;
     /** @brief Default air acceleration */
     float air_acceleration = 20.0f;
     /** @brief Default jump force */
@@ -160,7 +158,6 @@ class SimulationParameters {
         if (ini.has("physics")) {
             auto& physics = ini["physics"];
             DUMB_HACK(physics, ground_acceleration)
-            DUMB_HACK(physics, air_strafe_acceleration)
             DUMB_HACK(physics, air_acceleration)
             DUMB_HACK(physics, jump_force)
             DUMB_HACK(physics, ground_drag)
