@@ -153,6 +153,8 @@ class Server {
      *
      * This method handles different types of ENet events, such as connect,
      * receive, and disconnect.
+     *
+     * TODO: Currently, this can send like a million updates a second. Need to have a timer to stop that...
      */
     void get_event() {
         ENetEvent event;
