@@ -136,16 +136,16 @@ class PlayerBody : public PlayerBodyBase {
   public:
     using PlayerBodyBase::PlayerBodyBase;
 
-    raylib::Vector3 get_forward(){
-        return Vector3RotateByAxisAngle(
-                raylib::Vector3(0, 0, 1.0f), raylib::Vector3(0, 1.0f, 0),
-                this->rotation().y);
+    raylib::Vector3 get_forward() {
+        return Vector3RotateByAxisAngle(raylib::Vector3(0, 0, 1.0f),
+                                        raylib::Vector3(0, 1.0f, 0),
+                                        this->rotation().y);
     }
 
-    raylib::Vector3 get_left(){
-        return Vector3RotateByAxisAngle(
-                raylib::Vector3(1.0f, 0, 0), raylib::Vector3(0, 1.0f, 0),
-                this->rotation().y);
+    raylib::Vector3 get_left() {
+        return Vector3RotateByAxisAngle(raylib::Vector3(1.0f, 0, 0),
+                                        raylib::Vector3(0, 1.0f, 0),
+                                        this->rotation().y);
     }
 
     /**
@@ -161,23 +161,23 @@ class PlayerBody : public PlayerBodyBase {
         std::lock_guard<std::mutex> guard(m_player_mutex);
         update_grounded(ground);
 
-        //auto direction = move_direction();
+        // auto direction = move_direction();
 
         raylib::Vector3 forward = get_forward();
 
         raylib::Vector3 left = get_left();
 
-        raylib::Vector3 direction = raylib::Vector3(0,0,0);
+        raylib::Vector3 direction = raylib::Vector3(0, 0, 0);
 
-        raylib::Vector3 xz_v_delta = raylib::Vector3(0,0,0);
+        raylib::Vector3 xz_v_delta = raylib::Vector3(0, 0, 0);
 
-        if ((m_forward && m_backward) || ((!m_forward) && (!m_backward))){
+        if ((m_forward && m_backward) || ((!m_forward) && (!m_backward))) {
             xz_v_delta -= xz_velocity().Project(forward);
         } else {
             direction += forward * (m_forward - m_backward);
         }
 
-        if ((m_left && m_right) || ((!m_left) && (!m_right))){
+        if ((m_left && m_right) || ((!m_left) && (!m_right))) {
             xz_v_delta -= xz_velocity().Project(left);
         } else {
             direction += left * (m_left - m_right);
@@ -186,13 +186,15 @@ class PlayerBody : public PlayerBodyBase {
         direction = direction.Normalize();
 
         check_jump();
-        if (m_is_grounded){
+        if (m_is_grounded) {
             add_force(direction * m_sim_params.ground_acceleration);
-            xz_velocity(xz_velocity() + xz_v_delta * (m_sim_params.ground_drag));
+            xz_velocity(xz_velocity() +
+                        xz_v_delta * (m_sim_params.ground_drag));
             clamp_xz_velocity(m_sim_params.max_ground_velocity);
         } else {
             raylib::Vector3 proj_vel = Vector3Project(velocity(), direction);
-            if ((proj_vel.Length() < m_sim_params.max_air_velocity) || (direction.DotProduct(proj_vel) <= 0.0f)) {
+            if ((proj_vel.Length() < m_sim_params.max_air_velocity) ||
+                (direction.DotProduct(proj_vel) <= 0.0f)) {
                 add_force(direction * m_sim_params.air_acceleration);
             }
             xz_velocity(xz_velocity() + xz_v_delta * (m_sim_params.air_drag));
@@ -454,9 +456,9 @@ class Simulation {
      * Locks `simulation_mutex`.
      *
      * @param tick Pointer to the current simulation tick.
-     * @param states Vector of PlayerStateData to be updated.
+     * @param states Vector of player_state_data to be updated.
      */
-    void update(enet_uint32* tick, std::vector<PlayerStateData>& states) {
+    void update(enet_uint32* tick, std::vector<player_state_data>& states) {
         std::lock_guard<std::mutex> guard(simulation_mutex);
         *tick = m_tick;
         for (auto& i : states) {

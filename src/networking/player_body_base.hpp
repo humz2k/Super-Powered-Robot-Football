@@ -321,7 +321,7 @@ class PlayerBodyBase {
      *
      * @param packet The received client packet.
      */
-    void update_inputs(ClientPacket packet) {
+    void update_inputs(user_action_packet packet) {
         std::lock_guard<std::mutex> guard(m_player_mutex);
         m_forward |= packet.forward;
         m_backward |= packet.backward;

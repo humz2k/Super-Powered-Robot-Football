@@ -17,17 +17,13 @@ class Model : public Component {
     Model(RenderModel* model) : m_model(model) {}
 
     void draw3D(raylib::Matrix parent_transform) {
-      if (m_enabled)
-        m_model->add_instance(parent_transform);
+        if (m_enabled)
+            m_model->add_instance(parent_transform);
     }
 
-    void enable(){
-      m_enabled = true;
-    }
+    void enable() { m_enabled = true; }
 
-    void disable(){
-      m_enabled = false;
-    }
+    void disable() { m_enabled = false; }
 };
 
 } // namespace SPRF

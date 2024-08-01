@@ -62,9 +62,13 @@ class Game : public Logger {
 
         // monitor size in inches
         int monitor = GetCurrentMonitor();
-        game_info.monitor_size = raylib::Vector2(GetMonitorPhysicalWidth(monitor),GetMonitorPhysicalHeight(monitor)) * 0.039;
+        game_info.monitor_size =
+            raylib::Vector2(GetMonitorPhysicalWidth(monitor),
+                            GetMonitorPhysicalHeight(monitor)) *
+            0.039;
 
-        TraceLog(LOG_INFO,"Physical Monitor Size: %gx%g",game_info.monitor_size.x,game_info.monitor_size.y);
+        TraceLog(LOG_INFO, "Physical Monitor Size: %gx%g",
+                 game_info.monitor_size.x, game_info.monitor_size.y);
         loading_screen.draw_splash_screen();
         loading_screen.draw();
         log(LOG_INFO, "Launching game");

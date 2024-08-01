@@ -1,8 +1,8 @@
+#include "custom_mesh.hpp"
 #include "engine/engine.hpp"
 #include "networking/client.hpp"
-#include "custom_mesh.hpp"
-#include <string>
 #include <cassert>
+#include <string>
 
 namespace SPRF {
 
@@ -73,8 +73,8 @@ class MouseLook : public Component {
     void update() {
         m_display_w = GetRenderWidth();
         m_display_h = GetRenderHeight();
-        if (IsKeyPressed(KEY_Q)){
-            if (mouse_locked){
+        if (IsKeyPressed(KEY_Q)) {
+            if (mouse_locked) {
                 EnableCursor();
                 mouse_locked = false;
             } else {
@@ -89,14 +89,18 @@ class MouseLook : public Component {
             }
             return;
         }
-        if (!mouse_locked){
+        if (!mouse_locked) {
             return;
         }
 
-        //float aspect = ((float)GetDisplayWidth())/((float)GetDisplayHeight());
-        //float fovx = 2 * atan(tan(DEFAULT_FOVY * 0.5) * aspect);
-        //float deg_per_pix = fovx/((float)GetDisplayWidth());
-        auto mouse_delta = GetRawMouseDelta() * game_info.mouse_sense_ratio * sense;//*(1/0.2765)*(360.0f/16363.6364)*DEG2RAD*sense;// * game_info.mouse_sense_ratio * sense;// * (deg_per_pix);
+        // float aspect =
+        // ((float)GetDisplayWidth())/((float)GetDisplayHeight()); float fovx =
+        // 2 * atan(tan(DEFAULT_FOVY * 0.5) * aspect); float deg_per_pix =
+        // fovx/((float)GetDisplayWidth());
+        auto mouse_delta =
+            GetRawMouseDelta() * game_info.mouse_sense_ratio *
+            sense; //*(1/0.2765)*(360.0f/16363.6364)*DEG2RAD*sense;// *
+                   //game_info.mouse_sense_ratio * sense;// * (deg_per_pix);
         this->entity()->get_component<Transform>()->rotation.x += mouse_delta.y;
         this->entity()->get_component<Transform>()->rotation.y -= mouse_delta.x;
 
@@ -108,36 +112,39 @@ class MouseLook : public Component {
                   -M_PI * 0.5f + 0.5, M_PI * 0.5f - 0.5);
     }
 
-    void draw2D(){
-        //game_info.draw_debug_var("mousedelta",raylib::Vector3(GetMouseDelta().x,GetMouseDelta().y,0),500,500);
+    void draw2D() {
+        // game_info.draw_debug_var("mousedelta",raylib::Vector3(GetMouseDelta().x,GetMouseDelta().y,0),500,500);
     }
 };
 
-class PlayerComponent : public Component{
-    private:
-        Transform* m_transform;
-        Transform* m_head_transform;
-        NetworkEntity* m_network_entity;
-    public:
-        void init(){
-            m_transform = this->entity()->get_component<Transform>();
-            m_head_transform = this->entity()->get_child(0)->get_component<Transform>();
-            m_network_entity = this->entity()->get_component<NetworkEntity>();
-        }
+class PlayerComponent : public Component {
+  private:
+    Transform* m_transform;
+    Transform* m_head_transform;
+    NetworkEntity* m_network_entity;
 
-        void update(){
-            m_transform->position = m_network_entity->position;
-            m_transform->rotation.y = m_network_entity->rotation.y;
-            m_head_transform->rotation.x = m_network_entity->rotation.x;
-        }
+  public:
+    void init() {
+        m_transform = this->entity()->get_component<Transform>();
+        m_head_transform =
+            this->entity()->get_child(0)->get_component<Transform>();
+        m_network_entity = this->entity()->get_component<NetworkEntity>();
+    }
 
-        void draw2D(){
-            game_info.draw_debug_var("net_rotation",m_network_entity->rotation,300,300);
-        }
+    void update() {
+        m_transform->position = m_network_entity->position;
+        m_transform->rotation.y = m_network_entity->rotation.y;
+        m_head_transform->rotation.x = m_network_entity->rotation.x;
+    }
+
+    void draw2D() {
+        game_info.draw_debug_var("net_rotation", m_network_entity->rotation,
+                                 300, 300);
+    }
 };
 
-void init_player(Entity* player){
-    TraceLog(LOG_INFO,"initializing player");
+void init_player(Entity* player) {
+    TraceLog(LOG_INFO, "initializing player");
     auto head_model = player->scene()->renderer()->create_render_model(
         raylib::Mesh::Sphere(0.2, 30, 30));
     head_model->tint(raylib::Color::Red());
@@ -181,64 +188,79 @@ class Scene1 : public DefaultScene {
         int map_x_size = 70;
         int map_z_size = 60;
 
-        auto plane = this->renderer()->create_render_model(WrappedMesh(map_x_size,map_z_size,10,10));
+        auto plane = this->renderer()->create_render_model(
+            WrappedMesh(map_x_size, map_z_size, 10, 10));
         plane->add_texture("assets/prototype_texture/grey4.png");
         plane->clip(false);
         auto plane_entity = this->create_entity();
         plane_entity->add_component<Model>(plane);
 
-        auto cube = this->renderer()->create_render_model(raylib::Mesh::Cube(1,1,1));
+        auto cube =
+            this->renderer()->create_render_model(raylib::Mesh::Cube(1, 1, 1));
         cube->add_texture("assets/prototype_texture/orange-cube.png");
 
-        auto sphere = this->renderer()->create_render_model(raylib::Mesh::Sphere(0.5,30,30));
-        //cube->add_texture("assets/prototype_texture/orange-cube.png");
+        auto sphere = this->renderer()->create_render_model(
+            raylib::Mesh::Sphere(0.5, 30, 30));
+        // cube->add_texture("assets/prototype_texture/orange-cube.png");
 
         auto sphere1 = this->create_entity();
-            sphere1->get_component<Transform>()->position.y = 0.5;
-            sphere1->get_component<Transform>()->position.z = 0.5;// + (float)10;
-            sphere1->get_component<Transform>()->rotation.y = 0;
-            sphere1->add_component<Model>(sphere);
+        sphere1->get_component<Transform>()->position.y = 0.5;
+        sphere1->get_component<Transform>()->position.z = 0.5; // + (float)10;
+        sphere1->get_component<Transform>()->rotation.y = 0;
+        sphere1->add_component<Model>(sphere);
 
         auto sphere2 = this->create_entity();
-            sphere2->get_component<Transform>()->position.y = 0.5;
-            sphere2->get_component<Transform>()->position.z = 0.5 + (float)2;
-            sphere2->get_component<Transform>()->rotation.y = M_PI_2;
-            sphere2->add_component<Model>(sphere);
+        sphere2->get_component<Transform>()->position.y = 0.5;
+        sphere2->get_component<Transform>()->position.z = 0.5 + (float)2;
+        sphere2->get_component<Transform>()->rotation.y = M_PI_2;
+        sphere2->add_component<Model>(sphere);
 
-        for (int i = -(map_z_size/2); i < (map_z_size/2); i++){
-            for (int y = 0; y < 5; y++){
+        for (int i = -(map_z_size / 2); i < (map_z_size / 2); i++) {
+            for (int y = 0; y < 5; y++) {
                 auto cube_entity = this->create_entity();
-                cube_entity->get_component<Transform>()->position.y = 0.5 + (float)y;
-                cube_entity->get_component<Transform>()->position.z = 0.5 + (float)i;
-                cube_entity->get_component<Transform>()->position.x = 0.5 + -((float)map_x_size)*0.5;
+                cube_entity->get_component<Transform>()->position.y =
+                    0.5 + (float)y;
+                cube_entity->get_component<Transform>()->position.z =
+                    0.5 + (float)i;
+                cube_entity->get_component<Transform>()->position.x =
+                    0.5 + -((float)map_x_size) * 0.5;
                 cube_entity->add_component<Model>(cube);
 
                 auto cube_entity2 = this->create_entity();
-                cube_entity2->get_component<Transform>()->position.y = 0.5 + (float)y;
-                cube_entity2->get_component<Transform>()->position.z = 0.5 + (float)i;
-                cube_entity2->get_component<Transform>()->position.x = 0.5 + ((float)map_x_size)*0.5;
+                cube_entity2->get_component<Transform>()->position.y =
+                    0.5 + (float)y;
+                cube_entity2->get_component<Transform>()->position.z =
+                    0.5 + (float)i;
+                cube_entity2->get_component<Transform>()->position.x =
+                    0.5 + ((float)map_x_size) * 0.5;
                 cube_entity2->add_component<Model>(cube);
             }
         }
 
-        for (int i = -(map_x_size/2)+1; i < (map_x_size/2); i++){
-            for (int y = 0; y < 5; y++){
+        for (int i = -(map_x_size / 2) + 1; i < (map_x_size / 2); i++) {
+            for (int y = 0; y < 5; y++) {
                 auto cube_entity = this->create_entity();
-                cube_entity->get_component<Transform>()->position.y = 0.5 + (float)y;
-                cube_entity->get_component<Transform>()->position.x = 0.5 + (float)i;
-                cube_entity->get_component<Transform>()->position.z = 0.5 + -((float)map_z_size/2);
+                cube_entity->get_component<Transform>()->position.y =
+                    0.5 + (float)y;
+                cube_entity->get_component<Transform>()->position.x =
+                    0.5 + (float)i;
+                cube_entity->get_component<Transform>()->position.z =
+                    0.5 + -((float)map_z_size / 2);
                 cube_entity->add_component<Model>(cube);
 
                 auto cube_entity2 = this->create_entity();
-                cube_entity2->get_component<Transform>()->position.y = 0.5 + (float)y;
-                cube_entity2->get_component<Transform>()->position.x = 0.5 + (float)i;
-                cube_entity2->get_component<Transform>()->position.z = 0.5 + ((float)map_z_size/2)-1.0;
+                cube_entity2->get_component<Transform>()->position.y =
+                    0.5 + (float)y;
+                cube_entity2->get_component<Transform>()->position.x =
+                    0.5 + (float)i;
+                cube_entity2->get_component<Transform>()->position.z =
+                    0.5 + ((float)map_z_size / 2) - 1.0;
                 cube_entity2->add_component<Model>(cube);
             }
         }
 
         auto player = this->create_entity();
-        player->add_component<Client>(host, port,init_player);
+        player->add_component<Client>(host, port, init_player);
         auto camera = player->create_child()->add_component<Camera>();
         camera->set_active();
 
@@ -250,7 +272,7 @@ class Scene1 : public DefaultScene {
         auto light = this->renderer()->add_light();
         light->enabled(1);
         light->L(raylib::Vector3(1, 2, 0.02));
-        light->target(raylib::Vector3(2.5,0,0));
+        light->target(raylib::Vector3(2.5, 0, 0));
         light->fov(70);
         this->renderer()->load_skybox("src/"
                                       "defaultskybox.png");
@@ -296,10 +318,10 @@ class MenuScene : public DefaultScene {
 int main() {
     assert(enet_initialize() == 0);
     // SPRF::game = new SPRF::Game(1512, 982, "test", 1512 * 2, 982 * 2, 200);
-    SPRF::game = new SPRF::Game(0, 0, "test", 1024 * 2, 768 * 2, 200);
-    ToggleFullscreen();
+    SPRF::game = new SPRF::Game(500, 500, "test", 500, 500, 200);
+    // ToggleFullscreen();
 
-    SPRF::game->load_scene<SPRF::Scene1>("192.168.1.73",9999);
+    SPRF::game->load_scene<SPRF::Scene1>("192.168.1.73", 9999);
 
     while (SPRF::game->running()) {
         SPRF::game->draw();

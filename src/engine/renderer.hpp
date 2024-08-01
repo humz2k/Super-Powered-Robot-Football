@@ -296,16 +296,17 @@ class RenderModel : public Logger {
 
     ~RenderModel() {
         delete m_model;
-        if (m_texture_loaded)UnloadTexture(m_texture);
+        if (m_texture_loaded)
+            UnloadTexture(m_texture);
         free(m_bounding_boxes);
         free(m_instances);
         free(m_visible_instances);
     }
 
-    void add_texture(std::string path){
+    void add_texture(std::string path) {
         m_texture_loaded = true;
         m_texture = LoadTexture(path.c_str());
-        //SetTextureFilter(m_texture, TEXTURE_FILTER_TRILINEAR);
+        // SetTextureFilter(m_texture, TEXTURE_FILTER_TRILINEAR);
         m_model->materials[0].maps[MATERIAL_MAP_DIFFUSE].texture = m_texture;
     }
 
@@ -587,24 +588,24 @@ class Renderer : public Logger {
                 raylib::Color background_color = raylib::Color::White()) {
         m_camera_position.value(camera->GetPosition());
         ViewFrustrum frustrum(*camera);
-        //raylib::Camera3D cam;
-        //if (m_lights.size() > 0){
-        //cam = m_lights[0]->light_cam(camera);
-        //}
-        // camera->BeginMode();
-        //cam.BeginMode();
+        // raylib::Camera3D cam;
+        // if (m_lights.size() > 0){
+        // cam = m_lights[0]->light_cam(camera);
+        // }
+        //  camera->BeginMode();
+        // cam.BeginMode();
         ClearBackground(background_color);
         game_info.visible_meshes = 0;
         game_info.hidden_meshes = 0;
         draw_skybox(camera->GetPosition());
         for (auto& i : m_render_models) {
             i->draw(m_shader, camera->GetMatrix(), frustrum);
-            //i->draw(m_shader, cam.GetMatrix());
+            // i->draw(m_shader, cam.GetMatrix());
             i->clear_instances();
         }
-        //DrawGrid(100, 1);
-        //cam.EndMode();
-        // camera->EndMode();
+        // DrawGrid(100, 1);
+        // cam.EndMode();
+        //  camera->EndMode();
     }
 
     /**
