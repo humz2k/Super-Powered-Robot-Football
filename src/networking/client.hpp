@@ -301,7 +301,7 @@ class Client : public Component {
         last_recieve = enet_time_get();
         while (!should_quit()) {
             float time = enet_time_get();
-            if ((time - last_time) > (1000.0f / (float)m_tickrate)) {
+            if ((time - last_time) >= (1000.0f / (float)m_tickrate)) {
                 send_delta += time - last_time;
                 game_info.send_delta = time - last_time;
                 last_time = time;
