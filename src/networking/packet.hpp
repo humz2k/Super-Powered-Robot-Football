@@ -100,7 +100,23 @@ struct player_state_data {
                                position_data[2]);
     }
 
+    raylib::Vector3 position(raylib::Vector3 pos) {
+        position_data[0] = pos.x;
+        position_data[1] = pos.y;
+        position_data[2] = pos.z;
+        return raylib::Vector3(position_data[0], position_data[1],
+                               position_data[2]);
+    }
+
     raylib::Vector3 rotation() {
+        return raylib::Vector3(rotation_data[0], rotation_data[1],
+                               rotation_data[2]);
+    }
+
+    raylib::Vector3 rotation(raylib::Vector3 rot) {
+        rotation_data[0] = rot.x;
+        rotation_data[1] = rot.y;
+        rotation_data[2] = rot.z;
         return raylib::Vector3(rotation_data[0], rotation_data[1],
                                rotation_data[2]);
     }

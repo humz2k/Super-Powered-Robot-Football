@@ -178,7 +178,7 @@ class Server {
                 break;
             }
         }
-        if ((enet_time_get() - m_last_packet_send) >= (1000 / m_tickrate)){
+        if ((enet_time_get() - m_last_packet_send) >= (1000 / m_tickrate)) {
             game_state_packet packet(enet_time_get(), m_player_states);
             enet_host_broadcast(m_enet_server, 0, packet.serialize());
             enet_host_flush(m_enet_server);

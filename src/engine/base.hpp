@@ -37,6 +37,11 @@ static int GetDisplayHeight() {
     return GetScreenHeight();
 }
 
+static float randrange(float min = 0, float max = 1) {
+    float unscale = ((float)rand()) / ((float)RAND_MAX);
+    return unscale * (max - min) + min;
+}
+
 static inline raylib::Vector2 GetDisplaySize() {
     return raylib::Vector2(GetDisplayWidth(), GetDisplayHeight());
 }
@@ -58,6 +63,7 @@ class GameInfo {
     float send_delta;
     bool dev_console_active = false;
     raylib::Vector2 mouse_sense_ratio = raylib::Vector2(0.0165, 0.022);
+    int packet_queue_size = 0;
     GameInfo() {}
 
     template <class T>
@@ -94,6 +100,7 @@ class GameInfo {
         draw_debug_var("ping", ping, 0, 80);
         draw_debug_var("send_delta", send_delta, 0, 100);
         draw_debug_var("recv_delta", recieve_delta, 0, 120);
+        draw_debug_var("packet_queue_size", packet_queue_size, 0, 140);
         draw_debug_var("visible_meshes", visible_meshes, 0, 200);
         draw_debug_var("hidden_meshes", hidden_meshes, 0, 220);
     }

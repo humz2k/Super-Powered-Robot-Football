@@ -32,17 +32,18 @@ class TestScene : public DefaultScene {
 } // namespace SPRF
 
 int main() {
-    //SetConfigFlags(FLAG_MSAA_4X_HINT);
-    // SPRF::game = new SPRF::Game(1512, 982, "test", 1512 * 2, 982 * 2, 200);
-    //SPRF::game = new SPRF::Game(500, 500, "physics test", 500 * 2, 500 * 2, 200);
-    // ToggleFullscreen();
+    // SetConfigFlags(FLAG_MSAA_4X_HINT);
+    //  SPRF::game = new SPRF::Game(1512, 982, "test", 1512 * 2, 982 * 2, 200);
+    // SPRF::game = new SPRF::Game(500, 500, "physics test", 500 * 2, 500 * 2,
+    // 200);
+    //  ToggleFullscreen();
 
-    //SPRF::game->load_scene<SPRF::TestScene>();
+    // SPRF::game->load_scene<SPRF::TestScene>();
 
-    //while (SPRF::game->running()) {
-    //    SPRF::game->draw();
-    //}
+    // while (SPRF::game->running()) {
+    //     SPRF::game->draw();
+    // }
 
-    //delete SPRF::game;
+    // delete SPRF::game;
     return 0;
 }
