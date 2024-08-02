@@ -74,6 +74,8 @@ class Server {
     /** @brief Next available player ID */
     enet_uint32 m_next_id = 0;
 
+    enet_uint32 m_last_packet_send = 0;
+
     /** @brief The game simulation */
     Simulation m_simulation;
 
@@ -154,7 +156,6 @@ class Server {
      * This method handles different types of ENet events, such as connect,
      * receive, and disconnect.
      *
-     * TODO: Currently, this can send like a million updates a second. Need to have a timer to stop that...
      */
     void get_event() {
         ENetEvent event;
@@ -177,9 +178,12 @@ class Server {
                 break;
             }
         }
-        game_state_packet packet(enet_time_get(), m_player_states);
-        enet_host_broadcast(m_enet_server, 0, packet.serialize());
-        enet_host_flush(m_enet_server);
+        if ((enet_time_get() - m_last_packet_send) >= (1000 / m_tickrate)){
+            game_state_packet packet(enet_time_get(), m_player_states);
+            enet_host_broadcast(m_enet_server, 0, packet.serialize());
+            enet_host_flush(m_enet_server);
+            m_last_packet_send = enet_time_get();
+        }
     }
 
     /**

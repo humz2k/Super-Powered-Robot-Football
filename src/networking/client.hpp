@@ -39,7 +39,7 @@ class Client : public Component {
     ENetHost* m_client;
     ENetAddress m_address;
     ENetPeer* m_peer;
-    int m_tickrate = 128;
+    int m_tickrate = 100;
     bool m_should_quit = false;
     std::thread m_client_thread;
 
@@ -269,6 +269,10 @@ class Client : public Component {
             return;
         }
         if (header.packet_type == PACKET_GAME_STATE) {
+            recieves++;
+            recieve_delta += enet_time_get() - last_recieve;
+            game_info.recieve_delta = enet_time_get() - last_recieve;
+            last_recieve = enet_time_get();
             game_state_packet game_state_update(event->packet->data,
                                                 event->packet->dataLength);
             m_last_game_state = game_state_update;
@@ -282,12 +286,8 @@ class Client : public Component {
         if (enet_host_service(m_client, &event, 2) > 0) {
             switch (event.type) {
             case ENET_EVENT_TYPE_RECEIVE:
-                recieves++;
-                recieve_delta += enet_time_get() - last_recieve;
-                game_info.recieve_delta = enet_time_get() - last_recieve;
                 handle_recieve(&event);
                 enet_packet_destroy(event.packet);
-                last_recieve = enet_time_get();
                 break;
             default:
                 TraceLog(LOG_ERROR, "Unknown Event Recieved");
