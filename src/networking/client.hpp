@@ -145,7 +145,7 @@ class Client : public Component {
     game_state_packet m_last_game_state;
     std::mutex m_queue_mutex;
     std::list<game_state_packet> m_game_state_queue;
-    std::unordered_map<enet_uint32,Entity*> m_entities;
+    std::unordered_map<enet_uint32, Entity*> m_entities;
 
     enet_uint32 m_id = -1;
 
@@ -577,7 +577,7 @@ class Client : public Component {
         // update inputs
         if (!game_info.dev_console_active)
             update_inputs();
-        for (auto& i : m_entities){
+        for (auto& i : m_entities) {
             i.second->get_component<NetworkEntity>()->active = false;
         }
         for (auto& i : interpolate_game_states().states) {
@@ -588,7 +588,7 @@ class Client : public Component {
                 game_info.velocity = i.velocity();
                 continue;
             }
-            if (!KEY_EXISTS(m_entities,i.id)){
+            if (!KEY_EXISTS(m_entities, i.id)) {
                 auto entity = this->entity()->scene()->create_entity();
                 entity->add_component<NetworkEntity>();
                 m_init_player(entity);
