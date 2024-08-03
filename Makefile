@@ -41,7 +41,7 @@ endif
 
 DEBUG_FLAGS ?= -g -fsanitize=address -fsanitize=undefined -fno-omit-frame-pointer -fno-inline
 
-FLAGS ?= -O3 -Wall -Wpedantic -Wno-newline-eof -Wno-c99-extensions -Wno-format-security -Wno-unused-function -Wno-unused-private-field -fPIC # $(DEBUG_FLAGS)
+FLAGS ?= -O3 -Wall -Wpedantic -Wno-newline-eof -Wno-c99-extensions -Wno-format-security -Wno-unused-function -Wno-unused-private-field -fPIC $(DEBUG_FLAGS)
 
 SOURCE_DIR ?= src
 BUILD_DIR ?= build
@@ -53,7 +53,7 @@ OBJECTS := $(OBJECTS:%.c=$(BUILD_DIR)/%.o)
 HEADERS := $(shell find $(SOURCE_DIR) -name '*.hpp') $(shell find $(DRIVERS_DIR) -name '*.hpp')
 
 .PHONY: main
-main: $(BUILD_DIR)/game $(BUILD_DIR)/server $(BUILD_DIR)/test
+main: $(BUILD_DIR)/game $(BUILD_DIR)/server $(BUILD_DIR)/test $(BUILD_DIR)/physics
 
 .PHONY: game
 game: $(BUILD_DIR)/game
@@ -68,6 +68,9 @@ $(BUILD_DIR)/game: $(BUILD_DIR)/$(DRIVERS_DIR)/game.o $(OBJECTS) $(RAYLIB_DIR)/l
 	$(CXX) $^ -o $@ $(RAYLIB_FLAGS) $(FLAGS) $(ENET_FLAGS)
 
 $(BUILD_DIR)/test: $(BUILD_DIR)/$(DRIVERS_DIR)/test.o $(OBJECTS) $(RAYLIB_DIR)/libraylib.a
+	$(CXX) $^ -o $@ $(RAYLIB_FLAGS) $(FLAGS) $(ENET_FLAGS)
+
+$(BUILD_DIR)/physics: $(BUILD_DIR)/$(DRIVERS_DIR)/physics.o $(OBJECTS) $(RAYLIB_DIR)/libraylib.a
 	$(CXX) $^ -o $@ $(RAYLIB_FLAGS) $(FLAGS) $(ENET_FLAGS)
 
 $(ODE_NIX_LIB):

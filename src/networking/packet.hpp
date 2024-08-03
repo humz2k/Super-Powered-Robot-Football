@@ -13,55 +13,80 @@
 
 #include "raylib-cpp.hpp"
 #include <enet/enet.h>
+#include <vector>
 
 namespace SPRF {
 
-/**
- * @brief Represents the state of a player in the game.
- *
- * This structure holds essential data about a player's state, such as position,
- * velocity, rotation, and health. It is used to synchronize player states
- * between the server and clients in a multiplayer game.
- */
-struct PlayerStateData {
-    /** @brief Unique identifier for the player */
+enum packet_type_t {
+    PACKET_PING = 0,
+    PACKET_PING_RESPONSE,
+    PACKET_USER_ACTION,
+    PACKET_USER_COMMAND,
+    PACKET_GAME_STATE,
+    PACKET_GAME_EVENT,
+    PACKET_SERVER_HANDSHAKE
+};
+
+struct packet_header {
+    packet_type_t packet_type;
+    packet_header(packet_type_t packet_type_) : packet_type(packet_type_) {}
+    packet_header() {}
+};
+
+ENetPacket*
+construct_packet(packet_type_t type, void* data, size_t size,
+                 enet_uint32 flags = (ENET_PACKET_FLAG_UNSEQUENCED)) {
+    packet_header header(type);
+    size_t total_size = sizeof(packet_header) + size;
+    void* raw = malloc(total_size);
+    memcpy(raw, &header, sizeof(packet_header));
+    memcpy(((char*)raw) + sizeof(packet_header), data, size);
+    ENetPacket* out = enet_packet_create(raw, total_size, flags);
+    free(raw);
+    return out;
+}
+
+struct ping_packet {
+    enet_uint32 ping;
+    ping_packet(enet_uint32 ping_) : ping(ping_) {}
+    ping_packet() {}
+
+    ENetPacket* serialize() {
+        return construct_packet(PACKET_PING, this, sizeof(*this));
+    }
+};
+
+struct ping_response_packet {
+    enet_uint32 ping_return;
+    ping_response_packet(enet_uint32 ping_return_)
+        : ping_return(ping_return_) {}
+    ping_response_packet() {}
+    ping_response_packet(void* data, size_t datalen) {
+        assert(datalen == sizeof(packet_header) + sizeof(*this));
+        memcpy(this, (((char*)data) + sizeof(packet_header)), sizeof(*this));
+    }
+
+    ENetPacket* serialize() {
+        return construct_packet(PACKET_PING_RESPONSE, this, sizeof(*this));
+    }
+};
+
+struct player_state_data {
     enet_uint32 id;
-    /** @brief Player's position in the game world (x, y, z) */
     float position_data[3];
-    /** @brief Player's velocity in the game world (x, y, z) */
     float velocity_data[3];
-    /** @brief Player's rotation in the game world (pitch, yaw, roll) */
     float rotation_data[3];
-    /** @brief Player's health */
     float health_data;
 
-    /**
-     * @brief Construct a new PlayerStateData object with a specified ID.
-     *
-     * Initializes position, velocity, and rotation to zero, and health to 100.
-     *
-     * @param id_ The unique identifier for the player.
-     */
-    PlayerStateData(enet_uint32 id_) : id(id_) {
+    player_state_data(enet_uint32 id_) : id(id_) {
         memset(position_data, 0, sizeof(position_data));
         memset(velocity_data, 0, sizeof(velocity_data));
         memset(rotation_data, 0, sizeof(rotation_data));
         health_data = 100;
     }
 
-    /**
-     * @brief Default constructor for PlayerStateData.
-     *
-     * Allows for creating an uninitialized PlayerStateData.
-     */
-    PlayerStateData() {}
+    player_state_data() {}
 
-    /**
-     * @brief Print the player's state to the log.
-     *
-     * This is useful for debugging and logging purposes, to track the state of
-     * players.
-     */
     void print() {
         TraceLog(LOG_INFO, "Player %u: %g %g %g | %g %g %g | %g %g %g | %g", id,
                  position_data[0], position_data[1], position_data[2],
@@ -70,266 +95,118 @@ struct PlayerStateData {
                  health_data);
     }
 
-    /**
-     * @brief Get the player's position as a Vector3.
-     *
-     * @return raylib::Vector3 The player's position.
-     */
     raylib::Vector3 position() {
         return raylib::Vector3(position_data[0], position_data[1],
                                position_data[2]);
     }
 
-    /**
-     * @brief Get the player's rotation as a Vector3.
-     *
-     * @return raylib::Vector3 The player's rotation.
-     */
+    raylib::Vector3 position(raylib::Vector3 pos) {
+        position_data[0] = pos.x;
+        position_data[1] = pos.y;
+        position_data[2] = pos.z;
+        return raylib::Vector3(position_data[0], position_data[1],
+                               position_data[2]);
+    }
+
     raylib::Vector3 rotation() {
         return raylib::Vector3(rotation_data[0], rotation_data[1],
                                rotation_data[2]);
     }
 
-    /**
-     * @brief Get the player's velocity as a Vector3.
-     *
-     * @return raylib::Vector3 The player's velocity.
-     */
+    raylib::Vector3 rotation(raylib::Vector3 rot) {
+        rotation_data[0] = rot.x;
+        rotation_data[1] = rot.y;
+        rotation_data[2] = rot.z;
+        return raylib::Vector3(rotation_data[0], rotation_data[1],
+                               rotation_data[2]);
+    }
+
     raylib::Vector3 velocity() {
+        return raylib::Vector3(velocity_data[0], velocity_data[1],
+                               velocity_data[2]);
+    }
+
+    raylib::Vector3 velocity(raylib::Vector3 vel) {
+        velocity_data[0] = vel.x;
+        velocity_data[1] = vel.y;
+        velocity_data[2] = vel.z;
         return raylib::Vector3(velocity_data[0], velocity_data[1],
                                velocity_data[2]);
     }
 };
 
-/**
- * @brief Header for a packet containing multiple player states.
- *
- * This header is included in packets that transmit player states between the
- * server and clients. It contains metadata about the packet, such as the tick,
- * timestamp, and the number of player states included.
- */
-struct PlayerStateHeader {
-    /** @brief Simulation tick when the packet was created */
-    enet_uint32 tick;
-    /** @brief Timestamp of the packet creation */
+struct game_state_packet {
     enet_uint32 timestamp;
-    /** @brief Ping value to be returned to the client */
-    enet_uint32 ping_return;
-    /** @brief Number of player states included in the packet */
-    enet_uint32 n_states;
-};
+    std::vector<player_state_data> states;
 
-/**
- * @brief Padded representation of a player state header.
- *
- * This structure ensures that the header size matches the size of a
- * PlayerStateData, facilitating memory alignment and network transmission
- * (makes it easier to construct a packet to send, but yes we are wasting
- * space).
- */
-struct PlayerStateHeaderPadded {
-    /** @brief The actual player state header */
-    PlayerStateHeader raw;
-    /** @brief Padding to match the size of PlayerStateData */
-    char pad[(sizeof(PlayerStateData) - sizeof(PlayerStateHeader)) /
-             sizeof(char)];
-};
+    game_state_packet(enet_uint32 timestamp_,
+                      std::vector<player_state_data> states_)
+        : timestamp(timestamp_), states(states_) {}
+    game_state_packet() {}
 
-/**
- * @brief Packet structure for transmitting multiple player states.
- *
- * This packet is used to bundle multiple player states together and send them
- * over the network. It includes a header with metadata and the actual player
- * state data.
- */
-struct PlayerStatePacket {
-    /** @brief Indicates whether the memory for the packet was allocated by this
-     * object (so we can free it) */
-    bool allocated = false;
-    /** @brief Raw pointer to the packet data */
-    void* raw;
-    /** @brief Size of the packet data */
-    size_t size;
-
-    /**
-     * @brief Construct a new PlayerStatePacket object.
-     *
-     * Initializes the packet with a header and a list of player states.
-     *
-     * @param tick Simulation tick when the packet was created.
-     * @param timestamp Timestamp of the packet creation.
-     * @param ping_return Ping value to be returned to the client.
-     * @param states List of player states to include in the packet.
-     */
-    PlayerStatePacket(enet_uint32 tick, enet_uint32 timestamp,
-                      enet_uint32 ping_return,
-                      std::vector<PlayerStateData>& states)
-        : allocated(true) {
-        raw = malloc(sizeof(PlayerStateData) * (states.size() + 1));
-        size = sizeof(PlayerStateData) * (states.size() + 1);
-        PlayerStateHeaderPadded* header = (PlayerStateHeaderPadded*)raw;
-        header->raw.tick = tick;
-        header->raw.timestamp = timestamp;
-        header->raw.ping_return = ping_return;
-        header->raw.n_states = states.size();
-        PlayerStateData* raw_states = &(((PlayerStateData*)raw)[1]);
-        for (int i = 0; i < states.size(); i++) {
-            raw_states[i] = states[i];
-        }
+    game_state_packet(void* raw, size_t datalen) {
+        memcpy(&timestamp, ((char*)raw) + sizeof(packet_header),
+               sizeof(enet_uint32));
+        size_t state_size =
+            datalen - sizeof(packet_header) - sizeof(enet_uint32);
+        int n_states = state_size / sizeof(player_state_data);
+        states.resize(n_states);
+        memcpy(states.data(),
+               ((char*)raw) + sizeof(packet_header) + sizeof(enet_uint32),
+               state_size);
     }
 
-    /**
-     * @brief Construct a new PlayerStatePacket object from raw data.
-     *
-     * This infers the size of the data from the header (maybe not super
-     * safe...)
-     *
-     * @param raw_ Raw pointer to the packet data.
-     */
-    PlayerStatePacket(void* raw_) : allocated(false), raw(raw_) {
-        size = sizeof(PlayerStateData) * (header().n_states + 1);
-    }
-
-    /**
-     * @brief Get the header of the packet.
-     *
-     * @return PlayerStateHeader The header of the packet.
-     */
-    PlayerStateHeader header() { return ((PlayerStateHeaderPadded*)raw)->raw; }
-
-    /**
-     * @brief Get the list of player states included in the packet.
-     *
-     * Eh, probably not the best way to do this... Whatever.
-     *
-     * @return std::vector<PlayerState> The list of player states.
-     */
-    std::vector<PlayerStateData> states() {
-        PlayerStateData* raw_states = &(((PlayerStateData*)raw)[1]);
-        std::vector<PlayerStateData> out;
-        out.resize(header().n_states);
-        for (int i = 0; i < header().n_states; i++) {
-            out[i] = raw_states[i];
-        }
+    ENetPacket* serialize() {
+        size_t size =
+            sizeof(enet_uint32) + sizeof(player_state_data) * states.size();
+        void* data = malloc(size);
+        memcpy(data, &timestamp, sizeof(enet_uint32));
+        memcpy(((char*)data) + sizeof(enet_uint32), states.data(),
+               states.size() * sizeof(player_state_data));
+        ENetPacket* out = construct_packet(PACKET_GAME_STATE, data, size);
+        free(data);
         return out;
     }
-
-    /**
-     * @brief Destructor for PlayerStatePacket.
-     *
-     * Frees the allocated memory if the packet was dynamically allocated by
-     * this object.
-     */
-    ~PlayerStatePacket() {
-        if (allocated)
-            free(raw);
-    }
 };
 
-/**
- * @brief Packet structure for the initial handshake between client and server.
- *
- * This packet is used to establish the initial connection and synchronization
- * between the client and server.
- */
 struct HandshakePacket {
-    /** @brief Unique identifier for the client */
     enet_uint32 id;
-    /** @brief Tick rate of the server */
     enet_uint32 tickrate;
-    /** @brief Current server time */
     enet_uint32 current_time;
 
-    /**
-     * @brief Construct a new HandshakePacket object.
-     *
-     * @param id_ Unique identifier for the client.
-     * @param tickrate_ Tick rate of the server.
-     * @param current_time_ Current server time.
-     */
     HandshakePacket(enet_uint32 id_, enet_uint32 tickrate_,
                     enet_uint32 current_time_)
         : id(id_), tickrate(tickrate_), current_time(current_time_) {}
 
-    /**
-     * @brief Default constructor for HandshakePacket.
-     */
     HandshakePacket() {}
 };
 
-/**
- * @brief Raw structure for a client packet.
- *
- * This structure is used for low-level network transmission and reception of
- * client data.
- */
-struct ClientPacketRaw {
-    /** @brief Ping value sent by the client (this should get returned to the
-     * client for ping calculations) */
+struct user_action_packet_serialized {
     enet_uint32 ping;
-    /** @brief Encoded input state of the client (bits encode keyboard inputs)
-     */
     enet_uint32 raw;
-    /** @brief Rotation of the client (pitch, yaw, roll) */
     float rotation[3];
 };
 
-/**
- * @brief Packet structure for transmitting client inputs and state.
- *
- * This packet is used to send client inputs and state to the server, including
- * movement directions and rotation.
- */
-struct ClientPacket {
-    /** @brief Ping value sent by the client (to be returned by the server for
-     * ping calculations) */
+struct user_action_packet {
     enet_uint32 ping_send;
-    /** @brief Rotation of the client (pitch, yaw, roll) */
     raylib::Vector3 rotation;
-    /** @brief Indicates if the client is moving forward (i.e. pressed W this
-     * tick) */
     bool forward;
-    /** @brief Indicates if the client is moving backward (i.e. pressed S this
-     * tick) */
     bool backward;
-    /** @brief Indicates if the client is moving left (i.e. pressed A this tick)
-     */
     bool left;
-    /** @brief Indicates if the client is moving right (i.e. pressed D this
-     * tick) */
     bool right;
-    /** @brief Indicates if the client is jumping (i.e. pressed Space this tick)
-     */
     bool jump;
 
-    /**
-     * @brief Construct a new ClientPacket object.
-     *
-     * Initializes the packet with the client's input state and rotation.
-     *
-     * @param forward_ Indicates if the client is moving forward (i.e. pressed W
-     * this tick).
-     * @param backward_ Indicates if the client is moving backward (i.e. pressed
-     * S this tick).
-     * @param left_ Indicates if the client is moving left (i.e. pressed A this
-     * tick).
-     * @param right_ Indicates if the client is moving right (i.e. pressed D
-     * this tick).
-     * @param jump_ Indicates if the client is jumping (i.e. pressed Space this
-     * tick).
-     * @param rotation_ Rotation of the client (pitch, yaw, roll).
-     */
-    ClientPacket(bool forward_, bool backward_, bool left_, bool right_,
-                 bool jump_, raylib::Vector3 rotation_)
+    user_action_packet(bool forward_, bool backward_, bool left_, bool right_,
+                       bool jump_, raylib::Vector3 rotation_)
         : ping_send(enet_time_get()), rotation(rotation_), forward(forward_),
           backward(backward_), left(left_), right(right_), jump(jump_) {}
 
-    /**
-     * @brief Construct a new ClientPacket object from raw data.
-     *
-     * @param raw Raw data received from the client.
-     */
-    ClientPacket(ClientPacketRaw raw) {
+    user_action_packet(void* rawptr, size_t datalen) {
+        assert(datalen = sizeof(packet_header) +
+                         sizeof(user_action_packet_serialized));
+        user_action_packet_serialized raw;
+        memcpy(&raw, ((char*)rawptr) + sizeof(packet_header),
+               sizeof(user_action_packet_serialized));
         ping_send = raw.ping;
         forward = raw.raw & (1 << 0);
         backward = raw.raw & (1 << 1);
@@ -341,31 +218,18 @@ struct ClientPacket {
         rotation.z = raw.rotation[2];
     }
 
-    /**
-     * @brief Get the raw data representation of the client packet.
-     *
-     * This is useful for network transmission, as it converts the high-level
-     * data into a low-level format.
-     *
-     * @return ClientPacketRaw The raw data representation of the client packet.
-     */
-    ClientPacketRaw get_raw() {
-        ClientPacketRaw out;
+    ENetPacket* serialize() {
+        user_action_packet_serialized out;
         out.ping = ping_send;
         out.raw = 0 | (forward << 0) | (backward << 1) | (left << 2) |
                   (right << 3) | (jump << 4);
         out.rotation[0] = rotation.x;
         out.rotation[1] = rotation.y;
         out.rotation[2] = rotation.z;
-        return out;
+        return construct_packet(PACKET_USER_ACTION, &out,
+                                sizeof(user_action_packet_serialized));
     }
 
-    /**
-     * @brief Print the client's input state to the log.
-     *
-     * This is useful for debugging and logging purposes, to track the input
-     * state of clients.
-     */
     void print() {
         TraceLog(LOG_INFO, "Packet: %u | %s %s %s %s | %g %g %g", ping_send,
                  forward ? "+forward" : "", backward ? "+backward" : "",

@@ -65,7 +65,7 @@ class Server {
     ENetHost* m_enet_server;
 
     /** @brief List of player state data */
-    std::vector<PlayerStateData> m_player_states;
+    std::vector<player_state_data> m_player_states;
 
     /** @brief Simulation tick rate */
     enet_uint32 m_tickrate;
@@ -73,6 +73,8 @@ class Server {
     enet_uint32 m_tick = 0;
     /** @brief Next available player ID */
     enet_uint32 m_next_id = 0;
+
+    enet_uint32 m_last_packet_send = 0;
 
     /** @brief The game simulation */
     Simulation m_simulation;
@@ -86,16 +88,18 @@ class Server {
      * @param event Pointer to the ENet event containing the packet data.
      */
     void handle_recieve(ENetEvent* event) {
-        ClientPacketRaw* in_packet = (ClientPacketRaw*)event->packet->data;
-        ClientPacket client_packet(*in_packet);
-        PlayerBody* body = (PlayerBody*)event->peer->data;
-        body->update_inputs(client_packet);
-        enet_uint32 timestamp = enet_time_get();
-        PlayerStatePacket state_packet(
-            m_tick, timestamp, client_packet.ping_send, m_player_states);
-        ENetPacket* packet = enet_packet_create(
-            state_packet.raw, state_packet.size, ENET_PACKET_FLAG_UNSEQUENCED | ENET_PACKET_FLAG_UNRELIABLE_FRAGMENT);
-        assert(enet_peer_send(event->peer, 0, packet) == 0);
+        packet_header header = *(packet_header*)(event->packet->data);
+        if (header.packet_type == PACKET_USER_ACTION) {
+            user_action_packet client_packet(event->packet->data,
+                                             event->packet->dataLength);
+            PlayerBody* body = (PlayerBody*)event->peer->data;
+            body->update_inputs(client_packet);
+            if (enet_peer_send(event->peer, 0,
+                               ping_response_packet(client_packet.ping_send)
+                                   .serialize()) != 0) {
+                TraceLog(LOG_ERROR, "packet send failed");
+            }
+        }
         enet_host_flush(m_enet_server);
     }
 
@@ -109,7 +113,7 @@ class Server {
      */
     void handle_connect(ENetEvent* event) {
         TraceLog(LOG_INFO, "Peer Connected");
-        m_player_states.push_back(PlayerStateData(m_next_id));
+        m_player_states.push_back(player_state_data(m_next_id));
         auto player = m_simulation.create_player(m_next_id);
         player->enable();
         event->peer->data = player;
@@ -117,7 +121,10 @@ class Server {
         m_next_id++;
         ENetPacket* packet = enet_packet_create(&out, sizeof(HandshakePacket),
                                                 ENET_PACKET_FLAG_RELIABLE);
-        assert(enet_peer_send(event->peer, 0, packet) == 0);
+        if (enet_peer_send(event->peer, 0, packet) != 0) {
+            TraceLog(LOG_ERROR, "packet send failed");
+        }
+        enet_host_flush(m_enet_server);
     }
 
     /**
@@ -148,10 +155,11 @@ class Server {
      *
      * This method handles different types of ENet events, such as connect,
      * receive, and disconnect.
+     *
      */
     void get_event() {
         ENetEvent event;
-        if (enet_host_service(m_enet_server, &event, 1000) > 0) {
+        if (enet_host_service(m_enet_server, &event, (1000 / m_tickrate)) > 0) {
             m_simulation.update(&m_tick, m_player_states);
             switch (event.type) {
             case ENET_EVENT_TYPE_CONNECT:
@@ -170,7 +178,12 @@ class Server {
                 break;
             }
         }
-        enet_host_flush(m_enet_server);
+        if ((enet_time_get() - m_last_packet_send) >= (1000 / m_tickrate)) {
+            game_state_packet packet(enet_time_get(), m_player_states);
+            enet_host_broadcast(m_enet_server, 0, packet.serialize());
+            enet_host_flush(m_enet_server);
+            m_last_packet_send = enet_time_get();
+        }
     }
 
     /**

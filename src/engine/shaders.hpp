@@ -256,8 +256,10 @@ class ShaderUniform<raylib::Vector4>
  */
 class Light : public Logger {
   public:
-    /** @brief Static counter for light instances. Is reset on renderer instantiation (so only one renderer at a time!!!). */
+    /** @brief Static counter for light instances. Is reset on renderer
+     * instantiation (so only one renderer at a time!!!). */
     inline static int light_count = 0;
+
   private:
     /** @brief ID of the light */
     int m_id;
@@ -268,7 +270,7 @@ class Light : public Logger {
     /** @brief Uniform variable for light type */
     ShaderUniform<int> m_type;
     /** @brief Uniform variable for light type */
-    //ShaderUniform<int> m_shadowMapRes;
+    // ShaderUniform<int> m_shadowMapRes;
     /** @brief Uniform variable for diffuse coefficient */
     ShaderUniform<float> m_kd;
     /** @brief Uniform variable for specular coefficient */
@@ -293,7 +295,7 @@ class Light : public Logger {
     /** @brief Field of view for the light */
     float m_fov;
 
-    raylib::Vector3 m_target = raylib::Vector3(0,0,0);
+    raylib::Vector3 m_target = raylib::Vector3(0, 0, 0);
 
     /** @brief Location of the shadow map in the shader */
     int m_shadow_mapLoc;
@@ -490,7 +492,10 @@ class Light : public Logger {
      */
     float fov() const { return m_fov; }
 
-    float fov(float new_fov) { m_fov = new_fov; return m_fov; }
+    float fov(float new_fov) {
+        m_fov = new_fov;
+        return m_fov;
+    }
 
     /**
      * @brief Get the ID of the light.
@@ -504,13 +509,11 @@ class Light : public Logger {
      */
     ~Light() { UnloadShadowmapRenderTexture(m_shadow_map); }
 
-    raylib::Vector3 target() const{
-      return m_target;
-    }
+    raylib::Vector3 target() const { return m_target; }
 
-    raylib::Vector3 target(raylib::Vector3 new_target){
-      m_target = new_target;
-      return m_target;
+    raylib::Vector3 target(raylib::Vector3 new_target) {
+        m_target = new_target;
+        return m_target;
     }
 
     /**
@@ -521,7 +524,7 @@ class Light : public Logger {
     raylib::Camera3D light_cam(raylib::Camera* camera) const {
 
         raylib::Camera3D out;
-        out.target = m_target; // camera->GetPosition();//
+        out.target = m_target;                   // camera->GetPosition();//
         out.position = L() * scale() + m_target; // + camera->GetPosition();
         out.projection = CAMERA_ORTHOGRAPHIC;
         out.fovy = fov();
