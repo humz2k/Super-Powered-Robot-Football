@@ -125,6 +125,14 @@ struct player_state_data {
         return raylib::Vector3(velocity_data[0], velocity_data[1],
                                velocity_data[2]);
     }
+
+    raylib::Vector3 velocity(raylib::Vector3 vel) {
+        velocity_data[0] = vel.x;
+        velocity_data[1] = vel.y;
+        velocity_data[2] = vel.z;
+        return raylib::Vector3(velocity_data[0], velocity_data[1],
+                               velocity_data[2]);
+    }
 };
 
 struct game_state_packet {

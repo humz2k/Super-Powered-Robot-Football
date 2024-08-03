@@ -13,11 +13,11 @@
 #include "player_stats.hpp"
 #include <enet/enet.h>
 #include <functional>
+#include <list>
 #include <mutex>
+#include <queue>
 #include <string>
 #include <thread>
-#include <queue>
-#include <list>
 
 #define N_PING_AVERAGE (5)
 #define N_RECV_AVERAGE (20)
@@ -65,6 +65,53 @@ class SmoothedVariable {
     ~SmoothedVariable() { free(m_data); }
 };
 
+template <class T> class UpdateVariable : public DevConsoleCommand {
+  private:
+    std::string m_var_name;
+    T* m_var;
+    T convert_variable(std::string& val) {
+        std::stringstream convert(val);
+        T value;
+        convert >> value;
+        return value;
+    }
+
+  public:
+    UpdateVariable(DevConsole& console, std::string var_name, T* var)
+        : DevConsoleCommand(console), m_var_name(var_name), m_var(var){};
+    void handle(std::vector<std::string>& args) {
+        if (args.size() == 0) {
+            std::string out = m_var_name + " = " + std::to_string(*m_var);
+            TraceLog(LOG_CONSOLE, out.c_str());
+            return;
+        }
+        T val = convert_variable(args[0]);
+        *m_var = val;
+        std::string out = m_var_name + " = " + std::to_string(*m_var);
+        TraceLog(LOG_CONSOLE, out.c_str());
+    }
+};
+
+template <> class UpdateVariable<bool> : public DevConsoleCommand {
+  private:
+    std::string m_var_name;
+    bool* m_var;
+
+  public:
+    UpdateVariable(DevConsole& console, std::string var_name, bool* var)
+        : DevConsoleCommand(console), m_var_name(var_name), m_var(var){};
+    void handle(std::vector<std::string>& args) {
+        if (args.size() == 0) {
+            std::string out =
+                m_var_name + " = " + ((*m_var) ? "true" : "false");
+            TraceLog(LOG_CONSOLE, out.c_str());
+            return;
+        }
+        *m_var = args[0] == "true";
+        std::string out = m_var_name + " = " + ((*m_var) ? "true" : "false");
+        TraceLog(LOG_CONSOLE, out.c_str());
+    }
+};
 
 /** NOTE: No fake ping for sends!!! Only recieves... Please fix! */
 class Client : public Component {
@@ -88,26 +135,13 @@ class Client : public Component {
 
     bool m_connected = false;
 
-    // debug information
-    // size_t sends = 0;
-    // float send_delta = 0;
-    // size_t recieves = 0;
-    // size_t loops = 0;
-    // float recieve_delta = 0;
     float m_last_recieve = 0;
 
-    /** @brief Array to store ping measurements */
-    // enet_uint32 m_pings[N_PING_AVERAGE] = {500, 500, 500, 500, 500};
-    /** @brief Index for the current ping measurement */
-    // int m_current_ping = 0;
-
-    // float m_recv_deltas[N_RECV_AVERAGE];// =
-    // {100,100,100,100,100,100,100,100,100,100}; int m_current_recv_delta = 0;
     SmoothedVariable m_recv_delta;
     SmoothedVariable m_send_delta;
     SmoothedVariable m_ping;
 
-    float m_interp = 1.2;
+    float m_interp = 2;
     game_state_packet m_last_game_state;
     std::mutex m_queue_mutex;
     std::list<game_state_packet> m_game_state_queue;
@@ -292,8 +326,8 @@ class Client : public Component {
     }
 
     void send_input_packet() {
-        if (m_fake_packet_up_loss){
-            if (randrange(0,1) <= m_fake_packet_up_loss_amount){
+        if (m_fake_packet_up_loss) {
+            if (randrange(0, 1) <= m_fake_packet_up_loss_amount) {
                 reset_inputs();
                 return;
             }
@@ -310,10 +344,10 @@ class Client : public Component {
         reset_inputs();
     }
 
-    /** TODO: Lerp of some kind. */
     void handle_recieve(ENetEvent* event) {
         if (m_fake_packet_down_loss) {
-            if (randrange(0, 1) <= m_fake_packet_down_loss_amount)return;
+            if (randrange(0, 1) <= m_fake_packet_down_loss_amount)
+                return;
         }
 
         packet_header header = *(packet_header*)(event->packet->data);
@@ -324,9 +358,6 @@ class Client : public Component {
             return;
         }
         if (header.packet_type == PACKET_GAME_STATE) {
-            // recieves++;
-            // recieve_delta += enet_time_get() - m_last_recieve;
-            // enet_time_get() - m_last_recieve;
             m_recv_delta.update(enet_time_get() - m_last_recieve);
             game_info.recieve_delta = m_recv_delta.get();
             m_last_recieve = enet_time_get();
@@ -337,13 +368,12 @@ class Client : public Component {
 
             std::lock_guard<std::mutex> guard(m_queue_mutex);
             m_game_state_queue.push_back(game_state_update);
-            // need to have some kind of lerping here? I think...
         }
     }
 
     void recv_packet() {
-        if (m_fake_ping){
-            if (m_fake_ping_down_packets.size() > m_fake_ping_amount){
+        if (m_fake_ping) {
+            if (m_fake_ping_down_packets.size() > m_fake_ping_amount) {
                 ENetEvent event = m_fake_ping_down_packets.front();
                 m_fake_ping_down_packets.pop();
                 handle_recieve(&event);
@@ -405,7 +435,7 @@ class Client : public Component {
      * @param port The server port.
      */
     Client(std::string host, enet_uint16 port,
-           std::function<void(Entity*)> init_player_)
+           std::function<void(Entity*)> init_player_, DevConsole* dev_console)
         : m_host(host), m_port(port), m_recv_delta(N_RECV_AVERAGE, 100),
           m_send_delta(N_RECV_AVERAGE, 100), m_ping(N_PING_AVERAGE, 500),
           m_init_player(init_player_) {
@@ -415,6 +445,25 @@ class Client : public Component {
             enet_host_destroy(m_client);
             return;
         }
+        // this->entity()->scene()->
+        dev_console->add_command<UpdateVariable<float>>("cl_interp",
+                                                        "cl_interp", &m_interp);
+        dev_console->add_command<UpdateVariable<int>>(
+            "cl_fake_ping_amount", "cl_fake_ping_amount", &m_fake_ping_amount);
+        dev_console->add_command<UpdateVariable<float>>(
+            "cl_fake_packet_up_loss_amount", "cl_fake_packet_up_loss_amount",
+            &m_fake_packet_up_loss_amount);
+        dev_console->add_command<UpdateVariable<float>>(
+            "cl_fake_packet_down_loss_amount",
+            "cl_fake_packet_down_loss_amount", &m_fake_packet_down_loss_amount);
+        dev_console->add_command<UpdateVariable<bool>>(
+            "cl_fake_ping", "cl_fake_ping", &m_fake_ping);
+        dev_console->add_command<UpdateVariable<bool>>("cl_fake_packet_up_loss",
+                                                       "cl_fake_packet_up_loss",
+                                                       &m_fake_packet_up_loss);
+        dev_console->add_command<UpdateVariable<bool>>(
+            "cl_fake_packet_down_loss", "cl_fake_packet_down_loss",
+            &m_fake_packet_down_loss);
         enet_time_set(0);
         m_client_thread = std::thread(&Client::run_client, this);
     }
@@ -432,6 +481,28 @@ class Client : public Component {
             this->entity()->scene()->close();
             return;
         }
+    }
+
+    // bool id_exists(std::unordered_map<enet_uint32, player_state_data>& data,
+    // enet_uint32 id){
+    //     return data.find(id) != data.end();
+    // }
+
+    player_state_data interpolate_player_states(player_state_data& previous,
+                                                player_state_data& next,
+                                                enet_uint32 previous_time,
+                                                enet_uint32 next_time,
+                                                enet_uint32 client_time) {
+        auto p1 = previous.position();
+        auto p2 = next.position();
+        float lerp_amout = (((float)client_time) - (float)previous_time) /
+                           (((float)next_time) - ((float)previous_time));
+        player_state_data tmp;
+        tmp.position(Vector3Lerp(p1, p2, lerp_amout));
+        tmp.velocity(next.velocity());
+        tmp.rotation(next.rotation());
+        tmp.id = next.id;
+        return tmp;
     }
 
     game_state_packet interpolate_game_states() {
@@ -459,21 +530,31 @@ class Client : public Component {
             auto& t1 = *t1_ptr;
             auto& t2 = *t2_ptr;
             if ((t1.timestamp <= client_time) && (t2.timestamp > client_time)) {
-                // TraceLog(LOG_INFO,"good packet.");
                 game_state_packet out;
                 out.timestamp = client_time;
                 if (t1.states.size() < 1) {
                     return t1;
                 }
-                auto p1 = t1.states[0].position();
-                auto p2 = t2.states[0].position();
-                float lerp_amout =
-                    (((float)client_time) - (float)t1.timestamp) /
-                    (((float)t2.timestamp) - ((float)t1.timestamp));
-                player_state_data tmp;
-                tmp.position(Vector3Lerp(p1, p2, lerp_amout));
-                tmp.rotation(t2.states[0].rotation());
-                out.states.push_back(tmp);
+                std::unordered_map<enet_uint32, player_state_data>
+                    previous_states, next_states;
+
+                for (auto& i : t1.states) {
+                    previous_states[i.id] = i;
+                }
+                for (auto& i : t2.states) {
+                    next_states[i.id] = i;
+                }
+                for (auto& i : next_states) {
+                    enet_uint32 id = i.first;
+                    player_state_data& next_data = i.second;
+                    if (!KEY_EXISTS(previous_states, id)) {
+                        out.states.push_back(next_data);
+                        continue;
+                    }
+                    out.states.push_back(interpolate_player_states(
+                        previous_states[id], i.second, t1.timestamp,
+                        t2.timestamp, client_time));
+                }
                 return out;
             } else if ((t1.timestamp > client_time) &&
                        (t2.timestamp > client_time)) {
@@ -483,7 +564,7 @@ class Client : public Component {
                 m_game_state_queue.pop_front();
             }
         }
-        TraceLog(LOG_WARNING, "seomthing bad happened");
+        TraceLog(LOG_WARNING, "something bad happened");
         return m_game_state_queue.back();
     }
 
@@ -493,12 +574,16 @@ class Client : public Component {
             return;
 
         // update inputs
-        update_inputs();
+        if (!game_info.dev_console_active)
+            update_inputs();
 
-        auto tmp = interpolate_game_states();
-        if (tmp.states.size() > 0) {
-            this->entity()->get_component<Transform>()->position =
-                tmp.states[0].position();
+        for (auto& i : interpolate_game_states().states) {
+            if (i.id == m_id) {
+                this->entity()->get_component<Transform>()->position =
+                    i.position();
+                game_info.position = i.position();
+                game_info.velocity = i.velocity();
+            }
         }
 
         // store information in game info

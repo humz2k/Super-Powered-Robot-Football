@@ -6,47 +6,6 @@
 
 namespace SPRF {
 
-class Rotation : public Component {
-  public:
-    void update() {
-        if (!IsKeyDown(KEY_Z)) {
-            this->entity()->get_component<Transform>()->rotation.y -=
-                GetMouseWheelMoveV().x * 0.2;
-            this->entity()->get_component<Transform>()->rotation.x +=
-                GetMouseWheelMoveV().y * 0.2;
-        }
-    }
-};
-
-class RotationKeysY : public Component {
-  public:
-    void update() {
-        this->entity()->get_component<Transform>()->rotation.y +=
-            GetFrameTime() * 1 * (IsKeyDown(KEY_A) - IsKeyDown(KEY_D));
-    }
-};
-
-class RotationKeysX : public Component {
-  public:
-    void update() {
-        this->entity()->get_component<Transform>()->rotation.x +=
-            GetFrameTime() * 1 * (IsKeyDown(KEY_W) - IsKeyDown(KEY_S));
-    }
-};
-
-class Zoom : public Component {
-  public:
-    void update() {
-        if (IsKeyDown(KEY_Z)) {
-            this->entity()->get_component<Transform>()->position.z +=
-                GetMouseWheelMoveV().y;
-            if (this->entity()->get_component<Transform>()->position.z > -1) {
-                this->entity()->get_component<Transform>()->position.z = -1;
-            }
-        }
-    }
-};
-
 class MenuScene;
 
 class DisconnectCommand : public DevConsoleCommand {
@@ -260,7 +219,7 @@ class Scene1 : public DefaultScene {
         }
 
         auto player = this->create_entity();
-        player->add_component<Client>(host, port, init_player);
+        player->add_component<Client>(host, port, init_player, dev_console());
         auto camera = player->create_child()->add_component<Camera>();
         camera->set_active();
 

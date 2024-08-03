@@ -21,6 +21,8 @@
 #define M_PI_2 (3.14159265358979323846 * 0.5)
 #endif
 
+#define KEY_EXISTS(map, key) ((map).find((key)) != (map).end())
+
 namespace SPRF {
 
 static int GetDisplayWidth() {
