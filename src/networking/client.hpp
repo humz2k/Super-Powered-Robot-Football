@@ -145,6 +145,7 @@ class Client : public Component {
     game_state_packet m_last_game_state;
     std::mutex m_queue_mutex;
     std::list<game_state_packet> m_game_state_queue;
+    std::unordered_map<enet_uint32,Entity*> m_entities;
 
     enet_uint32 m_id = -1;
 
@@ -576,14 +577,29 @@ class Client : public Component {
         // update inputs
         if (!game_info.dev_console_active)
             update_inputs();
-
+        for (auto& i : m_entities){
+            i.second->get_component<NetworkEntity>()->active = false;
+        }
         for (auto& i : interpolate_game_states().states) {
             if (i.id == m_id) {
                 this->entity()->get_component<Transform>()->position =
                     i.position();
                 game_info.position = i.position();
                 game_info.velocity = i.velocity();
+                continue;
             }
+            if (!KEY_EXISTS(m_entities,i.id)){
+                auto entity = this->entity()->scene()->create_entity();
+                entity->add_component<NetworkEntity>();
+                m_init_player(entity);
+                entity->init();
+                m_entities[i.id] = entity;
+            }
+            auto net_data = m_entities[i.id]->get_component<NetworkEntity>();
+            net_data->position = i.position();
+            net_data->rotation = i.rotation();
+            net_data->velocity = i.velocity();
+            net_data->active = true;
         }
 
         // store information in game info
