@@ -1,5 +1,3 @@
-# remember to configure ODE and enet
-
 PLATFORM_OS ?= UNKNOWN
 
 ifeq ($(OS),Windows_NT)
@@ -16,11 +14,6 @@ RAYLIB_CPP_DIR ?= raylib-cpp/include
 RAYLIB_OSX_FLAGS ?= -framework CoreVideo -framework IOKit -framework Cocoa -framework GLUT -framework OpenGL
 RAYLIB_WINDOWS_FLAGS ?= -lopengl32 -lgdi32 -lwinmm
 
-ODE_DIR ?= ode
-ODE_NIX_LIB ?= $(ODE_DIR)/ode/src/.libs/libode.a
-ODE_LIB ?=
-ODE_INCLUDE ?= $(ODE_DIR)/include
-
 MINI_DIR ?= mini
 MINI_INCLUDE ?= $(MINI_DIR)/include
 
@@ -35,7 +28,6 @@ ifeq ($(PLATFORM_OS), WINDOWS)
 endif
 ifeq ($(PLATFORM_OS), OSX)
 	RAYLIB_FLAGS = $(RAYLIB_OSX_FLAGS)
-	ODE_LIB = $(ODE_NIX_LIB)
 endif
 
 
@@ -61,7 +53,7 @@ game: $(BUILD_DIR)/game
 .PHONY: server
 server: $(BUILD_DIR)/server
 
-$(BUILD_DIR)/server: $(BUILD_DIR)/$(DRIVERS_DIR)/server.o $(OBJECTS) $(RAYLIB_DIR)/libraylib.a $(ODE_LIB)
+$(BUILD_DIR)/server: $(BUILD_DIR)/$(DRIVERS_DIR)/server.o $(OBJECTS) $(RAYLIB_DIR)/libraylib.a
 	$(CXX) $^ -o $@ $(RAYLIB_FLAGS) $(FLAGS) $(ENET_FLAGS)
 
 $(BUILD_DIR)/game: $(BUILD_DIR)/$(DRIVERS_DIR)/game.o $(OBJECTS) $(RAYLIB_DIR)/libraylib.a
@@ -76,18 +68,15 @@ $(BUILD_DIR)/physics: $(BUILD_DIR)/$(DRIVERS_DIR)/physics.o $(OBJECTS) $(RAYLIB_
 $(BUILD_DIR)/model_test: $(BUILD_DIR)/$(DRIVERS_DIR)/model_test.o $(OBJECTS) $(RAYLIB_DIR)/libraylib.a
 	$(CXX) $^ -o $@ $(RAYLIB_FLAGS) $(FLAGS) $(ENET_FLAGS)
 
-$(ODE_NIX_LIB):
-	cd $(ODE_DIR) && $(MAKE)
-
 .secondary: $(OBJECTS)
 
 $(BUILD_DIR)/%.o: %.cpp $(HEADERS)
 	mkdir -p $(@D)
-	$(CXX) -c $< -o $@ -I$(RAYLIB_CPP_DIR) -I$(RAYLIB_DIR) -I$(SOURCE_DIR) -I$(ODE_INCLUDE) -I$(MINI_INCLUDE) -std=c++17 $(FLAGS)
+	$(CXX) -c $< -o $@ -I$(RAYLIB_CPP_DIR) -I$(RAYLIB_DIR) -I$(SOURCE_DIR) -I$(MINI_INCLUDE) -std=c++17 $(FLAGS)
 
 $(BUILD_DIR)/%.o: %.c $(HEADERS)
 	mkdir -p $(@D)
-	$(CC) -c $< -o $@ -I$(RAYLIB_CPP_DIR) -I$(RAYLIB_DIR) -I$(SOURCE_DIR) -I$(ODE_INCLUDE) -I$(MINI_INCLUDE) $(FLAGS)
+	$(CC) -c $< -o $@ -I$(RAYLIB_CPP_DIR) -I$(RAYLIB_DIR) -I$(SOURCE_DIR) -I$(MINI_INCLUDE) $(FLAGS)
 
 
 $(RAYLIB_DIR)/libraylib.a:
@@ -100,4 +89,3 @@ clean:
 .PHONY: fresh
 fresh: clean
 	cd $(RAYLIB_DIR) && $(MAKE) clean
-	cd $(ODE_DIR) && $(MAKE) clean
