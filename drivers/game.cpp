@@ -280,7 +280,7 @@ int main() {
     SPRF::game = new SPRF::Game(500, 500, "test", 500, 500, 200);
     //  ToggleFullscreen();
 
-    SPRF::game->load_scene<SPRF::Scene1>("192.168.1.73", 9999);
+    SPRF::game->load_scene<SPRF::MenuScene>();
 
     while (SPRF::game->running()) {
         SPRF::game->draw();
