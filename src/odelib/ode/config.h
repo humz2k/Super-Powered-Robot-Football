@@ -18,11 +18,13 @@
 /* #undef C_ALLOCA */
 
 /* Define to 1 if you have `alloca', as a function or macro. */
-#define HAVE_ALLOCA 1
+//#define HAVE_ALLOCA 1
+#undef HAVE_ALLOCA
 
 /* Define to 1 if you have <alloca.h> and it should be used (not on Ultrix).
    */
-#define HAVE_ALLOCA_H 1
+//#define HAVE_ALLOCA_H 1
+#undef HAVE_ALLOCA_H
 
 /* Use the Apple OpenGL framework. */
 //#define HAVE_APPLE_OPENGL_FRAMEWORK 1
@@ -263,7 +265,7 @@
 #define _OU_NAMESPACE odeou
 
 /* Target OS setting for OU Library */
-#define _OU_TARGET_OS _OU_TARGET_OS_MAC
+//#define _OU_TARGET_OS _OU_TARGET_OS_MAC
 
 /* Define for Solaris 2.5.1 so the uint32_t typedef from <sys/synch.h>,
    <pthread.h>, or <semaphore.h> is not used. If the typedef were allowed, the

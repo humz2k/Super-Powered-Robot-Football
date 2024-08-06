@@ -391,7 +391,6 @@ BEGIN_NAMESPACE_OU();
 
 #if _OU_TARGET_OS == _OU_TARGET_OS_WINDOWS
 
-
 END_NAMESPACE_OU();
 
 
@@ -731,7 +730,6 @@ static _OU_ALWAYSINLINE void _OU_CONVENTION_API
 
 
 END_NAMESPACE_OU();
-
 
 #include <libkern/OSAtomic.h>
 

@@ -31,8 +31,6 @@
 //////////////////////////////////////////////////////////////////////////
 // Target definitions
 
-#define MAC_OS_X_VERSION 1050
-
 #define _OU_TARGET_OS_GENUNIX   1
 #define _OU_TARGET_OS_WINDOWS   2
 #define _OU_TARGET_OS_QNX       3
@@ -119,12 +117,7 @@
 
 #if _OU_TARGET_OS == _OU_TARGET_OS_MAC
 
-#if !defined(MAC_OS_X_VERSION)
-
-#error Please define preprocessor symbol MAC_OS_X_VERSION in command line (e.g. "-DMAC_OS_X_VERSION=1050" for MacOS 10.5)
-
-
-#endif // #if !defined(MAC_OS_X_VERSION)
+#define MAC_OS_X_VERSION 1050
 
 
 #endif // #if _OU_TARGET_OS == _OU_TARGET_OS_MAC

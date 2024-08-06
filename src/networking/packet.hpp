@@ -13,6 +13,7 @@
 
 #include "raylib-cpp.hpp"
 #include <enet/enet.h>
+#include <cassert>
 #include <vector>
 
 namespace SPRF {
