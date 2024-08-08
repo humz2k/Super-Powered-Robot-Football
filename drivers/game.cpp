@@ -1,6 +1,7 @@
 #include "custom_mesh.hpp"
 #include "engine/engine.hpp"
 #include "networking/client.hpp"
+#include "networking/map.hpp"
 #include <cassert>
 #include <string>
 
@@ -147,6 +148,8 @@ class Scene1 : public DefaultScene {
         int map_x_size = 70;
         int map_z_size = 60;
 
+        simple_map()->load(this);
+
         auto plane = this->renderer()->create_render_model(
             WrappedMesh(map_x_size, map_z_size, 10, 10));
         plane->add_texture("assets/prototype_texture/grey4.png");
@@ -276,9 +279,9 @@ class MenuScene : public DefaultScene {
 
 int main() {
     assert(enet_initialize() == 0);
-    // SPRF::game = new SPRF::Game(1512, 982, "test", 1512 * 2, 982 * 2, 200);
-    SPRF::game = new SPRF::Game(1600, 900, "test", 1024*2, 768*2, 200);
-    //  ToggleFullscreen();
+    SPRF::game = new SPRF::Game(900, 900, "test", 900 * 2, 900 * 2, 200);
+    // SPRF::game = new SPRF::Game(1600, 900, "test", 1024*2, 768*2, 200);
+    //   ToggleFullscreen();
 
     SPRF::game->load_scene<SPRF::MenuScene>();
 

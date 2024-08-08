@@ -26,7 +26,84 @@
 #include <thread>
 #include <unordered_map>
 
+#define MAX_CONTACTS 32
+
 namespace SPRF {
+
+struct ode_raycast {
+    bool hit;
+    dReal depth;
+    dVector3 pos;
+    dVector3 normal;
+    std::vector<dGeomID> masks;
+};
+
+// Check ray collision against a space
+static void RayCallback(void* Data, dGeomID Geometry1, dGeomID Geometry2) {
+    ode_raycast* HitPosition = (ode_raycast*)Data;
+
+    // Check collisions
+    dContact Contacts[MAX_CONTACTS];
+    int Count = dCollide(Geometry1, Geometry2, MAX_CONTACTS, &Contacts[0].geom,
+                         sizeof(dContact));
+    for (int i = 0; i < Count; i++) {
+
+        // Check depth against current closest hit
+        if (Contacts[i].geom.depth < HitPosition->depth) {
+            for (auto& i : HitPosition->masks) {
+                if ((Geometry1 == i) || (Geometry2 == i))
+                    continue;
+            }
+            dCopyVector3(HitPosition->pos, Contacts[i].geom.pos);
+            dCopyVector3(HitPosition->normal, Contacts[i].geom.normal);
+            HitPosition->depth = Contacts[i].geom.depth;
+        }
+    }
+}
+
+// Performs raycasting on a space and returns the point of collision. Return
+// false for no hit.
+static raylib::RayCollision
+RaycastQuery(dSpaceID Space, raylib::Vector3 start, raylib::Vector3 direction,
+             float length,
+             std::vector<dGeomID> masks = std::vector<dGeomID>()) {
+    dVector3 Start = {start.x, start.y, start.z};
+    dVector3 Direction = {direction.x, direction.y, direction.z};
+
+    // Get length
+    dReal Length = length;
+    dReal InverseLength = dRecip(Length);
+
+    // Normalize
+    dScaleVector3(Direction, InverseLength);
+
+    // Create ray
+    dGeomID Ray = dCreateRay(0, Length);
+    dGeomRaySet(Ray, Start[0], Start[1], Start[2], Direction[0], Direction[1],
+                Direction[2]);
+
+    // Check collisions
+    ode_raycast HitPosition;
+    HitPosition.depth = dInfinity;
+    HitPosition.hit = false;
+    dSpaceCollide2(Ray, (dGeomID)Space, &HitPosition, &RayCallback);
+
+    // Cleanup
+    dGeomDestroy(Ray);
+
+    // Check for hit
+    if (HitPosition.depth != dInfinity) {
+        HitPosition.hit = true;
+    }
+
+    return raylib::RayCollision(
+        HitPosition.hit, HitPosition.depth,
+        raylib::Vector3(HitPosition.pos[0], HitPosition.pos[1],
+                        HitPosition.pos[2]),
+        raylib::Vector3(HitPosition.normal[0], HitPosition.normal[1],
+                        HitPosition.normal[2]));
+}
+
 /**
  * @brief Base class for managing the physical body of a player in the
  * simulation.
@@ -63,8 +140,7 @@ class PlayerBodyBase {
     /** @brief Offset for the foot collision sphere (i.e., where it is on the
      * player body) */
     float m_foot_offset;
-    /** @brief The ODE body representing the player */
-    dBodyID m_body;
+
     /** @brief The ODE geometry representing the player's main body */
     dGeomID m_geom;
     /** @brief The ODE geometry representing the player's foot */
@@ -75,7 +151,11 @@ class PlayerBodyBase {
     /** @brief Player's rotation */
     raylib::Vector3 m_rotation = raylib::Vector3(0, 0, 0);
 
+    std::vector<dGeomID> m_geom_masks;
+
   protected:
+    /** @brief The ODE body representing the player */
+    dBodyID m_body;
     /** @brief Mutex to protect player state */
     std::mutex m_player_mutex;
     /** @brief Flag indicating forward movement */
@@ -137,6 +217,9 @@ class PlayerBodyBase {
         dBodySetMaxAngularSpeed(m_body, 0);
         dBodySetLinearVel(m_body, 0, 0, 0);
         dBodySetData(m_body, (void*)0);
+
+        m_geom_masks.push_back(m_geom);
+        m_geom_masks.push_back(m_foot_geom);
     }
 
     /**
@@ -237,13 +320,29 @@ class PlayerBodyBase {
     /**
      * @brief Checks if the player body is grounded.
      *
-     * @param ground_geom The ground geometry ID.
      * @return bool True if the player body is grounded, false otherwise.
      */
-    bool grounded(dGeomID ground_geom) {
-        dContactGeom contact;
-        return dCollide(ground_geom, m_foot_geom, 1, &contact,
-                        sizeof(dContactGeom));
+    bool grounded() {
+        auto ray = RaycastQuery(m_space, position(), raylib::Vector3(0, -1, 0),
+                                PLAYER_HEIGHT * 1.025, m_geom_masks);
+        if (ray.hit) {
+            // TraceLog(LOG_INFO,"%g %g %g :
+            // %g",ray.normal.x,ray.normal.y,ray.normal.z,Vector3DotProduct(Vector3Normalize(ray.normal),raylib::Vector3(0,1,0)));
+            float angle_ish = Vector3DotProduct(Vector3Normalize(ray.normal),
+                                                raylib::Vector3(0, 1, 0));
+            if ((angle_ish < 0.99) && (angle_ish > 0.5)) {
+                dBodySetGravityMode(m_body, 0);
+            } else {
+                if (dBodyGetGravityMode(m_body) == 0) {
+                    dBodySetGravityMode(m_body, 1);
+                }
+            }
+        } else {
+            if (dBodyGetGravityMode(m_body) == 0) {
+                dBodySetGravityMode(m_body, 1);
+            }
+        }
+        return ray.hit;
     }
 
     /**

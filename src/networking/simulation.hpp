@@ -13,6 +13,7 @@
 #ifndef _SPRF_NETWORKING_SIMULATION_HPP_
 #define _SPRF_NETWORKING_SIMULATION_HPP_
 
+#include "map.hpp"
 #include "packet.hpp"
 #include "player_body_base.hpp"
 #include "player_stats.hpp"
@@ -27,7 +28,7 @@
 #include <thread>
 #include <unordered_map>
 
-#define MAX_CONTACTS 5
+#define MAX_CONTACTS 32
 
 namespace SPRF {
 
@@ -88,21 +89,21 @@ class PlayerBody : public PlayerBodyBase {
      *
      * This sets the variables `m_is_grounded` and `m_can_jump`.
      *
-     * @param ground The ground geometry ID.
      */
-    void update_grounded(dGeomID ground) {
-        bool new_grounded = grounded(ground);
+    bool update_grounded() {
+        bool new_grounded = grounded();
         if (!new_grounded) {
             m_ground_counter = 0;
         } else if ((!m_is_grounded) && (new_grounded)) {
             m_ground_counter += dt();
             if (m_ground_counter < m_sim_params.bunny_hop_forgiveness) {
                 m_can_jump = true;
-                return;
+                return new_grounded;
             }
         }
         m_is_grounded = new_grounded;
         m_can_jump = m_is_grounded;
+        return new_grounded;
     }
 
     /**
@@ -155,11 +156,10 @@ class PlayerBody : public PlayerBodyBase {
      * applies forces for movement and jumping, and ensures the player's
      * velocity stays within defined limits.
      *
-     * @param ground The ground geometry ID.
      */
-    void handle_inputs(dGeomID ground) {
+    void handle_inputs() {
         std::lock_guard<std::mutex> guard(m_player_mutex);
-        update_grounded(ground);
+        update_grounded();
 
         // auto direction = move_direction();
 
@@ -362,6 +362,8 @@ class Simulation {
 
         TraceLog(LOG_INFO, "Setting auto disable flag %d", m_auto_disable);
         dWorldSetAutoDisableFlag(m_world, m_auto_disable);
+
+        simple_map()->load(m_world, m_space);
     }
 
     /**
@@ -440,7 +442,7 @@ class Simulation {
     void step() {
         std::lock_guard<std::mutex> guard(simulation_mutex);
         for (auto& i : m_players) {
-            i.second->handle_inputs(m_ground_geom);
+            i.second->handle_inputs();
             i.second->reset_inputs();
         }
         dSpaceCollide(m_space, this, near_callback);

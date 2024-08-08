@@ -12,8 +12,8 @@
 #define _SPRF_NETWORKING_PACKET_
 
 #include "raylib-cpp.hpp"
-#include <enet/enet.h>
 #include <cassert>
+#include <enet/enet.h>
 #include <vector>
 
 namespace SPRF {
