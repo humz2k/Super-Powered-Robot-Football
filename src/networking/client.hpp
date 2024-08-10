@@ -469,12 +469,22 @@ class Client : public Component {
         m_client_thread = std::thread(&Client::run_client, this);
     }
 
+    void close() {
+        if (!m_connected)
+            return;
+        quit();
+        m_client_thread.join();
+        disconnect();
+        m_connected = false;
+    }
+
     ~Client() {
         if (!m_connected)
             return;
         quit();
         m_client_thread.join();
         disconnect();
+        m_connected = false;
     }
 
     void init() {

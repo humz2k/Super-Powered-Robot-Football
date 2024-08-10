@@ -215,7 +215,9 @@ class Server {
      * Locks `server_mutex`.
      */
     void quit() {
+        TraceLog(LOG_INFO, "closing server...");
         std::lock_guard<std::mutex> guard(server_mutex);
+        TraceLog(LOG_INFO, "closing server");
         m_server_should_quit = true;
     }
 
@@ -223,9 +225,13 @@ class Server {
      * @brief Waits for the server and simulation threads to finish.
      */
     void join() {
+        TraceLog(LOG_INFO, "joining server thread");
         server_thread.join();
+        TraceLog(LOG_INFO, "quitting sim thread");
         m_simulation.quit();
+        TraceLog(LOG_INFO, "joining simulation thread");
         m_simulation.join();
+        TraceLog(LOG_INFO, "done");
     }
 
     /**
@@ -238,6 +244,42 @@ class Server {
      */
     Server(std::string server_config)
         : config(server_config), m_host(config.host), m_port(config.port),
+          m_peer_count(config.peer_count),
+          m_channel_count(config.channel_count), m_iband(config.iband),
+          m_oband(config.oband), m_tickrate(config.tickrate),
+          m_simulation(m_tickrate, server_config) {
+        enet_address_set_host(&m_address, m_host.c_str());
+        m_address.port = m_port;
+        TraceLog(LOG_INFO,
+                 "setting server.address.host = %s, server.address.port = %u",
+                 m_host.c_str(), m_port);
+        TraceLog(LOG_INFO,
+                 "creating host with peer_count %lu, channel_count %lu, iband "
+                 "%u, oband %u",
+                 m_peer_count, m_channel_count, m_iband, m_oband);
+
+        m_enet_server = enet_host_create(&m_address, m_peer_count,
+                                         m_channel_count, m_iband, m_oband);
+        if (m_enet_server == NULL) {
+            TraceLog(LOG_ERROR, "Create an ENet server host failed");
+            exit(EXIT_FAILURE);
+        }
+        TraceLog(LOG_INFO, "ENet server host created");
+        enet_time_set(0);
+        server_thread = std::thread(&SPRF::Server::run, this);
+        m_simulation.launch();
+    }
+
+    /**
+     * @brief Construct a new Server object.
+     *
+     * Initializes the server with the given configuration file, sets up the
+     * ENet server host, and launches the server and simulation threads.
+     *
+     * @param server_config The path to the server configuration file.
+     */
+    Server(std::string server_config, std::string host, enet_uint16 port)
+        : config(server_config), m_host(host), m_port(port),
           m_peer_count(config.peer_count),
           m_channel_count(config.channel_count), m_iband(config.iband),
           m_oband(config.oband), m_tickrate(config.tickrate),

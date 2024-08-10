@@ -450,7 +450,7 @@ class PlayerBodyBase {
      *
      * @param ground The ground geometry ID.
      */
-    virtual void handle_inputs(dGeomID ground) {}
+    virtual void handle_inputs() {}
 };
 
 } // namespace SPRF

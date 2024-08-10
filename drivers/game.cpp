@@ -2,6 +2,7 @@
 #include "engine/engine.hpp"
 #include "networking/client.hpp"
 #include "networking/map.hpp"
+#include "networking/server.hpp"
 #include <cassert>
 #include <string>
 
@@ -140,6 +141,123 @@ void init_player(Entity* player) {
     gun->get_component<Transform>()->rotation.y = 0.05;
 }
 
+class LocalScene : public DefaultScene {
+  private:
+    SPRF::Server m_server;
+    Client* m_client;
+
+  public:
+    LocalScene(Game* game)
+        : DefaultScene(game), m_server("server_config.ini", "127.0.0.1", 9999) {
+
+        int map_x_size = 70;
+        int map_z_size = 60;
+
+        simple_map()->load(this);
+
+        auto plane = this->renderer()->create_render_model(
+            WrappedMesh(map_x_size, map_z_size, 10, 10));
+        plane->add_texture("assets/prototype_texture/grey4.png");
+        plane->clip(false);
+        auto plane_entity = this->create_entity();
+        plane_entity->add_component<Model>(plane);
+
+        auto cube =
+            this->renderer()->create_render_model(raylib::Mesh::Cube(1, 1, 1));
+        cube->add_texture("assets/prototype_texture/orange-cube.png");
+
+        auto sphere = this->renderer()->create_render_model(
+            raylib::Mesh::Sphere(0.5, 30, 30));
+        // cube->add_texture("assets/prototype_texture/orange-cube.png");
+
+        auto sphere1 = this->create_entity();
+        sphere1->get_component<Transform>()->position.y = 0.5;
+        sphere1->get_component<Transform>()->position.z = 0.5; // + (float)10;
+        sphere1->get_component<Transform>()->rotation.y = 0;
+        sphere1->add_component<Model>(sphere);
+
+        auto sphere2 = this->create_entity();
+        sphere2->get_component<Transform>()->position.y = 0.5;
+        sphere2->get_component<Transform>()->position.z = 0.5 + (float)2;
+        sphere2->get_component<Transform>()->rotation.y = M_PI_2;
+        sphere2->add_component<Model>(sphere);
+
+        for (int i = -(map_z_size / 2); i < (map_z_size / 2); i++) {
+            for (int y = 0; y < 5; y++) {
+                auto cube_entity = this->create_entity();
+                cube_entity->get_component<Transform>()->position.y =
+                    0.5 + (float)y;
+                cube_entity->get_component<Transform>()->position.z =
+                    0.5 + (float)i;
+                cube_entity->get_component<Transform>()->position.x =
+                    0.5 + -((float)map_x_size) * 0.5;
+                cube_entity->add_component<Model>(cube);
+
+                auto cube_entity2 = this->create_entity();
+                cube_entity2->get_component<Transform>()->position.y =
+                    0.5 + (float)y;
+                cube_entity2->get_component<Transform>()->position.z =
+                    0.5 + (float)i;
+                cube_entity2->get_component<Transform>()->position.x =
+                    0.5 + ((float)map_x_size) * 0.5;
+                cube_entity2->add_component<Model>(cube);
+            }
+        }
+
+        for (int i = -(map_x_size / 2) + 1; i < (map_x_size / 2); i++) {
+            for (int y = 0; y < 5; y++) {
+                auto cube_entity = this->create_entity();
+                cube_entity->get_component<Transform>()->position.y =
+                    0.5 + (float)y;
+                cube_entity->get_component<Transform>()->position.x =
+                    0.5 + (float)i;
+                cube_entity->get_component<Transform>()->position.z =
+                    0.5 + -((float)map_z_size / 2);
+                cube_entity->add_component<Model>(cube);
+
+                auto cube_entity2 = this->create_entity();
+                cube_entity2->get_component<Transform>()->position.y =
+                    0.5 + (float)y;
+                cube_entity2->get_component<Transform>()->position.x =
+                    0.5 + (float)i;
+                cube_entity2->get_component<Transform>()->position.z =
+                    0.5 + ((float)map_z_size / 2) - 1.0;
+                cube_entity2->add_component<Model>(cube);
+            }
+        }
+
+        auto player = this->create_entity();
+        m_client = player->add_component<Client>("127.0.0.1", 9999, init_player,
+                                                 dev_console());
+        auto camera = player->create_child()->add_component<Camera>();
+        camera->set_active();
+
+        player->get_child(0)->add_component<MouseLook>();
+
+        std::function<void()> callback = [this]() { disconnect(); };
+        dev_console()->add_command<DisconnectCommand>("disconnect", callback);
+
+        auto light = this->renderer()->add_light();
+        light->enabled(1);
+        light->L(raylib::Vector3(1, 2, 0.02));
+        light->target(raylib::Vector3(2.5, 0, 0));
+        light->fov(70);
+        this->renderer()->load_skybox("src/"
+                                      "defaultskybox.png");
+        this->renderer()->enable_skybox();
+    }
+
+    ~LocalScene() {
+        m_client->close();
+        m_server.quit();
+        m_server.join();
+    }
+
+    void disconnect() { this->close(); }
+
+    void on_close() { game()->load_scene<MenuScene>(); }
+};
+
 class Scene1 : public DefaultScene {
   public:
     Scene1(Game* game, std::string host, enet_uint32 port)
@@ -241,6 +359,7 @@ class Scene1 : public DefaultScene {
         this->renderer()->enable_skybox();
     }
     void disconnect() { this->close(); }
+
     void on_close() { game()->load_scene<MenuScene>(); }
 };
 
@@ -261,17 +380,36 @@ class ConnectCommand : public DevConsoleCommand {
     }
 };
 
+class ConnectLocalCommand : public DevConsoleCommand {
+  private:
+    std::function<void()> m_callback;
+
+  public:
+    ConnectLocalCommand(DevConsole& dev_console, std::function<void()> callback)
+        : DevConsoleCommand(dev_console), m_callback(callback) {}
+
+    void handle(std::vector<std::string>& args) { m_callback(); }
+};
+
 class MenuScene : public DefaultScene {
   public:
     MenuScene(Game* game) : DefaultScene(game) {
         std::function<void(std::string, enet_uint32)> callback =
             [this](std::string host, enet_uint32 port) { connect(host, port); };
+        std::function<void()> callback_local = [this]() { connect_local(); };
         dev_console()->add_command<ConnectCommand>("connect", callback);
+        dev_console()->add_command<ConnectLocalCommand>("connect_local",
+                                                        callback_local);
     }
 
     void connect(std::string host, enet_uint32 port) {
         TraceLog(LOG_INFO, "MenuScene connect called...");
         game()->load_scene<Scene1>(host, port);
+    }
+
+    void connect_local() {
+        TraceLog(LOG_INFO, "MenuScene connect local called...");
+        game()->load_scene<LocalScene>();
     }
 };
 
@@ -283,6 +421,7 @@ int main() {
     // SPRF::game = new SPRF::Game(1600, 900, "test", 1024*2, 768*2, 200);
     //   ToggleFullscreen();
 
+    // SPRF::game->load_scene<SPRF::MenuScene>();
     SPRF::game->load_scene<SPRF::MenuScene>();
 
     while (SPRF::game->running()) {

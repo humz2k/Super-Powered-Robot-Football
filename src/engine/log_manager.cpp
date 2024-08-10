@@ -15,6 +15,7 @@ static std::string last_source = "NONE";
 static std::mutex log_mutex;
 
 void CustomLog(int msgType, const char* text, va_list args) {
+    std::lock_guard<std::mutex> guard(log_mutex);
     std::string log_type;
 
     switch (msgType) {
