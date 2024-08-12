@@ -155,20 +155,12 @@ class LocalScene : public DefaultScene {
 
         simple_map()->load(this);
 
-        auto plane = this->renderer()->create_render_model(
-            WrappedMesh(map_x_size, map_z_size, 10, 10));
-        plane->add_texture("assets/prototype_texture/grey4.png");
-        plane->clip(false);
-        auto plane_entity = this->create_entity();
-        plane_entity->add_component<Model>(plane);
-
         auto cube =
             this->renderer()->create_render_model(raylib::Mesh::Cube(1, 1, 1));
         cube->add_texture("assets/prototype_texture/orange-cube.png");
 
         auto sphere = this->renderer()->create_render_model(
             raylib::Mesh::Sphere(0.5, 30, 30));
-        // cube->add_texture("assets/prototype_texture/orange-cube.png");
 
         auto sphere1 = this->create_entity();
         sphere1->get_component<Transform>()->position.y = 0.5;
@@ -182,7 +174,7 @@ class LocalScene : public DefaultScene {
         sphere2->get_component<Transform>()->rotation.y = M_PI_2;
         sphere2->add_component<Model>(sphere);
 
-        for (int i = -(map_z_size / 2); i < (map_z_size / 2); i++) {
+        /*for (int i = -(map_z_size / 2); i < (map_z_size / 2); i++) {
             for (int y = 0; y < 5; y++) {
                 auto cube_entity = this->create_entity();
                 cube_entity->get_component<Transform>()->position.y =
@@ -224,7 +216,7 @@ class LocalScene : public DefaultScene {
                     0.5 + ((float)map_z_size / 2) - 1.0;
                 cube_entity2->add_component<Model>(cube);
             }
-        }
+        }*/
 
         auto player = this->create_entity();
         m_client = player->add_component<Client>("127.0.0.1", 9999, init_player,
@@ -237,14 +229,6 @@ class LocalScene : public DefaultScene {
         std::function<void()> callback = [this]() { disconnect(); };
         dev_console()->add_command<DisconnectCommand>("disconnect", callback);
 
-        auto light = this->renderer()->add_light();
-        light->enabled(1);
-        light->L(raylib::Vector3(1, 2, 0.02));
-        light->target(raylib::Vector3(2.5, 0, 0));
-        light->fov(70);
-        this->renderer()->load_skybox("src/"
-                                      "defaultskybox.png");
-        this->renderer()->enable_skybox();
     }
 
     ~LocalScene() {
@@ -268,12 +252,12 @@ class Scene1 : public DefaultScene {
 
         simple_map()->load(this);
 
-        auto plane = this->renderer()->create_render_model(
-            WrappedMesh(map_x_size, map_z_size, 10, 10));
-        plane->add_texture("assets/prototype_texture/grey4.png");
-        plane->clip(false);
-        auto plane_entity = this->create_entity();
-        plane_entity->add_component<Model>(plane);
+        //auto plane = this->renderer()->create_render_model(
+        //    WrappedMesh(map_x_size, map_z_size, 10, 10));
+        //plane->add_texture("assets/prototype_texture/grey4.png");
+        //plane->clip(false);
+        //auto plane_entity = this->create_entity();
+        //plane_entity->add_component<Model>(plane);
 
         auto cube =
             this->renderer()->create_render_model(raylib::Mesh::Cube(1, 1, 1));
@@ -349,14 +333,6 @@ class Scene1 : public DefaultScene {
         std::function<void()> callback = [this]() { disconnect(); };
         dev_console()->add_command<DisconnectCommand>("disconnect", callback);
 
-        auto light = this->renderer()->add_light();
-        light->enabled(1);
-        light->L(raylib::Vector3(1, 2, 0.02));
-        light->target(raylib::Vector3(2.5, 0, 0));
-        light->fov(70);
-        this->renderer()->load_skybox("src/"
-                                      "defaultskybox.png");
-        this->renderer()->enable_skybox();
     }
     void disconnect() { this->close(); }
 
