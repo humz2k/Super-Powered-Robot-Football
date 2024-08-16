@@ -8,6 +8,10 @@
 #ifndef _SPRF_NETWORKING_CLIENT_HPP_
 #define _SPRF_NETWORKING_CLIENT_HPP_
 
+#include "engine/engine.hpp"
+#include "packet.hpp"
+#include "physics/player_stats.hpp"
+#include <enet/enet.h>
 #include <functional>
 #include <list>
 #include <mutex>
@@ -15,10 +19,6 @@
 #include <string>
 #include <thread>
 #include <vector>
-#include "engine/engine.hpp"
-#include "packet.hpp"
-#include "physics/player_stats.hpp"
-#include <enet/enet.h>
 
 #define N_PING_AVERAGE (5)
 #define N_RECV_AVERAGE (20)
@@ -37,7 +37,7 @@ class NetworkEntity : public Component {
 
 class SmoothedVariable {
   private:
-    //float* m_data = NULL;
+    // float* m_data = NULL;
     std::vector<float> m_data;
     int m_pointer = 0;
     const int m_samples;
@@ -46,7 +46,7 @@ class SmoothedVariable {
     SmoothedVariable(int samples, float initial_value = 0.0f)
         : m_samples(samples) {
         m_data.resize(samples);
-        //assert((m_data = (float*)malloc(sizeof(float) * samples)));
+        // assert((m_data = (float*)malloc(sizeof(float) * samples)));
         for (int i = 0; i < m_samples; i++) {
             m_data[i] = initial_value;
         }
@@ -65,7 +65,7 @@ class SmoothedVariable {
         return sum / (float)m_samples;
     }
 
-    ~SmoothedVariable() { //free(m_data);
+    ~SmoothedVariable() { // free(m_data);
     }
 };
 
