@@ -1,4 +1,6 @@
-#include "raylib-cpp.hpp"
+#include "engine/engine.hpp"
+#include "networking/client.hpp"
+#include "networking/map.hpp"
 #include "networking/server.hpp"
 #include <fstream>
 #include <iostream>
