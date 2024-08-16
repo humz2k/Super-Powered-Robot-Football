@@ -186,7 +186,7 @@ static std::shared_ptr<Map> simple_map() {
         raylib::Vector3(1, 2, 0.02), raylib::Vector3(2.5, 0, 0), 70));
 
     out->add_element(
-        std::make_shared<MapSkyboxElement>("src/defaultskybox.png"));
+        std::make_shared<MapSkyboxElement>("assets/defaultskybox.png"));
 
     std::shared_ptr<MapCubeElement> basic_block =
         std::make_shared<MapCubeElement>(0.5, 0.5, 0.5,

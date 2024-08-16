@@ -71,7 +71,7 @@ class DevConsole : public Component, public UITextInputBox {
                        raylib::Color(23, 27, 33, m_transparency)),
           m_foreground(raylib::Vector2(0.12, 0.12), raylib::Vector2(0.88, 0.86),
                        raylib::Color(30, 35, 43, m_transparency)),
-          m_font("src/"
+          m_font("assets/"
                  "JetBrainsMono-Regular.ttf",
                  128),
           m_scroll_speed(scroll_speed) {

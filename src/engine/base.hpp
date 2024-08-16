@@ -91,7 +91,7 @@ class GameInfo {
     }
 
     void load_debug_font() {
-        m_font = raylib::Font("src/"
+        m_font = raylib::Font("assets/"
                               "JetBrainsMono-Regular.ttf");
     }
 

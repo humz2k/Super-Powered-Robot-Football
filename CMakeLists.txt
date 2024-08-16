@@ -13,6 +13,18 @@ file(GLOB_RECURSE sources src/*.cpp src/*.c src/*.h src/*.hpp)
 
 add_library(SPRF ${sources})
 
+add_custom_command(
+    TARGET SPRF POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+        ${CMAKE_SOURCE_DIR}/assets
+        ${PROJECT_BINARY_DIR}/assets)
+
+add_custom_command(
+    TARGET SPRF POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy
+        ${CMAKE_SOURCE_DIR}/server_config.ini
+        ${PROJECT_BINARY_DIR}/server_config.ini)
+
 target_include_directories(SPRF PUBLIC src raylib-cpp/include raylib/src src/soloud/include)
 
 if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")

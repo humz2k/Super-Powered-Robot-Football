@@ -71,7 +71,7 @@ class TestScene : public DefaultScene {
         camera->add_component<Camera>();
         camera->get_component<Camera>()->set_active();
 
-        this->renderer()->load_skybox("src/"
+        this->renderer()->load_skybox("assets/"
                                       "defaultskybox.png");
         this->renderer()->enable_skybox();
 
