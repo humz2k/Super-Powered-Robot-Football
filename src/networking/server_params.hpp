@@ -125,6 +125,8 @@ class SimulationParameters {
     /** @brief Default bunny hop forgiveness time */
     float bunny_hop_forgiveness = 0.15f;
 
+    float ground_friction = 0.5f;
+
     /** @brief Error reduction parameter */
     float erp = 0.2;
     /** @brief Constraint force mixing parameter */
@@ -168,6 +170,7 @@ class SimulationParameters {
             DUMB_HACK(physics, mass)
             DUMB_HACK(physics, gravity)
             DUMB_HACK(physics, bunny_hop_forgiveness)
+            DUMB_HACK(physics, ground_friction)
         }
         if (ini.has("error_correction")) {
             auto& error_correction = ini["error_correction"];

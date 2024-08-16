@@ -1,11 +1,11 @@
 #ifndef _SPRF_NETWORKING_MAP_HPP_
 #define _SPRF_NETWORKING_MAP_HPP_
 
+#include "custom_mesh.hpp"
 #include "engine/engine.hpp"
 #include "raylib-cpp.hpp"
-#include "custom_mesh.hpp"
-#include <string>
 #include <ode/ode.h>
+#include <string>
 #include <vector>
 
 namespace SPRF {
@@ -88,64 +88,71 @@ class MapCubeElement : public MapElement {
 };
 
 class MapPlaneElement : public MapElement {
-    private:
-        float m_x_size;
-        float m_y_size;
-        std::string m_texture_path;
-        int m_resX;
-        int m_resY;
+  private:
+    float m_x_size;
+    float m_y_size;
+    std::string m_texture_path;
+    int m_resX;
+    int m_resY;
 
-    public:
-        MapPlaneElement(float x_size, float y_size, std::string texture_path = "", int resX = 10, int resY = 10) : m_x_size(x_size), m_y_size(y_size), m_texture_path(texture_path), m_resX(resX), m_resY(resY){}
+  public:
+    MapPlaneElement(float x_size, float y_size, std::string texture_path = "",
+                    int resX = 10, int resY = 10)
+        : m_x_size(x_size), m_y_size(y_size), m_texture_path(texture_path),
+          m_resX(resX), m_resY(resY) {}
 
-        void load(Scene* scene){
-            auto plane = scene->renderer()->create_render_model(WrappedMesh(m_x_size,m_y_size,m_resX,m_resY));
-            plane->clip(false);
-            if (m_texture_path != "")
-                plane->add_texture(m_texture_path);
+    void load(Scene* scene) {
+        auto plane = scene->renderer()->create_render_model(
+            WrappedMesh(m_x_size, m_y_size, m_resX, m_resY));
+        plane->clip(false);
+        if (m_texture_path != "")
+            plane->add_texture(m_texture_path);
 
-            for (auto& i : this->instances()) {
-                auto entity = scene->create_entity();
-                entity->add_component<Model>(plane);
-                entity->get_component<Transform>()->position = i.position;
-                entity->get_component<Transform>()->rotation = i.rotation;
-
-            }
+        for (auto& i : this->instances()) {
+            auto entity = scene->create_entity();
+            entity->add_component<Model>(plane);
+            entity->get_component<Transform>()->position = i.position;
+            entity->get_component<Transform>()->rotation = i.rotation;
         }
+    }
 
-        void load(dWorldID world, dSpaceID space) {}
+    void load(dWorldID world, dSpaceID space) {}
 };
 
-class MapLightElement : public MapElement{
-    private:
-        raylib::Vector3 m_L;
-        raylib::Vector3 m_target;
-        float m_fov;
+class MapLightElement : public MapElement {
+  private:
+    raylib::Vector3 m_L;
+    raylib::Vector3 m_target;
+    float m_fov;
 
-    public:
-        MapLightElement(raylib::Vector3 L, raylib::Vector3 target = raylib::Vector3(0,0,0), float fov = 70) : m_L(L), m_target(target), m_fov(fov){}
+  public:
+    MapLightElement(raylib::Vector3 L,
+                    raylib::Vector3 target = raylib::Vector3(0, 0, 0),
+                    float fov = 70)
+        : m_L(L), m_target(target), m_fov(fov) {}
 
-        void load(Scene* scene){
-            auto light = scene->renderer()->add_light();
-            light->L(m_L);
-            light->target(m_target);
-            light->fov(m_fov);
-            light->enabled(1);
-        }
+    void load(Scene* scene) {
+        auto light = scene->renderer()->add_light();
+        light->L(m_L);
+        light->target(m_target);
+        light->fov(m_fov);
+        light->enabled(1);
+    }
 
-        void load(dWorldID world, dSpaceID space){ }
+    void load(dWorldID world, dSpaceID space) {}
 };
 
-class MapSkyboxElement : public MapElement{
-    private:
-        std::string m_path;
-    public:
-        MapSkyboxElement(std::string path) : m_path(path){}
-        void load(Scene* scene){
-            scene->renderer()->load_skybox(m_path);
-            scene->renderer()->enable_skybox();
-        }
-        void load(dWorldID world, dSpaceID space){}
+class MapSkyboxElement : public MapElement {
+  private:
+    std::string m_path;
+
+  public:
+    MapSkyboxElement(std::string path) : m_path(path) {}
+    void load(Scene* scene) {
+        scene->renderer()->load_skybox(m_path);
+        scene->renderer()->enable_skybox();
+    }
+    void load(dWorldID world, dSpaceID space) {}
 };
 
 class Map {
@@ -175,9 +182,11 @@ class Map {
 static std::shared_ptr<Map> simple_map() {
     std::shared_ptr<Map> out = std::make_shared<Map>();
 
-    out->add_element(std::make_shared<MapLightElement>(raylib::Vector3(1, 2, 0.02),raylib::Vector3(2.5, 0, 0),70));
+    out->add_element(std::make_shared<MapLightElement>(
+        raylib::Vector3(1, 2, 0.02), raylib::Vector3(2.5, 0, 0), 70));
 
-    out->add_element(std::make_shared<MapSkyboxElement>("src/defaultskybox.png"));
+    out->add_element(
+        std::make_shared<MapSkyboxElement>("src/defaultskybox.png"));
 
     std::shared_ptr<MapCubeElement> basic_block =
         std::make_shared<MapCubeElement>(0.5, 0.5, 0.5,
@@ -190,12 +199,18 @@ static std::shared_ptr<Map> simple_map() {
                               raylib::Vector3(0.5, 0, 0));
     out->add_element(basic_block);
 
-    std::shared_ptr<MapPlaneElement> ground_plane = std::make_shared<MapPlaneElement>(70,60,"assets/prototype_texture/grey4.png");
-    ground_plane->add_instance(raylib::Vector3(0,0,0),raylib::Vector3(0,0,0));
+    std::shared_ptr<MapPlaneElement> ground_plane =
+        std::make_shared<MapPlaneElement>(70, 60,
+                                          "assets/prototype_texture/grey4.png");
+    ground_plane->add_instance(raylib::Vector3(0, 0, 0),
+                               raylib::Vector3(0, 0, 0));
     out->add_element(ground_plane);
 
-    std::shared_ptr<MapPlaneElement> wall_plane = std::make_shared<MapPlaneElement>(10,10,"assets/prototype_texture/orange.png");
-    wall_plane->add_instance(raylib::Vector3(0,5,-30),raylib::Vector3(M_PI_2,0,0));
+    std::shared_ptr<MapPlaneElement> wall_plane =
+        std::make_shared<MapPlaneElement>(
+            10, 10, "assets/prototype_texture/orange.png");
+    wall_plane->add_instance(raylib::Vector3(0, 5, -30),
+                             raylib::Vector3(M_PI_2, 0, 0));
     out->add_element(wall_plane);
     return out;
 }

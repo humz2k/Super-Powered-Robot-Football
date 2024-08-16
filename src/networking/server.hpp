@@ -16,9 +16,9 @@
 #define _SPRF_SERVER_SERVER_HPP_
 
 #include "packet.hpp"
+#include "physics/simulation.hpp"
 #include "raylib-cpp.hpp"
 #include "server_params.hpp"
-#include "simulation.hpp"
 #include <cassert>
 #include <enet/enet.h>
 #include <mutex>

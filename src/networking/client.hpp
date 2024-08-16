@@ -10,7 +10,7 @@
 
 #include "engine/engine.hpp"
 #include "packet.hpp"
-#include "player_stats.hpp"
+#include "physics/player_stats.hpp"
 #include <enet/enet.h>
 #include <functional>
 #include <list>

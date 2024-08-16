@@ -32,8 +32,6 @@ class MouseLook : public Component {
     void init() {}
 
     void update() {
-        m_display_w = GetRenderWidth();
-        m_display_h = GetRenderHeight();
         if (IsKeyPressed(KEY_Q)) {
             if (mouse_locked) {
                 EnableCursor();
@@ -54,14 +52,8 @@ class MouseLook : public Component {
             return;
         }
 
-        // float aspect =
-        // ((float)GetDisplayWidth())/((float)GetDisplayHeight()); float fovx =
-        // 2 * atan(tan(DEFAULT_FOVY * 0.5) * aspect); float deg_per_pix =
-        // fovx/((float)GetDisplayWidth());
         auto mouse_delta =
-            GetRawMouseDelta() * game_info.mouse_sense_ratio *
-            sense; //*(1/0.2765)*(360.0f/16363.6364)*DEG2RAD*sense;// *
-                   // game_info.mouse_sense_ratio * sense;// * (deg_per_pix);
+            GetRawMouseDelta() * game_info.mouse_sense_ratio * sense;
         this->entity()->get_component<Transform>()->rotation.x += mouse_delta.y;
         this->entity()->get_component<Transform>()->rotation.y -= mouse_delta.x;
 
@@ -71,10 +63,6 @@ class MouseLook : public Component {
         this->entity()->get_component<Transform>()->rotation.x =
             Clamp(this->entity()->get_component<Transform>()->rotation.x,
                   -M_PI * 0.5f + 0.5, M_PI * 0.5f - 0.5);
-    }
-
-    void draw2D() {
-        // game_info.draw_debug_var("mousedelta",raylib::Vector3(GetMouseDelta().x,GetMouseDelta().y,0),500,500);
     }
 };
 
@@ -155,69 +143,6 @@ class LocalScene : public DefaultScene {
 
         simple_map()->load(this);
 
-        auto cube =
-            this->renderer()->create_render_model(raylib::Mesh::Cube(1, 1, 1));
-        cube->add_texture("assets/prototype_texture/orange-cube.png");
-
-        auto sphere = this->renderer()->create_render_model(
-            raylib::Mesh::Sphere(0.5, 30, 30));
-
-        auto sphere1 = this->create_entity();
-        sphere1->get_component<Transform>()->position.y = 0.5;
-        sphere1->get_component<Transform>()->position.z = 0.5; // + (float)10;
-        sphere1->get_component<Transform>()->rotation.y = 0;
-        sphere1->add_component<Model>(sphere);
-
-        auto sphere2 = this->create_entity();
-        sphere2->get_component<Transform>()->position.y = 0.5;
-        sphere2->get_component<Transform>()->position.z = 0.5 + (float)2;
-        sphere2->get_component<Transform>()->rotation.y = M_PI_2;
-        sphere2->add_component<Model>(sphere);
-
-        /*for (int i = -(map_z_size / 2); i < (map_z_size / 2); i++) {
-            for (int y = 0; y < 5; y++) {
-                auto cube_entity = this->create_entity();
-                cube_entity->get_component<Transform>()->position.y =
-                    0.5 + (float)y;
-                cube_entity->get_component<Transform>()->position.z =
-                    0.5 + (float)i;
-                cube_entity->get_component<Transform>()->position.x =
-                    0.5 + -((float)map_x_size) * 0.5;
-                cube_entity->add_component<Model>(cube);
-
-                auto cube_entity2 = this->create_entity();
-                cube_entity2->get_component<Transform>()->position.y =
-                    0.5 + (float)y;
-                cube_entity2->get_component<Transform>()->position.z =
-                    0.5 + (float)i;
-                cube_entity2->get_component<Transform>()->position.x =
-                    0.5 + ((float)map_x_size) * 0.5;
-                cube_entity2->add_component<Model>(cube);
-            }
-        }
-
-        for (int i = -(map_x_size / 2) + 1; i < (map_x_size / 2); i++) {
-            for (int y = 0; y < 5; y++) {
-                auto cube_entity = this->create_entity();
-                cube_entity->get_component<Transform>()->position.y =
-                    0.5 + (float)y;
-                cube_entity->get_component<Transform>()->position.x =
-                    0.5 + (float)i;
-                cube_entity->get_component<Transform>()->position.z =
-                    0.5 + -((float)map_z_size / 2);
-                cube_entity->add_component<Model>(cube);
-
-                auto cube_entity2 = this->create_entity();
-                cube_entity2->get_component<Transform>()->position.y =
-                    0.5 + (float)y;
-                cube_entity2->get_component<Transform>()->position.x =
-                    0.5 + (float)i;
-                cube_entity2->get_component<Transform>()->position.z =
-                    0.5 + ((float)map_z_size / 2) - 1.0;
-                cube_entity2->add_component<Model>(cube);
-            }
-        }*/
-
         auto player = this->create_entity();
         m_client = player->add_component<Client>("127.0.0.1", 9999, init_player,
                                                  dev_console());
@@ -228,7 +153,6 @@ class LocalScene : public DefaultScene {
 
         std::function<void()> callback = [this]() { disconnect(); };
         dev_console()->add_command<DisconnectCommand>("disconnect", callback);
-
     }
 
     ~LocalScene() {
@@ -252,77 +176,6 @@ class Scene1 : public DefaultScene {
 
         simple_map()->load(this);
 
-        //auto plane = this->renderer()->create_render_model(
-        //    WrappedMesh(map_x_size, map_z_size, 10, 10));
-        //plane->add_texture("assets/prototype_texture/grey4.png");
-        //plane->clip(false);
-        //auto plane_entity = this->create_entity();
-        //plane_entity->add_component<Model>(plane);
-
-        auto cube =
-            this->renderer()->create_render_model(raylib::Mesh::Cube(1, 1, 1));
-        cube->add_texture("assets/prototype_texture/orange-cube.png");
-
-        auto sphere = this->renderer()->create_render_model(
-            raylib::Mesh::Sphere(0.5, 30, 30));
-        // cube->add_texture("assets/prototype_texture/orange-cube.png");
-
-        auto sphere1 = this->create_entity();
-        sphere1->get_component<Transform>()->position.y = 0.5;
-        sphere1->get_component<Transform>()->position.z = 0.5; // + (float)10;
-        sphere1->get_component<Transform>()->rotation.y = 0;
-        sphere1->add_component<Model>(sphere);
-
-        auto sphere2 = this->create_entity();
-        sphere2->get_component<Transform>()->position.y = 0.5;
-        sphere2->get_component<Transform>()->position.z = 0.5 + (float)2;
-        sphere2->get_component<Transform>()->rotation.y = M_PI_2;
-        sphere2->add_component<Model>(sphere);
-
-        for (int i = -(map_z_size / 2); i < (map_z_size / 2); i++) {
-            for (int y = 0; y < 5; y++) {
-                auto cube_entity = this->create_entity();
-                cube_entity->get_component<Transform>()->position.y =
-                    0.5 + (float)y;
-                cube_entity->get_component<Transform>()->position.z =
-                    0.5 + (float)i;
-                cube_entity->get_component<Transform>()->position.x =
-                    0.5 + -((float)map_x_size) * 0.5;
-                cube_entity->add_component<Model>(cube);
-
-                auto cube_entity2 = this->create_entity();
-                cube_entity2->get_component<Transform>()->position.y =
-                    0.5 + (float)y;
-                cube_entity2->get_component<Transform>()->position.z =
-                    0.5 + (float)i;
-                cube_entity2->get_component<Transform>()->position.x =
-                    0.5 + ((float)map_x_size) * 0.5;
-                cube_entity2->add_component<Model>(cube);
-            }
-        }
-
-        for (int i = -(map_x_size / 2) + 1; i < (map_x_size / 2); i++) {
-            for (int y = 0; y < 5; y++) {
-                auto cube_entity = this->create_entity();
-                cube_entity->get_component<Transform>()->position.y =
-                    0.5 + (float)y;
-                cube_entity->get_component<Transform>()->position.x =
-                    0.5 + (float)i;
-                cube_entity->get_component<Transform>()->position.z =
-                    0.5 + -((float)map_z_size / 2);
-                cube_entity->add_component<Model>(cube);
-
-                auto cube_entity2 = this->create_entity();
-                cube_entity2->get_component<Transform>()->position.y =
-                    0.5 + (float)y;
-                cube_entity2->get_component<Transform>()->position.x =
-                    0.5 + (float)i;
-                cube_entity2->get_component<Transform>()->position.z =
-                    0.5 + ((float)map_z_size / 2) - 1.0;
-                cube_entity2->add_component<Model>(cube);
-            }
-        }
-
         auto player = this->create_entity();
         player->add_component<Client>(host, port, init_player, dev_console());
         auto camera = player->create_child()->add_component<Camera>();
@@ -332,7 +185,6 @@ class Scene1 : public DefaultScene {
 
         std::function<void()> callback = [this]() { disconnect(); };
         dev_console()->add_command<DisconnectCommand>("disconnect", callback);
-
     }
     void disconnect() { this->close(); }
 

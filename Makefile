@@ -14,9 +14,6 @@ RAYLIB_CPP_DIR ?= raylib-cpp/include
 RAYLIB_OSX_FLAGS ?= -framework CoreVideo -framework IOKit -framework Cocoa -framework GLUT -framework OpenGL
 RAYLIB_WINDOWS_FLAGS ?= -lopengl32 -lgdi32 -lwinmm
 
-MINI_DIR ?= mini
-MINI_INCLUDE ?= $(MINI_DIR)/include
-
 DRIVERS_DIR ?= drivers
 
 ENET_FLAGS ?=
@@ -70,13 +67,41 @@ $(BUILD_DIR)/model_test: $(BUILD_DIR)/$(DRIVERS_DIR)/model_test.o $(OBJECTS) $(R
 
 .secondary: $(OBJECTS)
 
-$(BUILD_DIR)/%.o: %.cpp $(HEADERS)
+$(BUILD_DIR)/$(DRIVERS_DIR)/%.o: $(DRIVERS_DIR)/%.cpp $(HEADERS)
 	mkdir -p $(@D)
-	$(CXX) -c $< -o $@ -I$(RAYLIB_CPP_DIR) -I$(RAYLIB_DIR) -I$(SOURCE_DIR) -I$(MINI_INCLUDE) -std=c++17 $(FLAGS)
+	$(CXX) -c $< -o $@ -I$(RAYLIB_CPP_DIR) -I$(RAYLIB_DIR) -I$(SOURCE_DIR) -std=c++17 $(FLAGS)
 
-$(BUILD_DIR)/%.o: %.c $(HEADERS)
+$(BUILD_DIR)/$(SOURCE_DIR)/physics/%.o: $(SOURCE_DIR)/physics/%.cpp $(HEADERS)
 	mkdir -p $(@D)
-	$(CC) -c $< -o $@ -I$(RAYLIB_CPP_DIR) -I$(RAYLIB_DIR) -I$(SOURCE_DIR) -I$(MINI_INCLUDE) $(FLAGS)
+	$(CXX) -c $< -o $@ -I$(RAYLIB_CPP_DIR) -I$(RAYLIB_DIR) -I$(SOURCE_DIR) -std=c++17 $(FLAGS)
+
+$(BUILD_DIR)/$(SOURCE_DIR)/physics/%.o: $(SOURCE_DIR)/physics/%.c $(HEADERS)
+	mkdir -p $(@D)
+	$(CC) -c $< -o $@ -I$(RAYLIB_CPP_DIR) -I$(RAYLIB_DIR) -I$(SOURCE_DIR) $(FLAGS)
+
+$(BUILD_DIR)/$(SOURCE_DIR)/engine/%.o: $(SOURCE_DIR)/engine/%.cpp $(HEADERS)
+	mkdir -p $(@D)
+	$(CXX) -c $< -o $@ -I$(RAYLIB_CPP_DIR) -I$(RAYLIB_DIR) -I$(SOURCE_DIR) -std=c++17 $(FLAGS)
+
+$(BUILD_DIR)/$(SOURCE_DIR)/engine/%.o: $(SOURCE_DIR)/engine/%.c $(HEADERS)
+	mkdir -p $(@D)
+	$(CC) -c $< -o $@ -I$(RAYLIB_CPP_DIR) -I$(RAYLIB_DIR) -I$(SOURCE_DIR) $(FLAGS)
+
+$(BUILD_DIR)/$(SOURCE_DIR)/odelib/%.o: $(SOURCE_DIR)/odelib/%.cpp
+	mkdir -p $(@D)
+	$(CXX) -c $< -o $@ -I$(RAYLIB_CPP_DIR) -I$(RAYLIB_DIR) -I$(SOURCE_DIR) -std=c++17 $(FLAGS)
+
+$(BUILD_DIR)/$(SOURCE_DIR)/odelib/%.o: $(SOURCE_DIR)/odelib/%.c
+	mkdir -p $(@D)
+	$(CC) -c $< -o $@ -I$(RAYLIB_CPP_DIR) -I$(RAYLIB_DIR) -I$(SOURCE_DIR) $(FLAGS)
+
+$(BUILD_DIR)/$(SOURCE_DIR)/enet/%.o: $(SOURCE_DIR)/enet/%.cpp
+	mkdir -p $(@D)
+	$(CXX) -c $< -o $@ -I$(RAYLIB_CPP_DIR) -I$(RAYLIB_DIR) -I$(SOURCE_DIR) -std=c++17 $(FLAGS)
+
+$(BUILD_DIR)/$(SOURCE_DIR)/enet/%.o: $(SOURCE_DIR)/enet/%.c
+	mkdir -p $(@D)
+	$(CC) -c $< -o $@ -I$(RAYLIB_CPP_DIR) -I$(RAYLIB_DIR) -I$(SOURCE_DIR) $(FLAGS)
 
 
 $(RAYLIB_DIR)/libraylib.a:

@@ -13,12 +13,12 @@
 #ifndef _SPRF_NETWORKING_SIMULATION_HPP_
 #define _SPRF_NETWORKING_SIMULATION_HPP_
 
-#include "map.hpp"
-#include "packet.hpp"
+#include "networking/map.hpp"
+#include "networking/packet.hpp"
+#include "networking/server_params.hpp"
 #include "player_body_base.hpp"
 #include "player_stats.hpp"
 #include "raylib-cpp.hpp"
-#include "server_params.hpp"
 #include <cassert>
 #include <chrono>
 #include <enet/enet.h>
@@ -228,8 +228,6 @@ class Simulation {
     enet_uint32 m_tick = 0;
     /** @brief Flag to indicate if the simulation should quit */
     bool m_should_quit = false;
-    /** @brief Ground friction coefficient */
-    float m_ground_friction = 0.0;
     /** @brief Time step per tick */
     float m_dt;
 
@@ -253,7 +251,7 @@ class Simulation {
     std::thread m_simulation_thread;
 
     /** @brief Simulation parameters */
-    SimulationParameters sim_params;
+    SimulationParameters m_sim_params;
 
     /** @brief Map of player IDs to PlayerBody objects */
     std::unordered_map<enet_uint32, PlayerBody*> m_players;
@@ -325,6 +323,8 @@ class Simulation {
      */
     void join() { m_simulation_thread.join(); }
 
+    const SimulationParameters& params() { return m_sim_params; }
+
     /**
      * @brief Construct a new Simulation object.
      *
@@ -336,7 +336,7 @@ class Simulation {
      */
     Simulation(enet_uint32 tickrate, std::string server_config = "")
         : m_tickrate(tickrate), m_time_per_tick(1000000000L / m_tickrate),
-          m_dt(1.0f / (float)m_tickrate), sim_params(server_config) {
+          m_dt(1.0f / (float)m_tickrate), m_sim_params(server_config) {
         TraceLog(LOG_INFO, "Initializing ODE");
         dInitODE();
 
@@ -352,13 +352,13 @@ class Simulation {
         TraceLog(LOG_INFO, "Ground Plane %g %g %g %g", 0, 1, 0, 0);
         m_ground_geom = dCreatePlane(m_space, 0, 1, 0, 0);
 
-        TraceLog(LOG_INFO, "Setting gravity = %g", sim_params.gravity);
-        dWorldSetGravity(m_world, 0, sim_params.gravity, 0);
+        TraceLog(LOG_INFO, "Setting gravity = %g", m_sim_params.gravity);
+        dWorldSetGravity(m_world, 0, m_sim_params.gravity, 0);
 
-        TraceLog(LOG_INFO, "Setting ERP %g and CFM %g", sim_params.erp,
-                 sim_params.cfm);
-        dWorldSetERP(m_world, sim_params.erp);
-        dWorldSetCFM(m_world, sim_params.cfm);
+        TraceLog(LOG_INFO, "Setting ERP %g and CFM %g", m_sim_params.erp,
+                 m_sim_params.cfm);
+        dWorldSetERP(m_world, m_sim_params.erp);
+        dWorldSetCFM(m_world, m_sim_params.cfm);
 
         TraceLog(LOG_INFO, "Setting auto disable flag %d", m_auto_disable);
         dWorldSetAutoDisableFlag(m_world, m_auto_disable);
@@ -398,7 +398,7 @@ class Simulation {
      */
     PlayerBody* create_player(enet_uint32 id) {
         std::lock_guard<std::mutex> guard(simulation_mutex);
-        m_players[id] = new PlayerBody(sim_params, &simulation_mutex, id,
+        m_players[id] = new PlayerBody(m_sim_params, &simulation_mutex, id,
                                        m_world, m_space, m_dt);
         return m_players[id];
     }
@@ -409,13 +409,6 @@ class Simulation {
      * @return dGeomID The ground geometry ID.
      */
     dGeomID ground_geom() { return m_ground_geom; }
-
-    /**
-     * @brief Gets the ground friction coefficient.
-     *
-     * @return float The ground friction coefficient.
-     */
-    float ground_friction() { return m_ground_friction; }
 
     /**
      * @brief Gets the ODE world ID.
@@ -503,10 +496,10 @@ static void near_callback(void* data, dGeomID o1, dGeomID o2) {
     // ODE manual and have fun experimenting to learn more.
     for (i = 0; i < MAX_CONTACTS; i++) {
         contact[i].surface.mode = dContactBounce | dContactSoftCFM;
-        if ((o1 == sim->ground_geom()) || (o2 == sim->ground_geom()))
-            contact[i].surface.mu = sim->ground_friction();
-        else
-            contact[i].surface.mu = 0;
+        // if ((o1 == sim->ground_geom()) || (o2 == sim->ground_geom()))
+        //     contact[i].surface.mu = sim->params().ground_friction;
+        // else
+        contact[i].surface.mu = sim->params().ground_friction;
         contact[i].surface.mu2 = 0;
         contact[i].surface.bounce = 0.01;
         contact[i].surface.bounce_vel = 0.1;
