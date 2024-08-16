@@ -1,5 +1,5 @@
-#include "networking/server.hpp"
 #include "raylib-cpp.hpp"
+#include "networking/server.hpp"
 #include <fstream>
 #include <iostream>
 #include <string>
