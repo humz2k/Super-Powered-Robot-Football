@@ -3,6 +3,7 @@
 
 #include "raylib-cpp.hpp"
 #include <ode/ode.h>
+#include <vector>
 
 namespace SPRF {
 

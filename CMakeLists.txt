@@ -3,14 +3,11 @@ cmake_minimum_required(VERSION 3.0)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
+#set(CMAKE_BUILD_TYPE Debug)
+
 project(SPRF)
 
-find_package(OpenGL)
-
-add_custom_command(OUTPUT raylib/src/libraylib.a
-                   COMMAND make MACOSX_DEPLOYMENT_TARGET=10.9
-                   WORKING_DIRECTORY raylib/src
-)
+add_subdirectory(raylib)
 
 file(GLOB_RECURSE sources src/*.cpp src/*.c src/*.h src/*.hpp)
 
@@ -20,8 +17,10 @@ target_include_directories(SPRF PUBLIC src raylib-cpp/include raylib/src)
 
 if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
     SET(CMAKE_EXE_LINKER_FLAGS  "-framework CoreVideo -framework IOKit -framework Cocoa -framework GLUT -framework OpenGL")
+    SET( CMAKE_CXX_FLAGS  "-Wall -Wpedantic -g -fsanitize=address -fsanitize=undefined -fno-omit-frame-pointer -fno-inline -fPIC")
 else()
     SET(CMAKE_EXE_LINKER_FLAGS  "-lopengl32 -lgdi32 -lws2_32 -lwinmm")
+    SET( CMAKE_CXX_FLAGS  "-fPIC")
 endif()
 
 file( GLOB DRIVER_SOURCES drivers/*.cpp )

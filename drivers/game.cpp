@@ -136,7 +136,7 @@ class LocalScene : public DefaultScene {
 
   public:
     LocalScene(Game* game)
-        : DefaultScene(game), m_server("server_config.ini", "127.0.0.1", 9999) {
+        : DefaultScene(game), m_server("/Users/humzaqureshi/GitHub/Super-Powered-Robot-Football/server_config.ini", "127.0.0.1", 9999) {
 
         int map_x_size = 70;
         int map_z_size = 60;

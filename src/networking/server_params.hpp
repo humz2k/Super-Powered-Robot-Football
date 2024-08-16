@@ -86,7 +86,7 @@ class ServerConfig {
             DUMB_HACK(server, tickrate)
         }
 
-        file.write(ini); // Write any changes back to the INI file
+        //file.write(ini); // Write any changes back to the INI file
 
 #undef DUMB_HACK
     }
@@ -145,9 +145,10 @@ class SimulationParameters {
         if (filename == "")
             return;
 
-        TraceLog(LOG_INFO, "Reading file %s", filename.c_str());
+        TraceLog(LOG_INFO, "Reading sim params file %s", filename.c_str());
 
 #define DUMB_HACK(field, token)                                                \
+    TraceLog(LOG_INFO, "Server Config: %s", TOSTRING(token)); \
     if (field.has(TOSTRING(token))) {                                          \
         token = std::stof(field[TOSTRING(token)]);                             \
         TraceLog(LOG_INFO, "Server Config: %s = %g", TOSTRING(token), token);  \
@@ -178,7 +179,7 @@ class SimulationParameters {
             DUMB_HACK(error_correction, cfm)
         }
 
-        file.write(ini);
+        //file.write(ini);
 
 #undef DUMB_HACK
     }
