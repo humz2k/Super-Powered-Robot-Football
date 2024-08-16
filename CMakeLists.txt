@@ -28,5 +28,11 @@ foreach( sourcefile ${DRIVER_SOURCES} )
     get_filename_component( name ${sourcefile} NAME_WE )
     add_executable( ${name} ${sourcefile} )
     target_link_directories( ${name} PUBLIC raylib/src)
-    target_link_libraries( ${name} SPRF raylib )
+    if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+        target_link_libraries( ${name} SPRF raylib )
+    else()
+        target_link_libraries( ${name} SPRF raylib opengl32 gdi32 ws2_32 winmm)
+    endif()
+
+
 endforeach( sourcefile ${DRIVER_SOURCES} )
