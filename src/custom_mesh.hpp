@@ -5,6 +5,21 @@
 
 namespace SPRF {
 
+static Vector3 make_vector3(float x, float y, float z){
+    Vector3 out;
+    out.x = x;
+    out.y = y;
+    out.z = z;
+    return out;
+}
+
+static Vector2 make_vector2(float x, float y){
+    Vector2 out;
+    out.x = x;
+    out.y = y;
+    return out;
+}
+
 static Mesh WrappedMesh(float width, float length, int resX, int resZ) {
     Mesh mesh = {0};
 
@@ -21,22 +36,22 @@ static Mesh WrappedMesh(float width, float length, int resX, int resZ) {
         for (int x = 0; x < resX; x++) {
             // [-width/2, width/2]
             float xPos = ((float)x / (resX - 1) - 0.5f) * width;
-            vertices[x + z * resX] = (Vector3){xPos, 0.0f, zPos};
+            vertices[x + z * resX] = make_vector3(xPos, 0.0f, zPos);
         }
     }
 
     // Normals definition
     Vector3* normals = (Vector3*)RL_MALLOC(vertexCount * sizeof(Vector3));
     for (int n = 0; n < vertexCount; n++)
-        normals[n] = (Vector3){0.0f, 1.0f, 0.0f}; // Vector3.up;
+        normals[n] = make_vector3(0.0f, 1.0f, 0.0f); // Vector3.up;
 
     // TexCoords definition
     Vector2* texcoords = (Vector2*)RL_MALLOC(vertexCount * sizeof(Vector2));
     for (int v = 0; v < resZ; v++) {
         for (int u = 0; u < resX; u++) {
             texcoords[u + v * resX] =
-                (Vector2){((float)u / (resX - 1)) * width * 0.25f,
-                          ((float)v / (resZ - 1)) * length * 0.25f};
+                make_vector2(((float)u / (resX - 1)) * width * 0.25f,
+                          ((float)v / (resZ - 1)) * length * 0.25f);
         }
     }
 
