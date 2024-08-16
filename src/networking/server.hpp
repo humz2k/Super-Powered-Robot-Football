@@ -15,6 +15,7 @@
 #ifndef _SPRF_SERVER_SERVER_HPP_
 #define _SPRF_SERVER_SERVER_HPP_
 
+#include "engine/engine.hpp"
 #include "packet.hpp"
 #include "physics/simulation.hpp"
 #include "raylib-cpp.hpp"
