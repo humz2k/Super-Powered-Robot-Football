@@ -13,7 +13,7 @@ file(GLOB_RECURSE sources src/*.cpp src/*.c src/*.h src/*.hpp)
 
 add_library(SPRF ${sources})
 
-target_include_directories(SPRF PUBLIC src raylib-cpp/include raylib/src)
+target_include_directories(SPRF PUBLIC src raylib-cpp/include raylib/src src/soloud/include)
 
 if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
     SET(CMAKE_EXE_LINKER_FLAGS  "-framework CoreVideo -framework IOKit -framework Cocoa -framework GLUT -framework OpenGL")
