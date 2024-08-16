@@ -71,19 +71,22 @@ class GameInfo {
     template <class T>
     void draw_debug_var(std::string name, T var, int x, int y,
                         Color color = RED) {
-        raylib::DrawTextEx(m_font, (name + ": " + std::to_string(var)),
+        std::string text = (name + ": " + std::to_string(var));
+        raylib::DrawTextEx(m_font, text.c_str(),
                    raylib::Vector2(x, y), 20, 1, color);
     }
 
     void draw_debug_var(std::string name, std::string var, int x, int y,
                         Color color = RED) {
-        raylib::DrawTextEx(m_font, (name + ": " + var), raylib::Vector2(x, y), 20, 1,
+        std::string text = (name + ": " + var);
+        raylib::DrawTextEx(m_font, text.c_str(), raylib::Vector2(x, y), 20, 1,
                    color);
     }
 
     void draw_debug_var(std::string name, raylib::Vector3 var, int x, int y,
                         Color color = RED) {
-        raylib::DrawTextEx(m_font, (name + ": " + var.ToString()),
+        std::string text = (name + ": " + var.ToString());
+        raylib::DrawTextEx(m_font, text.c_str(),
                    raylib::Vector2(x, y), 20, 1, color);
     }
 
