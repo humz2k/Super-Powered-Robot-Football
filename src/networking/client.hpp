@@ -18,6 +18,7 @@
 #include <queue>
 #include <string>
 #include <thread>
+#include <vector>
 
 #define N_PING_AVERAGE (5)
 #define N_RECV_AVERAGE (20)
@@ -36,14 +37,16 @@ class NetworkEntity : public Component {
 
 class SmoothedVariable {
   private:
-    float* m_data = NULL;
+    // float* m_data = NULL;
+    std::vector<float> m_data;
     int m_pointer = 0;
     const int m_samples;
 
   public:
     SmoothedVariable(int samples, float initial_value = 0.0f)
         : m_samples(samples) {
-        assert((m_data = (float*)malloc(sizeof(float) * samples)));
+        m_data.resize(samples);
+        // assert((m_data = (float*)malloc(sizeof(float) * samples)));
         for (int i = 0; i < m_samples; i++) {
             m_data[i] = initial_value;
         }
@@ -62,7 +65,8 @@ class SmoothedVariable {
         return sum / (float)m_samples;
     }
 
-    ~SmoothedVariable() { free(m_data); }
+    ~SmoothedVariable() { // free(m_data);
+    }
 };
 
 template <class T> class UpdateVariable : public DevConsoleCommand {

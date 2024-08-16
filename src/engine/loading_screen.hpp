@@ -58,7 +58,7 @@ class LoadingScreen {
     }
 
   public:
-    LoadingScreen(std::string loading_image = "src/loading_screen.png")
+    LoadingScreen(std::string loading_image = "assets/loading_screen.png")
         : m_loading_texture(raylib::Image(loading_image)) {}
 
     ~LoadingScreen() {}
@@ -87,7 +87,7 @@ class LoadingScreen {
     }
 
     void draw_splash_screen(float time = 5,
-                            std::string logo_path = "src/logo.png") {
+                            std::string logo_path = "assets/logo.png") {
         float start = GetTime();
         float end = start + time;
         raylib::Texture2D logo_texture =
@@ -107,7 +107,7 @@ class LoadingScreen {
             color.a = alpha * 255.0f;
             BeginDrawing();
             ClearBackground(BLACK);
-            logo_texture.Draw(source_rect, dest_rect, raylib::Vector2(0,0), 0,
+            logo_texture.Draw(source_rect, dest_rect, raylib::Vector2(0, 0), 0,
                               color);
             EndDrawing();
             if (IsMouseButtonPressed(0) || (GetKeyPressed() != 0)) {

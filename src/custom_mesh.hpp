@@ -5,7 +5,7 @@
 
 namespace SPRF {
 
-static Vector3 make_vector3(float x, float y, float z){
+static Vector3 make_vector3(float x, float y, float z) {
     Vector3 out;
     out.x = x;
     out.y = y;
@@ -13,7 +13,7 @@ static Vector3 make_vector3(float x, float y, float z){
     return out;
 }
 
-static Vector2 make_vector2(float x, float y){
+static Vector2 make_vector2(float x, float y) {
     Vector2 out;
     out.x = x;
     out.y = y;
@@ -51,7 +51,7 @@ static Mesh WrappedMesh(float width, float length, int resX, int resZ) {
         for (int u = 0; u < resX; u++) {
             texcoords[u + v * resX] =
                 make_vector2(((float)u / (resX - 1)) * width * 0.25f,
-                          ((float)v / (resZ - 1)) * length * 0.25f);
+                             ((float)v / (resZ - 1)) * length * 0.25f);
         }
     }
 

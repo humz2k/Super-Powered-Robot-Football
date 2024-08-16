@@ -59,9 +59,9 @@ if(NOT TARGET uninstall)
     COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake)
 endif()
 
-if (${BUILD_EXAMPLES})
-  MESSAGE(STATUS "Building examples is enabled")
-  add_subdirectory(examples)
-endif()
+#if (${BUILD_EXAMPLES})
+#  MESSAGE(STATUS "Building examples is enabled")
+#  add_subdirectory(examples)
+#endif()
 
 enable_testing()
