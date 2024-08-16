@@ -19,7 +19,6 @@ if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
     SET(CMAKE_EXE_LINKER_FLAGS  "-framework CoreVideo -framework IOKit -framework Cocoa -framework GLUT -framework OpenGL")
     SET( CMAKE_CXX_FLAGS  "-Wall -Wpedantic -g -fsanitize=address -fsanitize=undefined -fno-omit-frame-pointer -fno-inline -fPIC")
 else()
-    SET(CMAKE_EXE_LINKER_FLAGS  "-lopengl32 -lgdi32 -lws2_32 -lwinmm")
     SET( CMAKE_CXX_FLAGS  "-fPIC")
 endif()
 
