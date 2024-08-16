@@ -17,13 +17,13 @@ add_custom_command(
     TARGET SPRF POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_directory
         ${CMAKE_SOURCE_DIR}/assets
-        ${PROJECT_BINARY_DIR}/assets)
+        ${PROJECT_BINARY_DIR}/${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/assets)
 
 add_custom_command(
     TARGET SPRF POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy
         ${CMAKE_SOURCE_DIR}/server_config.ini
-        ${PROJECT_BINARY_DIR}/server_config.ini)
+        ${PROJECT_BINARY_DIR}/${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/server_config.ini)
 
 target_include_directories(SPRF PUBLIC src raylib-cpp/include raylib/src src/soloud/include)
 
