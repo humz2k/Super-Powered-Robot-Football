@@ -25,8 +25,6 @@ class MouseLook : public Component {
   private:
     float sense = 2;
     bool mouse_locked = false;
-    float m_display_w;
-    float m_display_h;
 
   public:
     void init() {}
@@ -138,9 +136,6 @@ class LocalScene : public DefaultScene {
     LocalScene(Game* game)
         : DefaultScene(game), m_server("server_config.ini", "127.0.0.1", 9999) {
 
-        int map_x_size = 70;
-        int map_z_size = 60;
-
         simple_map()->load(this);
 
         auto player = this->create_entity();
@@ -170,9 +165,6 @@ class Scene1 : public DefaultScene {
   public:
     Scene1(Game* game, std::string host, enet_uint32 port)
         : DefaultScene(game) {
-
-        int map_x_size = 70;
-        int map_z_size = 60;
 
         simple_map()->load(this);
 
