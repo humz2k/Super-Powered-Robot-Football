@@ -93,7 +93,7 @@ class LocalScene : public DefaultScene {
 
   public:
     LocalScene(Game* game)
-        : DefaultScene(game), m_server("server_config.ini", "127.0.0.1", 9999) {
+        : DefaultScene(game), m_server("server_cfg.ini", "127.0.0.1", 9999) {
 
         simple_map()->load(this);
 
