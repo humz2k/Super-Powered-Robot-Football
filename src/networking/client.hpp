@@ -503,9 +503,14 @@ class Client : public Component {
         }
         auto ball_model =
             this->entity()->scene()->renderer()->create_render_model(
-                raylib::Mesh::Sphere(m_ball_radius, 10, 10));
+                raylib::Mesh::Sphere(m_ball_radius, 50, 50));
+        auto ball_cube_model = this->entity()->scene()->renderer()->create_render_model(raylib::Mesh::Cube(m_ball_radius,m_ball_radius,m_ball_radius));
+        ball_model->tint(raylib::Color(255,255,255,100));
+        ball_cube_model->tint(raylib::Color(0,0,0,255));
         m_ball_entity = this->entity()->scene()->create_entity();
         m_ball_entity->add_component<Model>(ball_model);
+        auto child_comp = m_ball_entity->create_child();
+        child_comp->add_component<Model>(ball_cube_model);
         m_ball_entity->init();
     }
 
