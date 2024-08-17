@@ -75,7 +75,8 @@ class PlayerBody : public PlayerBodyBase {
             }
         }
         m_is_grounded = new_grounded;
-        m_can_jump = m_is_grounded;
+        if (m_is_grounded)
+            m_can_jump = true;
         return new_grounded;
     }
 
@@ -97,6 +98,7 @@ class PlayerBody : public PlayerBodyBase {
                     m_jumped = true;
                     add_force(raylib::Vector3(0, 1, 0) *
                               m_sim_params.jump_force);
+                    m_can_jump = false;
                 }
             } else {
                 m_last_was_jump = false;
