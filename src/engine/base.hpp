@@ -60,6 +60,8 @@ class GameInfo {
     raylib::Vector3 position;
     raylib::Vector3 rotation;
     raylib::Vector3 velocity;
+    raylib::Vector3 ball_position;
+    raylib::Vector3 ball_rotation;
     int ping;
     float recieve_delta;
     float send_delta;
@@ -108,6 +110,8 @@ class GameInfo {
         draw_debug_var("packet_queue_size", packet_queue_size, 0, 140);
         draw_debug_var("visible_meshes", visible_meshes, 0, 200);
         draw_debug_var("hidden_meshes", hidden_meshes, 0, 220);
+        draw_debug_var("ball_pos", ball_position, 0, 240);
+        draw_debug_var("ball_rot", ball_rotation, 0, 260);
     }
 
     void unload_debug_font() { m_font.Unload(); }

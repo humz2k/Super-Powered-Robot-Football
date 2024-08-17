@@ -174,6 +174,9 @@ class Client : public Component {
     bool m_fake_ping = false;
     std::queue<ENetEvent> m_fake_ping_down_packets;
 
+    float m_ball_radius = 0;
+    Entity* m_ball_entity = NULL;
+
     void reset_inputs() {
         m_forward = false;
         m_backward = false;
@@ -247,11 +250,12 @@ class Client : public Component {
                     (HandshakePacket*)event.packet->data;
                 TraceLog(
                     LOG_INFO,
-                    "I am player %u, server tickrate = %u, current_time = %u",
+                    "I am player %u, server tickrate = %u, current_time = %u, ball_radius = %g",
                     handshake->id, handshake->tickrate,
-                    handshake->current_time);
+                    handshake->current_time, handshake->ball_radius);
                 enet_time_set(handshake->current_time);
                 m_id = handshake->id;
+                m_ball_radius = handshake->ball_radius;
                 enet_packet_destroy(event.packet);
                 handshake_succeeded = true;
                 break;
@@ -497,6 +501,10 @@ class Client : public Component {
             this->entity()->scene()->close();
             return;
         }
+        auto ball_model = this->entity()->scene()->renderer()->create_render_model(raylib::Mesh::Sphere(m_ball_radius,10,10));
+        m_ball_entity = this->entity()->scene()->create_entity();
+        m_ball_entity->add_component<Model>(ball_model);
+        m_ball_entity->init();
     }
 
     // bool id_exists(std::unordered_map<enet_uint32, player_state_data>& data,
@@ -518,6 +526,21 @@ class Client : public Component {
         tmp.velocity(next.velocity());
         tmp.rotation(next.rotation());
         tmp.id = next.id;
+        return tmp;
+    }
+
+    ball_state_data interpolate_ball_states(ball_state_data& previous,
+                                                ball_state_data& next,
+                                                enet_uint32 previous_time,
+                                                enet_uint32 next_time,
+                                                enet_uint32 client_time) {
+        auto p1 = previous.position();
+        auto p2 = next.position();
+        float lerp_amout = (((float)client_time) - (float)previous_time) /
+                           (((float)next_time) - ((float)previous_time));
+        ball_state_data tmp;
+        tmp.position(Vector3Lerp(p1, p2, lerp_amout));
+        tmp.rotation(next.rotation());
         return tmp;
     }
 
@@ -571,6 +594,7 @@ class Client : public Component {
                         previous_states[id], i.second, t1.timestamp,
                         t2.timestamp, client_time));
                 }
+                out.ball_state = interpolate_ball_states(t1.ball_state,t2.ball_state,t1.timestamp,t2.timestamp,client_time);
                 return out;
             } else if ((t1.timestamp > client_time) &&
                        (t2.timestamp > client_time)) {
@@ -588,10 +612,28 @@ class Client : public Component {
         if (!m_connected)
             return;
 
+        //if (m_ball_entity == NULL){
+        //    auto ball_model = this->entity()->scene()->renderer()->create_render_model(raylib::Mesh::Sphere(m_ball_radius,10,10));
+            //m_ball_entity = this->entity()->scene()->create_entity();
+            //assert(m_ball_entity != NULL);
+        //    m_ball_entity->add_component<Model>(ball_model);
+        //    m_ball_entity->init();
+        //}
+
         for (auto& i : m_entities) {
             i.second->get_component<NetworkEntity>()->active = false;
         }
-        for (auto& i : interpolate_game_states().states) {
+        auto interped = interpolate_game_states();
+
+        auto ball_transform = m_ball_entity->get_component<Transform>();
+
+        ball_transform->position = interped.ball_state.position();
+        ball_transform->rotation = interped.ball_state.rotation();
+
+        game_info.ball_position = ball_transform->position;
+        game_info.ball_rotation = ball_transform->rotation;
+
+        for (auto& i : interped.states) {
             if (i.id == m_id) {
                 this->entity()->get_component<Transform>()->position =
                     i.position() + raylib::Vector3(0,PLAYER_HEIGHT * 0.5,0);
@@ -600,10 +642,12 @@ class Client : public Component {
                 continue;
             }
             if (!KEY_EXISTS(m_entities, i.id)) {
+                TraceLog(LOG_INFO,"creating new player with id %d",i.id);
                 auto entity = this->entity()->scene()->create_entity();
                 entity->add_component<NetworkEntity>();
                 m_init_player(entity);
                 entity->init();
+                assert(!KEY_EXISTS(m_entities,i.id));
                 m_entities[i.id] = entity;
             }
             auto net_data = m_entities[i.id]->get_component<NetworkEntity>();

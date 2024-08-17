@@ -127,6 +127,13 @@ class SimulationParameters {
 
     float ground_friction = 0.5f;
 
+    float ball_radius = 0.5f;
+    float ball_mass = 0.5f;
+
+    float ball_friction = 0.0f;
+    float ball_damping = 0.99f;
+    float ball_bounce = 0.9f;
+
     /** @brief Error reduction parameter */
     float erp = 0.2;
     /** @brief Constraint force mixing parameter */

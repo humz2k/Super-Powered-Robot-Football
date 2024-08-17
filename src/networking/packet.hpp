@@ -72,6 +72,40 @@ struct ping_response_packet {
     }
 };
 
+struct ball_state_data{
+    float position_data[3];
+    float rotation_data[3];
+
+    ball_state_data(){
+        memset(position_data,0,sizeof(position_data));
+        memset(rotation_data,0,sizeof(rotation_data));
+    }
+
+    raylib::Vector3 position() {
+        return raylib::Vector3(position_data[0], position_data[1],
+                               position_data[2]);
+    }
+
+    raylib::Vector3 position(raylib::Vector3 pos) {
+        position_data[0] = pos.x;
+        position_data[1] = pos.y;
+        position_data[2] = pos.z;
+        return position();
+    }
+
+    raylib::Vector3 rotation() {
+        return raylib::Vector3(rotation_data[0], rotation_data[1],
+                               rotation_data[2]);
+    }
+
+    raylib::Vector3 rotation(raylib::Vector3 rot) {
+        rotation_data[0] = rot.x;
+        rotation_data[1] = rot.y;
+        rotation_data[2] = rot.z;
+        return rotation();
+    }
+};
+
 struct player_state_data {
     enet_uint32 id;
     float position_data[3];
@@ -138,31 +172,34 @@ struct player_state_data {
 
 struct game_state_packet {
     enet_uint32 timestamp;
+    ball_state_data ball_state;
     std::vector<player_state_data> states;
 
-    game_state_packet(enet_uint32 timestamp_,
+    game_state_packet(enet_uint32 timestamp_, ball_state_data ball_state_,
                       std::vector<player_state_data> states_)
-        : timestamp(timestamp_), states(states_) {}
+        : timestamp(timestamp_), ball_state(ball_state_), states(states_) {}
     game_state_packet() {}
 
     game_state_packet(void* raw, size_t datalen) {
         memcpy(&timestamp, ((char*)raw) + sizeof(packet_header),
                sizeof(enet_uint32));
+        memcpy(&ball_state, ((char*)raw) + sizeof(packet_header) + sizeof(enet_uint32),sizeof(ball_state_data));
         size_t state_size =
-            datalen - sizeof(packet_header) - sizeof(enet_uint32);
+            datalen - (sizeof(packet_header) + sizeof(enet_uint32) + sizeof(ball_state_data));
         int n_states = state_size / sizeof(player_state_data);
         states.resize(n_states);
         memcpy(states.data(),
-               ((char*)raw) + sizeof(packet_header) + sizeof(enet_uint32),
+               ((char*)raw) + sizeof(packet_header) + sizeof(enet_uint32) + sizeof(ball_state_data),
                state_size);
     }
 
     ENetPacket* serialize() {
         size_t size =
-            sizeof(enet_uint32) + sizeof(player_state_data) * states.size();
+            sizeof(enet_uint32) + sizeof(ball_state_data) + sizeof(player_state_data) * states.size();
         void* data = malloc(size);
         memcpy(data, &timestamp, sizeof(enet_uint32));
-        memcpy(((char*)data) + sizeof(enet_uint32), states.data(),
+        memcpy(((char*)data) + sizeof(enet_uint32), &ball_state, sizeof(ball_state_data));
+        memcpy(((char*)data) + sizeof(enet_uint32) + sizeof(ball_state_data), states.data(),
                states.size() * sizeof(player_state_data));
         ENetPacket* out = construct_packet(PACKET_GAME_STATE, data, size);
         free(data);
@@ -174,10 +211,11 @@ struct HandshakePacket {
     enet_uint32 id;
     enet_uint32 tickrate;
     enet_uint32 current_time;
+    float ball_radius;
 
     HandshakePacket(enet_uint32 id_, enet_uint32 tickrate_,
-                    enet_uint32 current_time_)
-        : id(id_), tickrate(tickrate_), current_time(current_time_) {}
+                    enet_uint32 current_time_, float ball_radius_)
+        : id(id_), tickrate(tickrate_), current_time(current_time_), ball_radius(ball_radius_) {}
 
     HandshakePacket() {}
 };
