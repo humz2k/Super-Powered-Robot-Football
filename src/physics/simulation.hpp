@@ -32,105 +32,108 @@
 
 namespace SPRF {
 
-class Ball{
-    private:
-        SimulationParameters& m_sim_params;
-        std::mutex* m_simulation_mutex;
-        dWorldID m_world;
-        dSpaceID m_space;
-        float m_dt;
-        float m_radius;
-        dMass m_mass;
-        dBodyID m_body;
-        dGeomID m_geom;
-        std::vector<dGeomID> m_geom_masks;
-    public:
-        Ball(SimulationParameters& sim_params, std::mutex* simulation_mutex, dWorldID world,
-                   dSpaceID space, float dt, raylib::Vector3 initial_position = raylib::Vector3(3, 3, 3))
-                   : m_sim_params(sim_params), m_simulation_mutex(simulation_mutex),
-                   m_world(world), m_space(space), m_dt(dt), m_radius(m_sim_params.ball_radius){
-            m_body = dBodyCreate(m_world);
-            m_geom = dCreateSphere(m_space, m_radius);
-            dMassSetSphereTotal(&m_mass,sim_params.ball_mass,m_radius);
-            dBodySetMass(m_body,&m_mass);
-            dGeomSetBody(m_geom,m_body);
-            dBodySetPosition(m_body, initial_position.x, initial_position.y, initial_position.z);
-            m_geom_masks.push_back(m_geom);
-        }
+class Ball {
+  private:
+    SimulationParameters& m_sim_params;
+    std::mutex* m_simulation_mutex;
+    dWorldID m_world;
+    dSpaceID m_space;
+    float m_dt;
+    float m_radius;
+    dMass m_mass;
+    dBodyID m_body;
+    dGeomID m_geom;
+    std::vector<dGeomID> m_geom_masks;
 
-        raylib::Vector3 position(){
-            const float* pos = dBodyGetPosition(m_body);
-            return raylib::Vector3(pos[0], pos[1], pos[2]);
-        }
+  public:
+    Ball(SimulationParameters& sim_params, std::mutex* simulation_mutex,
+         dWorldID world, dSpaceID space, float dt,
+         raylib::Vector3 initial_position = raylib::Vector3(3, 3, 3))
+        : m_sim_params(sim_params), m_simulation_mutex(simulation_mutex),
+          m_world(world), m_space(space), m_dt(dt),
+          m_radius(m_sim_params.ball_radius) {
+        m_body = dBodyCreate(m_world);
+        m_geom = dCreateSphere(m_space, m_radius);
+        dMassSetSphereTotal(&m_mass, sim_params.ball_mass, m_radius);
+        dBodySetMass(m_body, &m_mass);
+        dGeomSetBody(m_geom, m_body);
+        dBodySetPosition(m_body, initial_position.x, initial_position.y,
+                         initial_position.z);
+        m_geom_masks.push_back(m_geom);
+    }
 
-        raylib::Vector3 rotation(){
-            dQuaternion q;
-            dQfromR(q,dBodyGetRotation(m_body));
-            return QuaternionToEuler(raylib::Quaternion(q[0],q[1],q[2],q[3]));
-        }
+    raylib::Vector3 position() {
+        const float* pos = dBodyGetPosition(m_body);
+        return raylib::Vector3(pos[0], pos[1], pos[2]);
+    }
 
-        /**
-         * @brief Sets the velocity of the player body.
-         *
-         * @param vel The velocity to be set.
-         *
-         * @return raylib::Vector3 The current velocity.
-         */
-        raylib::Vector3 velocity(raylib::Vector3 vel) {
-            dBodySetLinearVel(m_body, vel.x, vel.y, vel.z);
-            return vel;
-        }
+    raylib::Vector3 rotation() {
+        dQuaternion q;
+        dQfromR(q, dBodyGetRotation(m_body));
+        return QuaternionToEuler(raylib::Quaternion(q[0], q[1], q[2], q[3]));
+    }
 
-        /**
-         * @brief Gets the current velocity of the player body.
-         *
-         * @return raylib::Vector3 The current velocity.
-         */
-        raylib::Vector3 velocity() {
-            const float* v = dBodyGetLinearVel(m_body);
-            return raylib::Vector3(v[0], v[1], v[2]);
-        }
+    /**
+     * @brief Sets the velocity of the player body.
+     *
+     * @param vel The velocity to be set.
+     *
+     * @return raylib::Vector3 The current velocity.
+     */
+    raylib::Vector3 velocity(raylib::Vector3 vel) {
+        dBodySetLinearVel(m_body, vel.x, vel.y, vel.z);
+        return vel;
+    }
 
-        /**
-         * @brief Gets the current XZ velocity of the player body.
-         *
-         * @return raylib::Vector3 The current XZ velocity.
-         */
-        raylib::Vector3 xz_velocity() {
-            auto out = velocity();
-            out.y = 0;
-            return out;
-        }
+    /**
+     * @brief Gets the current velocity of the player body.
+     *
+     * @return raylib::Vector3 The current velocity.
+     */
+    raylib::Vector3 velocity() {
+        const float* v = dBodyGetLinearVel(m_body);
+        return raylib::Vector3(v[0], v[1], v[2]);
+    }
 
-        /**
-         * @brief Sets the XZ velocity of the player body.
-         *
-         * @param vel The XZ velocity to be set.
-         *
-         * @return raylib::Vector3 The current XZ velocity.
-         */
-        raylib::Vector3 xz_velocity(raylib::Vector3 vel) {
-            auto tmp = vel;
-            tmp.y = velocity().y;
-            velocity(tmp);
-            return vel;
-        }
+    /**
+     * @brief Gets the current XZ velocity of the player body.
+     *
+     * @return raylib::Vector3 The current XZ velocity.
+     */
+    raylib::Vector3 xz_velocity() {
+        auto out = velocity();
+        out.y = 0;
+        return out;
+    }
 
-        dGeomID geom(){
-            return m_geom;
-        }
+    /**
+     * @brief Sets the XZ velocity of the player body.
+     *
+     * @param vel The XZ velocity to be set.
+     *
+     * @return raylib::Vector3 The current XZ velocity.
+     */
+    raylib::Vector3 xz_velocity(raylib::Vector3 vel) {
+        auto tmp = vel;
+        tmp.y = velocity().y;
+        velocity(tmp);
+        return vel;
+    }
 
-        bool grounded() {
-            auto ray = RaycastQuery(m_space, position(), raylib::Vector3(0, -1, 0),
-                                    m_radius * 1.05, m_geom_masks);
-            return ray.hit;
-        }
+    dGeomID geom() { return m_geom; }
 
-        void update(){
-            if (grounded()){
-                xz_velocity(xz_velocity() * m_sim_params.ball_damping * (m_dt / 0.01));
-            }
+    bool grounded() {
+        auto ray = RaycastQuery(m_space, position(), raylib::Vector3(0, -1, 0),
+                                m_radius * 1.05, m_geom_masks);
+        return ray.hit;
+    }
+
+    void update() {
+        if (grounded()) {
+            xz_velocity(xz_velocity() * m_sim_params.ball_damping *
+                        (m_dt / 0.01));
         }
+    }
 };
 
 /**
@@ -163,7 +166,7 @@ class Simulation {
 
     /** @brief How much velocity objects inside each other will separate at
      * (default infinity but that seems dumb) */
-    //float m_correcting_velocity = 0.9;
+    // float m_correcting_velocity = 0.9;
 
     /** @brief dont do work if object is stationary */
     bool m_auto_disable = false;
@@ -297,7 +300,8 @@ class Simulation {
 
         simple_map()->load(m_world, m_space);
 
-        m_ball = new Ball(m_sim_params,&simulation_mutex,m_world,m_space,m_dt);
+        m_ball =
+            new Ball(m_sim_params, &simulation_mutex, m_world, m_space, m_dt);
     }
 
     /**
@@ -359,9 +363,7 @@ class Simulation {
      */
     dJointGroupID contact_group() { return m_contact_group; }
 
-    Ball* ball(){
-        return m_ball;
-    }
+    Ball* ball() { return m_ball; }
 
     /**
      * @brief Steps the simulation.
@@ -393,7 +395,8 @@ class Simulation {
      * @param tick Pointer to the current simulation tick.
      * @param states Vector of player_state_data to be updated.
      */
-    void update(enet_uint32* tick, std::vector<player_state_data>& states, ball_state_data& ball_state) {
+    void update(enet_uint32* tick, std::vector<player_state_data>& states,
+                ball_state_data& ball_state) {
         std::lock_guard<std::mutex> guard(simulation_mutex);
         *tick = m_tick;
         for (auto& i : states) {
@@ -438,14 +441,13 @@ static void near_callback(void* data, dGeomID o1, dGeomID o2) {
     // ODE manual and have fun experimenting to learn more.
     for (i = 0; i < MAX_CONTACTS; i++) {
         contact[i].surface.mode = dContactBounce | dContactSoftCFM;
-        if ((o1 == sim->ball()->geom()) || (o2 == sim->ball()->geom())){
-             contact[i].surface.mu = sim->params().ball_friction;
-             contact[i].surface.mu2 = 0;
+        if ((o1 == sim->ball()->geom()) || (o2 == sim->ball()->geom())) {
+            contact[i].surface.mu = sim->params().ball_friction;
+            contact[i].surface.mu2 = 0;
             contact[i].surface.bounce = sim->params().ball_bounce;
             contact[i].surface.bounce_vel = 0.05;
             contact[i].surface.soft_cfm = 0.01;
-        }
-        else{
+        } else {
             contact[i].surface.mu = sim->params().ground_friction;
             contact[i].surface.mu2 = 0;
             contact[i].surface.bounce = 0.01;

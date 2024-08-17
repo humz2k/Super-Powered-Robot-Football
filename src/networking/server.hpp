@@ -120,7 +120,8 @@ class Server {
         auto player = m_simulation.create_player(m_next_id);
         player->enable();
         event->peer->data = player;
-        HandshakePacket out(m_next_id, m_tickrate, enet_time_get(), m_simulation.params().ball_radius);
+        HandshakePacket out(m_next_id, m_tickrate, enet_time_get(),
+                            m_simulation.params().ball_radius);
         m_next_id++;
         ENetPacket* packet = enet_packet_create(&out, sizeof(HandshakePacket),
                                                 ENET_PACKET_FLAG_RELIABLE);
@@ -182,7 +183,8 @@ class Server {
             }
         }
         if ((enet_time_get() - m_last_packet_send) >= (1000 / m_tickrate)) {
-            game_state_packet packet(enet_time_get(), m_ball_state, m_player_states);
+            game_state_packet packet(enet_time_get(), m_ball_state,
+                                     m_player_states);
             enet_host_broadcast(m_enet_server, 0, packet.serialize());
             enet_host_flush(m_enet_server);
             m_last_packet_send = enet_time_get();

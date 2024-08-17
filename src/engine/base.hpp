@@ -66,7 +66,7 @@ class GameInfo {
     float recieve_delta;
     float send_delta;
     bool dev_console_active = false;
-    //raylib::Vector2 mouse_sense_ratio = raylib::Vector2(0.0165, 0.022);
+    // raylib::Vector2 mouse_sense_ratio = raylib::Vector2(0.0165, 0.022);
     int packet_queue_size = 0;
     GameInfo() {}
 
@@ -141,16 +141,16 @@ class Logger {
     }
 };
 
-class GameSettings{
-    public:
-        std::unordered_map<std::string,float> float_values;
-        std::unordered_map<std::string,int> int_values;
-        std::unordered_map<std::string,raylib::Color> color_values;
-        GameSettings(){
-            float_values["m_yaw"] = 0.022;
-            float_values["m_pitch"] = 0.022;
-            float_values["m_sensitivity"] = 1;
-        }
+class GameSettings {
+  public:
+    std::unordered_map<std::string, float> float_values;
+    std::unordered_map<std::string, int> int_values;
+    std::unordered_map<std::string, raylib::Color> color_values;
+    GameSettings() {
+        float_values["m_yaw"] = 0.022;
+        float_values["m_pitch"] = 0.022;
+        float_values["m_sensitivity"] = 1;
+    }
 };
 
 extern GameSettings game_settings;

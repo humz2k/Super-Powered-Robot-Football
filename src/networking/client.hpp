@@ -118,14 +118,13 @@ template <> class UpdateVariable<bool> : public DevConsoleCommand {
 };
 
 class UpdateInput : public DevConsoleCommand {
-    private:
-        bool* m_var;
-    public:
-        UpdateInput(DevConsole& console, bool* var)
+  private:
+    bool* m_var;
+
+  public:
+    UpdateInput(DevConsole& console, bool* var)
         : DevConsoleCommand(console), m_var(var){};
-        void handle(std::vector<std::string>& args){
-            *m_var = true;
-        }
+    void handle(std::vector<std::string>& args) { *m_var = true; }
 };
 
 /** NOTE: No fake ping for sends!!! Only recieves... Please fix! */
@@ -156,7 +155,7 @@ class Client : public Component {
     SmoothedVariable m_send_delta;
     SmoothedVariable m_ping;
 
-    //float m_interp = 2;
+    // float m_interp = 2;
     game_state_packet m_last_game_state;
     std::mutex m_queue_mutex;
     std::list<game_state_packet> m_game_state_queue;
@@ -248,11 +247,11 @@ class Client : public Component {
                 event.type == ENET_EVENT_TYPE_RECEIVE) {
                 HandshakePacket* handshake =
                     (HandshakePacket*)event.packet->data;
-                TraceLog(
-                    LOG_INFO,
-                    "I am player %u, server tickrate = %u, current_time = %u, ball_radius = %g",
-                    handshake->id, handshake->tickrate,
-                    handshake->current_time, handshake->ball_radius);
+                TraceLog(LOG_INFO,
+                         "I am player %u, server tickrate = %u, current_time = "
+                         "%u, ball_radius = %g",
+                         handshake->id, handshake->tickrate,
+                         handshake->current_time, handshake->ball_radius);
                 enet_time_set(handshake->current_time);
                 m_id = handshake->id;
                 m_ball_radius = handshake->ball_radius;
@@ -448,9 +447,10 @@ class Client : public Component {
             return;
         }
         // this->entity()->scene()->
-        //dev_console->add_command<UpdateVariable<float>>("cl_interp",
-        //                                                "cl_interp", &m_interp);
-        if (!KEY_EXISTS(game_settings.float_values,"cl_interp")){
+        // dev_console->add_command<UpdateVariable<float>>("cl_interp",
+        //                                                "cl_interp",
+        //                                                &m_interp);
+        if (!KEY_EXISTS(game_settings.float_values, "cl_interp")) {
             game_settings.float_values["cl_interp"] = 2;
         }
         dev_console->add_command<UpdateVariable<int>>(
@@ -469,11 +469,11 @@ class Client : public Component {
         dev_console->add_command<UpdateVariable<bool>>(
             "cl_fake_packet_down_loss", "cl_fake_packet_down_loss",
             &m_fake_packet_down_loss);
-        dev_console->add_command<UpdateInput>("+forward",&m_forward);
-        dev_console->add_command<UpdateInput>("+backward",&m_backward);
-        dev_console->add_command<UpdateInput>("+left",&m_left);
-        dev_console->add_command<UpdateInput>("+right",&m_right);
-        dev_console->add_command<UpdateInput>("+jump",&m_jump);
+        dev_console->add_command<UpdateInput>("+forward", &m_forward);
+        dev_console->add_command<UpdateInput>("+backward", &m_backward);
+        dev_console->add_command<UpdateInput>("+left", &m_left);
+        dev_console->add_command<UpdateInput>("+right", &m_right);
+        dev_console->add_command<UpdateInput>("+jump", &m_jump);
         enet_time_set(0);
         m_client_thread = std::thread(&Client::run_client, this);
     }
@@ -501,7 +501,9 @@ class Client : public Component {
             this->entity()->scene()->close();
             return;
         }
-        auto ball_model = this->entity()->scene()->renderer()->create_render_model(raylib::Mesh::Sphere(m_ball_radius,10,10));
+        auto ball_model =
+            this->entity()->scene()->renderer()->create_render_model(
+                raylib::Mesh::Sphere(m_ball_radius, 10, 10));
         m_ball_entity = this->entity()->scene()->create_entity();
         m_ball_entity->add_component<Model>(ball_model);
         m_ball_entity->init();
@@ -530,10 +532,10 @@ class Client : public Component {
     }
 
     ball_state_data interpolate_ball_states(ball_state_data& previous,
-                                                ball_state_data& next,
-                                                enet_uint32 previous_time,
-                                                enet_uint32 next_time,
-                                                enet_uint32 client_time) {
+                                            ball_state_data& next,
+                                            enet_uint32 previous_time,
+                                            enet_uint32 next_time,
+                                            enet_uint32 client_time) {
         auto p1 = previous.position();
         auto p2 = next.position();
         float lerp_amout = (((float)client_time) - (float)previous_time) /
@@ -546,7 +548,9 @@ class Client : public Component {
 
     game_state_packet interpolate_game_states() {
         enet_uint32 client_time =
-            enet_time_get() - m_recv_delta.get() * game_settings.float_values["cl_interp"];//m_interp;
+            enet_time_get() -
+            m_recv_delta.get() *
+                game_settings.float_values["cl_interp"]; // m_interp;
         std::lock_guard<std::mutex> guard(m_queue_mutex);
         game_info.packet_queue_size = m_game_state_queue.size();
         if (m_game_state_queue.size() == 0) {
@@ -594,7 +598,9 @@ class Client : public Component {
                         previous_states[id], i.second, t1.timestamp,
                         t2.timestamp, client_time));
                 }
-                out.ball_state = interpolate_ball_states(t1.ball_state,t2.ball_state,t1.timestamp,t2.timestamp,client_time);
+                out.ball_state = interpolate_ball_states(
+                    t1.ball_state, t2.ball_state, t1.timestamp, t2.timestamp,
+                    client_time);
                 return out;
             } else if ((t1.timestamp > client_time) &&
                        (t2.timestamp > client_time)) {
@@ -612,10 +618,11 @@ class Client : public Component {
         if (!m_connected)
             return;
 
-        //if (m_ball_entity == NULL){
-        //    auto ball_model = this->entity()->scene()->renderer()->create_render_model(raylib::Mesh::Sphere(m_ball_radius,10,10));
-            //m_ball_entity = this->entity()->scene()->create_entity();
-            //assert(m_ball_entity != NULL);
+        // if (m_ball_entity == NULL){
+        //     auto ball_model =
+        //     this->entity()->scene()->renderer()->create_render_model(raylib::Mesh::Sphere(m_ball_radius,10,10));
+        // m_ball_entity = this->entity()->scene()->create_entity();
+        // assert(m_ball_entity != NULL);
         //    m_ball_entity->add_component<Model>(ball_model);
         //    m_ball_entity->init();
         //}
@@ -636,18 +643,18 @@ class Client : public Component {
         for (auto& i : interped.states) {
             if (i.id == m_id) {
                 this->entity()->get_component<Transform>()->position =
-                    i.position() + raylib::Vector3(0,PLAYER_HEIGHT * 0.5,0);
+                    i.position() + raylib::Vector3(0, PLAYER_HEIGHT * 0.5, 0);
                 game_info.position = i.position();
                 game_info.velocity = i.velocity();
                 continue;
             }
             if (!KEY_EXISTS(m_entities, i.id)) {
-                TraceLog(LOG_INFO,"creating new player with id %d",i.id);
+                TraceLog(LOG_INFO, "creating new player with id %d", i.id);
                 auto entity = this->entity()->scene()->create_entity();
                 entity->add_component<NetworkEntity>();
                 m_init_player(entity);
                 entity->init();
-                assert(!KEY_EXISTS(m_entities,i.id));
+                assert(!KEY_EXISTS(m_entities, i.id));
                 m_entities[i.id] = entity;
             }
             auto net_data = m_entities[i.id]->get_component<NetworkEntity>();

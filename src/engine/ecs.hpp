@@ -183,20 +183,26 @@ class Entity : public Logger {
      * @brief Construct a new Entity object.
      * @param scene Pointer to the scene.
      */
-    Entity(Scene* scene) : m_scene(scene){m_id = id_counter++; TraceLog(LOG_INFO,"created entity %d",m_id);};
+    Entity(Scene* scene) : m_scene(scene) {
+        m_id = id_counter++;
+        TraceLog(LOG_INFO, "created entity %d", m_id);
+    };
 
     /**
      * @brief Construct a new Entity object with a parent entity.
      * @param scene Pointer to the scene.
      * @param parent Pointer to the parent entity.
      */
-    Entity(Scene* scene, Entity* parent) : m_scene(scene), m_parent(parent){m_id = id_counter++;TraceLog(LOG_INFO,"created entity %d",m_id);};
+    Entity(Scene* scene, Entity* parent) : m_scene(scene), m_parent(parent) {
+        m_id = id_counter++;
+        TraceLog(LOG_INFO, "created entity %d", m_id);
+    };
 
     /**
      * @brief Destroy the Entity object and its components.
      */
     ~Entity() {
-        TraceLog(LOG_INFO,"deleting entity %d",m_id);
+        TraceLog(LOG_INFO, "deleting entity %d", m_id);
         for (const auto& [key, value] : m_components) {
             delete value;
         }
@@ -383,7 +389,7 @@ class Scene : public Logger {
      */
     void update() {
         size_t len = m_entities.size();
-        for (size_t i = 0; i < len; i++){
+        for (size_t i = 0; i < len; i++) {
             m_entities[i]->update();
         }
     }
@@ -458,7 +464,7 @@ class Scene : public Logger {
      */
     void init() {
         size_t len = m_entities.size();
-        for (size_t i = 0; i < len; i++){
+        for (size_t i = 0; i < len; i++) {
             m_entities[i]->init();
         }
     }

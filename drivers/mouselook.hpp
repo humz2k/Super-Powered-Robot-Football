@@ -3,7 +3,7 @@
 
 #include "engine/engine.hpp"
 
-namespace SPRF{
+namespace SPRF {
 
 class MouseLook : public Component {
   private:
@@ -34,7 +34,10 @@ class MouseLook : public Component {
         }
 
         auto mouse_delta =
-            GetRawMouseDelta() * raylib::Vector2(game_settings.float_values["m_yaw"],game_settings.float_values["m_pitch"]) * game_settings.float_values["m_sensitivity"];
+            GetRawMouseDelta() *
+            raylib::Vector2(game_settings.float_values["m_yaw"],
+                            game_settings.float_values["m_pitch"]) *
+            game_settings.float_values["m_sensitivity"];
         this->entity()->get_component<Transform>()->rotation.x += mouse_delta.y;
         this->entity()->get_component<Transform>()->rotation.y -= mouse_delta.x;
 

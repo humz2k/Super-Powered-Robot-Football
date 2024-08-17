@@ -6,8 +6,8 @@
 #include "raylib-cpp.hpp"
 #include "ui.hpp"
 
-#include <sstream>
 #include <fstream>
+#include <sstream>
 #include <unordered_map>
 
 namespace SPRF {
@@ -129,7 +129,8 @@ class DevConsole : public Component, public UITextInputBox {
         return evaluate_alias(alias.command, final_args);
     }
 
-    void run_command(std::string command, std::vector<std::string> args = std::vector<std::string>(),
+    void run_command(std::string command,
+                     std::vector<std::string> args = std::vector<std::string>(),
                      int depth = 0) {
         if (command == "alias") {
             if (args.size() >= 2) {
@@ -163,8 +164,8 @@ class DevConsole : public Component, public UITextInputBox {
         m_aliases[alias] = CommandAlias(command, arguments);
     }
 
-    void submit(std::string input,bool silent = false){
-        if (!silent){
+    void submit(std::string input, bool silent = false) {
+        if (!silent) {
             TraceLog(LOG_INFO, input.c_str());
         }
         std::istringstream iss(input);
@@ -183,24 +184,23 @@ class DevConsole : public Component, public UITextInputBox {
         m_console_start = log_manager.log_stack.size() - m_text_boxes.size();
     }
 
-    void exec(std::string filename){
+    void exec(std::string filename) {
         std::ifstream file(filename);
         std::string line;
 
         if (file.is_open()) {
             while (getline(file, line)) {
                 if (line.size() > 0)
-                    submit(line,true);
+                    submit(line, true);
             }
             file.close();
-        }
-        else {
-            TraceLog(LOG_ERROR,"couldn't open file %s",filename.c_str());
+        } else {
+            TraceLog(LOG_ERROR, "couldn't open file %s", filename.c_str());
         }
     }
 
     void on_submit(std::string input) {
-        if (input != ""){
+        if (input != "") {
             m_inputs.push_back(input);
             m_input_pointer = m_inputs.size();
         }
@@ -213,19 +213,19 @@ class DevConsole : public Component, public UITextInputBox {
         // return m_commands[name];
     }
 
-    void add_bind(KeyboardKey key, std::string command){
+    void add_bind(KeyboardKey key, std::string command) {
         m_binds[key] = command;
     }
 
-    void update_binds(){
-        for (auto& i : m_binds){
-            if (i.first == KEY_NULL){
-                if (GetMouseWheelMove() != 0.0f){
+    void update_binds() {
+        for (auto& i : m_binds) {
+            if (i.first == KEY_NULL) {
+                if (GetMouseWheelMove() != 0.0f) {
                     run_command(i.second);
                 }
                 continue;
             }
-            if (IsKeyDown(i.first)){
+            if (IsKeyDown(i.first)) {
                 run_command(i.second);
             }
         }
@@ -239,7 +239,7 @@ class DevConsole : public Component, public UITextInputBox {
             }
         }
         game_info.dev_console_active = m_enabled;
-        if (!m_enabled){
+        if (!m_enabled) {
             update_binds();
             return;
         }
@@ -273,17 +273,16 @@ class DevConsole : public Component, public UITextInputBox {
         }
         if (IsKeyPressed(KEY_DOWN)) {
             m_input_pointer++;
-            if ((m_input_pointer >= 0) && (m_input_pointer < m_inputs.size())){
+            if ((m_input_pointer >= 0) && (m_input_pointer < m_inputs.size())) {
                 update_text(m_inputs[m_input_pointer]);
             } else {
                 m_input_pointer = m_inputs.size();
                 update_text("");
             }
-
         }
         if (IsKeyPressed(KEY_UP)) {
             m_input_pointer--;
-            if ((m_input_pointer >= 0) && (m_input_pointer < m_inputs.size())){
+            if ((m_input_pointer >= 0) && (m_input_pointer < m_inputs.size())) {
                 update_text(m_inputs[m_input_pointer]);
             } else {
                 m_input_pointer = 0;

@@ -1,10 +1,10 @@
+#include "crosshair.hpp"
 #include "custom_mesh.hpp"
 #include "engine/engine.hpp"
+#include "mouselook.hpp"
 #include "networking/client.hpp"
 #include "networking/map.hpp"
 #include "networking/server.hpp"
-#include "mouselook.hpp"
-#include "crosshair.hpp"
 #include <cassert>
 #include <string>
 
