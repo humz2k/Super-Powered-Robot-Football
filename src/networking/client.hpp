@@ -182,24 +182,6 @@ class Client : public Component {
         m_jump = false;
     }
 
-    void update_inputs() {
-        if (IsKeyDown(KEY_W)) {
-            m_forward = true;
-        }
-        if (IsKeyDown(KEY_S)) {
-            m_backward = true;
-        }
-        if (IsKeyDown(KEY_A)) {
-            m_left = true;
-        }
-        if (IsKeyDown(KEY_D)) {
-            m_right = true;
-        }
-        if (IsKeyDown(KEY_SPACE) || (GetMouseWheelMove() != 0.0f)) {
-            m_jump = true;
-        }
-    }
-
     /**
      * @brief Connect to the server.
      * @return int 0 if connection failed, 1 if succeeded.
@@ -606,9 +588,6 @@ class Client : public Component {
         if (!m_connected)
             return;
 
-        // update inputs
-        //if (!game_info.dev_console_active)
-            //update_inputs();
         for (auto& i : m_entities) {
             i.second->get_component<NetworkEntity>()->active = false;
         }
