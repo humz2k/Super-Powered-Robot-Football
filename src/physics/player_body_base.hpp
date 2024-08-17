@@ -249,7 +249,7 @@ class PlayerBodyBase {
      */
     bool grounded() {
         auto ray = RaycastQuery(m_space, position(), raylib::Vector3(0, -1, 0),
-                                PLAYER_HEIGHT * 1.025, m_geom_masks);
+                                PLAYER_HEIGHT, m_geom_masks);
         return ray.hit;
     }
 
