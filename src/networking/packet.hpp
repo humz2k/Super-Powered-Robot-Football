@@ -34,7 +34,7 @@ struct packet_header {
     packet_header() {}
 };
 
-ENetPacket*
+static ENetPacket*
 construct_packet(packet_type_t type, void* data, size_t size,
                  enet_uint32 flags = (ENET_PACKET_FLAG_UNSEQUENCED)) {
     packet_header header(type);

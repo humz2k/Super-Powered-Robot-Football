@@ -3,6 +3,8 @@
 #include "networking/client.hpp"
 #include "networking/map.hpp"
 #include "networking/server.hpp"
+#include "mouselook.hpp"
+#include "crosshair.hpp"
 #include <cassert>
 #include <string>
 
@@ -19,49 +21,6 @@ class DisconnectCommand : public DevConsoleCommand {
         : DevConsoleCommand(dev_console), m_callback(callback) {}
 
     void handle(std::vector<std::string>& args) { m_callback(); }
-};
-
-class MouseLook : public Component {
-  private:
-    float sense = 2;
-    bool mouse_locked = false;
-
-  public:
-    void init() {}
-
-    void update() {
-        if (IsKeyPressed(KEY_Q)) {
-            if (mouse_locked) {
-                EnableCursor();
-                mouse_locked = false;
-            } else {
-                DisableCursor();
-                mouse_locked = true;
-            }
-        }
-        if (game_info.dev_console_active) {
-            if (mouse_locked) {
-                EnableCursor();
-                mouse_locked = false;
-            }
-            return;
-        }
-        if (!mouse_locked) {
-            return;
-        }
-
-        auto mouse_delta =
-            GetRawMouseDelta() * game_info.mouse_sense_ratio * sense;
-        this->entity()->get_component<Transform>()->rotation.x += mouse_delta.y;
-        this->entity()->get_component<Transform>()->rotation.y -= mouse_delta.x;
-
-        this->entity()->get_component<Transform>()->rotation.y =
-            Wrap(this->entity()->get_component<Transform>()->rotation.y, 0,
-                 2 * M_PI);
-        this->entity()->get_component<Transform>()->rotation.x =
-            Clamp(this->entity()->get_component<Transform>()->rotation.x,
-                  -M_PI * 0.5f + 0.5, M_PI * 0.5f - 0.5);
-    }
 };
 
 class PlayerComponent : public Component {
@@ -139,6 +98,7 @@ class LocalScene : public DefaultScene {
         simple_map()->load(this);
 
         auto player = this->create_entity();
+        player->add_component<Crosshair>();
         m_client = player->add_component<Client>("127.0.0.1", 9999, init_player,
                                                  dev_console());
         auto camera = player->create_child()->add_component<Camera>();
@@ -169,6 +129,7 @@ class Scene1 : public DefaultScene {
         simple_map()->load(this);
 
         auto player = this->create_entity();
+        player->add_component<Crosshair>();
         player->add_component<Client>(host, port, init_player, dev_console());
         auto camera = player->create_child()->add_component<Camera>();
         camera->set_active();

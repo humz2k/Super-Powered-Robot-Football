@@ -60,6 +60,11 @@ class Game : public Logger {
         : Logger("GAME"), m_window(window_width, window_height, window_name),
           m_render_view(render_width, render_height), m_fps_max(fps_max) {
 
+        TraceLog(LOG_INFO,"working in %s",GetWorkingDirectory());
+        TraceLog(LOG_INFO,"cd %s",GetApplicationDirectory());
+        ChangeDirectory(GetApplicationDirectory());
+        TraceLog(LOG_INFO,"now working in %s",GetWorkingDirectory());
+
         // monitor size in inches
         int monitor = GetCurrentMonitor();
         game_info.monitor_size =
@@ -144,6 +149,17 @@ class QuitCommand : public DevConsoleCommand {
     void handle(std::vector<std::string>& args) { quit(); }
 };
 
+class FPSMaxCommand : public DevConsoleCommand {
+public:
+    using DevConsoleCommand::DevConsoleCommand;
+    void handle(std::vector<std::string>& args) {
+        if (args.size() > 0){
+            int max_fps = std::stoi(args[0]);
+            SetTargetFPS(max_fps);
+        }
+    }
+};
+
 class FnCommand : public DevConsoleCommand {
   public:
     using DevConsoleCommand::DevConsoleCommand;
@@ -177,12 +193,76 @@ class FnCommand : public DevConsoleCommand {
     }
 };
 
+class ConfigCommand : public DevConsoleCommand {
+    public:
+    using DevConsoleCommand::DevConsoleCommand;
+    void handle(std::vector<std::string>& args) {
+        if (args.size() < 2)return;
+        if (args[0] == "float"){
+            if (args.size() == 3){
+                game_settings.float_values[args[1]] = std::stof(args[2]);
+            }
+            TraceLog(LOG_CONSOLE, "%s = %g", args[1].c_str(), game_settings.float_values[args[1]]);
+            return;
+        }
+        if (args[0] == "color"){
+            if (args.size() == 6){
+            game_settings.color_values[args[1]] = raylib::Color(std::stoi(args[2]),std::stoi(args[3]),std::stoi(args[4]),std::stoi(args[5]));
+            }
+            TraceLog(LOG_CONSOLE, "%s = %d %d %d %d", args[1].c_str(), game_settings.color_values[args[1]].r, game_settings.color_values[args[1]].g, game_settings.color_values[args[1]].b, game_settings.color_values[args[1]].a);
+            return;
+        }
+        if (args[0] == "int"){
+            if (args.size() == 3){
+                game_settings.int_values[args[1]] = std::stoi(args[2]);
+            }
+            TraceLog(LOG_CONSOLE, "%s = %d", args[1].c_str(), game_settings.int_values[args[1]]);
+            return;
+        }
+    }
+};
+
+class BindCommand : public DevConsoleCommand{
+    public:
+        using DevConsoleCommand::DevConsoleCommand;
+        void handle(std::vector<std::string>& args){
+            if (args.size() != 2)return;
+            std::string& key_name = args[0];
+            std::string& command = args[1];
+            if (key_name == "mwheel"){
+                dev_console().add_bind(KEY_NULL,command);
+            } else if (key_name == "space") {
+                dev_console().add_bind(KEY_SPACE,command);
+            } else if (key_name == "left_arrow") {
+                dev_console().add_bind(KEY_LEFT,command);
+            } else if (key_name == "right_arrow") {
+                dev_console().add_bind(KEY_RIGHT,command);
+            } else if (key_name == "up_arrow") {
+                dev_console().add_bind(KEY_UP,command);
+            } else if (key_name == "down_arrow") {
+                dev_console().add_bind(KEY_DOWN,command);
+            } else if (key_name.size() == 1) {
+                dev_console().add_bind((KeyboardKey)std::toupper(key_name[0]),command);
+            } else {
+                return;
+            }
+            TraceLog(LOG_CONSOLE,"bind %s %s",key_name.c_str(),command.c_str());
+        }
+};
+
 class DefaultDevConsole : public DevConsole {
   public:
     DefaultDevConsole() {
         add_command<EchoCommand>("echo");
         add_command<QuitCommand>("quit");
         add_command<FnCommand>("fn");
+        add_command<FPSMaxCommand>("fps_max");
+        add_command<ConfigCommand>("config");
+        add_command<BindCommand>("bind");
+    }
+
+    void init(){
+        exec("autoexec.cfg");
     }
 };
 
@@ -195,17 +275,10 @@ class DefaultScene : public Scene {
     DefaultScene(Game* game)
         : m_dev_console(
               this->create_entity()->add_component<DefaultDevConsole>()),
-          m_game(game) {}
+          m_game(game) {
+          }
 
     DefaultDevConsole* dev_console() { return m_dev_console; }
-
-    // template <class T, typename... Args>
-    // void load_next(Args... args){
-    //     m_scene_to_load = true;
-    //     m_load_next = [this,args...](){
-    //         m_game->load_scene<T>(args...);
-    //     };
-    // }
 
     Game* game() { return m_game; }
 };

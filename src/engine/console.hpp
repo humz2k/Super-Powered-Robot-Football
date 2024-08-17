@@ -7,6 +7,7 @@
 #include "ui.hpp"
 
 #include <sstream>
+#include <fstream>
 #include <unordered_map>
 
 namespace SPRF {
@@ -48,6 +49,9 @@ class DevConsole : public Component, public UITextInputBox {
     std::unordered_map<std::string, std::shared_ptr<DevConsoleCommand>>
         m_commands;
     std::unordered_map<std::string, CommandAlias> m_aliases;
+    std::vector<std::string> m_inputs;
+    std::unordered_map<KeyboardKey, std::string> m_binds;
+    int m_input_pointer = 0;
     // UITextInputBox m_input_box;
 
     void incr_console_start() {
@@ -125,7 +129,7 @@ class DevConsole : public Component, public UITextInputBox {
         return evaluate_alias(alias.command, final_args);
     }
 
-    void run_command(std::string command, std::vector<std::string> args,
+    void run_command(std::string command, std::vector<std::string> args = std::vector<std::string>(),
                      int depth = 0) {
         if (command == "alias") {
             if (args.size() >= 2) {
@@ -159,8 +163,10 @@ class DevConsole : public Component, public UITextInputBox {
         m_aliases[alias] = CommandAlias(command, arguments);
     }
 
-    void on_submit(std::string input) {
-        TraceLog(LOG_INFO, input.c_str());
+    void submit(std::string input,bool silent = false){
+        if (!silent){
+            TraceLog(LOG_INFO, input.c_str());
+        }
         std::istringstream iss(input);
         std::string s;
         std::vector<std::string> args;
@@ -177,10 +183,52 @@ class DevConsole : public Component, public UITextInputBox {
         m_console_start = log_manager.log_stack.size() - m_text_boxes.size();
     }
 
+    void exec(std::string filename){
+        std::ifstream file(filename);
+        std::string line;
+
+        if (file.is_open()) {
+            while (getline(file, line)) {
+                if (line.size() > 0)
+                    submit(line,true);
+            }
+            file.close();
+        }
+        else {
+            TraceLog(LOG_ERROR,"couldn't open file %s",filename.c_str());
+        }
+    }
+
+    void on_submit(std::string input) {
+        if (input != ""){
+            m_inputs.push_back(input);
+            m_input_pointer = m_inputs.size();
+        }
+        submit(input);
+    }
+
     template <class T, typename... Args>
     void add_command(std::string name, Args... args) {
         m_commands[name] = std::make_shared<T>(*this, args...);
         // return m_commands[name];
+    }
+
+    void add_bind(KeyboardKey key, std::string command){
+        m_binds[key] = command;
+    }
+
+    void update_binds(){
+        for (auto& i : m_binds){
+            if (i.first == KEY_NULL){
+                if (GetMouseWheelMove() != 0.0f){
+                    run_command(i.second);
+                }
+                continue;
+            }
+            if (IsKeyDown(i.first)){
+                run_command(i.second);
+            }
+        }
     }
 
     void update() {
@@ -191,8 +239,10 @@ class DevConsole : public Component, public UITextInputBox {
             }
         }
         game_info.dev_console_active = m_enabled;
-        if (!m_enabled)
+        if (!m_enabled){
+            update_binds();
             return;
+        }
         UITextInputBox::update(m_offset);
         if (IsMouseButtonDown(0)) {
             if ((m_background.mouse_over(m_offset))) {
@@ -222,10 +272,22 @@ class DevConsole : public Component, public UITextInputBox {
             }
         }
         if (IsKeyPressed(KEY_DOWN)) {
-            incr_console_start();
+            m_input_pointer++;
+            if ((m_input_pointer >= 0) && (m_input_pointer < m_inputs.size())){
+                update_text(m_inputs[m_input_pointer]);
+            } else {
+                m_input_pointer = m_inputs.size();
+                update_text("");
+            }
+
         }
         if (IsKeyPressed(KEY_UP)) {
-            decr_console_start();
+            m_input_pointer--;
+            if ((m_input_pointer >= 0) && (m_input_pointer < m_inputs.size())){
+                update_text(m_inputs[m_input_pointer]);
+            } else {
+                m_input_pointer = 0;
+            }
         }
     }
 

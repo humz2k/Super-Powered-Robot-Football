@@ -117,6 +117,17 @@ template <> class UpdateVariable<bool> : public DevConsoleCommand {
     }
 };
 
+class UpdateInput : public DevConsoleCommand {
+    private:
+        bool* m_var;
+    public:
+        UpdateInput(DevConsole& console, bool* var)
+        : DevConsoleCommand(console), m_var(var){};
+        void handle(std::vector<std::string>& args){
+            *m_var = true;
+        }
+};
+
 /** NOTE: No fake ping for sends!!! Only recieves... Please fix! */
 class Client : public Component {
   private:
@@ -145,7 +156,7 @@ class Client : public Component {
     SmoothedVariable m_send_delta;
     SmoothedVariable m_ping;
 
-    float m_interp = 2;
+    //float m_interp = 2;
     game_state_packet m_last_game_state;
     std::mutex m_queue_mutex;
     std::list<game_state_packet> m_game_state_queue;
@@ -451,8 +462,11 @@ class Client : public Component {
             return;
         }
         // this->entity()->scene()->
-        dev_console->add_command<UpdateVariable<float>>("cl_interp",
-                                                        "cl_interp", &m_interp);
+        //dev_console->add_command<UpdateVariable<float>>("cl_interp",
+        //                                                "cl_interp", &m_interp);
+        if (!KEY_EXISTS(game_settings.float_values,"cl_interp")){
+            game_settings.float_values["cl_interp"] = 2;
+        }
         dev_console->add_command<UpdateVariable<int>>(
             "cl_fake_ping_amount", "cl_fake_ping_amount", &m_fake_ping_amount);
         dev_console->add_command<UpdateVariable<float>>(
@@ -469,6 +483,11 @@ class Client : public Component {
         dev_console->add_command<UpdateVariable<bool>>(
             "cl_fake_packet_down_loss", "cl_fake_packet_down_loss",
             &m_fake_packet_down_loss);
+        dev_console->add_command<UpdateInput>("+forward",&m_forward);
+        dev_console->add_command<UpdateInput>("+backward",&m_backward);
+        dev_console->add_command<UpdateInput>("+left",&m_left);
+        dev_console->add_command<UpdateInput>("+right",&m_right);
+        dev_console->add_command<UpdateInput>("+jump",&m_jump);
         enet_time_set(0);
         m_client_thread = std::thread(&Client::run_client, this);
     }
@@ -522,7 +541,7 @@ class Client : public Component {
 
     game_state_packet interpolate_game_states() {
         enet_uint32 client_time =
-            enet_time_get() - m_recv_delta.get() * m_interp;
+            enet_time_get() - m_recv_delta.get() * game_settings.float_values["cl_interp"];//m_interp;
         std::lock_guard<std::mutex> guard(m_queue_mutex);
         game_info.packet_queue_size = m_game_state_queue.size();
         if (m_game_state_queue.size() == 0) {
@@ -583,21 +602,20 @@ class Client : public Component {
         return m_game_state_queue.back();
     }
 
-    /** TODO: This only handles one player!!!! Please fix... */
     void update() {
         if (!m_connected)
             return;
 
         // update inputs
-        if (!game_info.dev_console_active)
-            update_inputs();
+        //if (!game_info.dev_console_active)
+            //update_inputs();
         for (auto& i : m_entities) {
             i.second->get_component<NetworkEntity>()->active = false;
         }
         for (auto& i : interpolate_game_states().states) {
             if (i.id == m_id) {
                 this->entity()->get_component<Transform>()->position =
-                    i.position();
+                    i.position() + raylib::Vector3(0,PLAYER_HEIGHT * 0.5,0);
                 game_info.position = i.position();
                 game_info.velocity = i.velocity();
                 continue;

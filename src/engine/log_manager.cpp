@@ -8,6 +8,8 @@ namespace SPRF {
 
 GameInfo game_info;
 
+GameSettings game_settings;
+
 LogManager log_manager;
 
 static std::string last_source = "NONE";

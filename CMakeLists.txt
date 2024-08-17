@@ -14,19 +14,46 @@ add_subdirectory(raylib)
 
 file(GLOB_RECURSE sources src/*.cpp src/*.c src/*.h src/*.hpp)
 
-add_library(SPRF ${sources})
+add_custom_target(
+    my_custom_target_that_always_runs ALL
+    DEPENDS ${PROJECT_BINARY_DIR}/${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/nothing1
+)
+
+add_custom_target(
+    my_custom_target_that_always_runs2 ALL
+    DEPENDS ${PROJECT_BINARY_DIR}/${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/nothing2
+)
+
+add_custom_target(
+    my_custom_target_that_always_runs3 ALL
+    DEPENDS ${PROJECT_BINARY_DIR}/${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/nothing3
+)
 
 add_custom_command(
-    TARGET SPRF POST_BUILD
+    OUTPUT ${PROJECT_BINARY_DIR}/${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/nothing1
+            ${PROJECT_BINARY_DIR}/${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/assets
+
     COMMAND ${CMAKE_COMMAND} -E copy_directory
         ${CMAKE_SOURCE_DIR}/assets
         ${PROJECT_BINARY_DIR}/${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/assets)
 
 add_custom_command(
-    TARGET SPRF POST_BUILD
+    OUTPUT ${PROJECT_BINARY_DIR}/${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/nothing2
+            ${PROJECT_BINARY_DIR}/${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/server_config.ini
+
     COMMAND ${CMAKE_COMMAND} -E copy
         ${CMAKE_SOURCE_DIR}/server_config.ini
         ${PROJECT_BINARY_DIR}/${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/server_config.ini)
+
+add_custom_command(
+    OUTPUT ${PROJECT_BINARY_DIR}/${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/nothing3
+        ${PROJECT_BINARY_DIR}/${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/autoexec.cfg
+
+    COMMAND ${CMAKE_COMMAND} -E copy
+        ${CMAKE_SOURCE_DIR}/autoexec.cfg
+        ${PROJECT_BINARY_DIR}/${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/autoexec.cfg)
+
+add_library(SPRF ${sources})
 
 target_include_directories(SPRF PUBLIC src raylib-cpp/include raylib/src src/soloud/include)
 
