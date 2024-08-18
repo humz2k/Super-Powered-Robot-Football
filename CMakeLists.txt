@@ -28,13 +28,6 @@ if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
     SET( CMAKE_CXX_FLAGS  "-Wall -Wpedantic -g -fsanitize=address -fsanitize=undefined -fno-omit-frame-pointer -fno-inline -fPIC")
 endif()
 
-if (WIN32)
-    # /ENTRY:mainCRTStartup keeps the same "main" function instead of requiring "WinMain"
-    set(CMAKE_EXE_LINKER_FLAGS " /SUBSYSTEM:WINDOWS /ENTRY:mainCRTStartup")
-else()
-
-endif()
-
 add_custom_command(
     OUTPUT ${PROJECT_BINARY_DIR}/${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/nothing4 ${PROJECT_BINARY_DIR}/${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/package
         COMMAND ${CMAKE_COMMAND} -E make_directory ${PROJECT_BINARY_DIR}/${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/package
@@ -58,5 +51,14 @@ foreach( sourcefile ${DRIVER_SOURCES} )
         target_link_libraries( ${name} SPRF raylib )
     else()
         target_link_libraries( ${name} SPRF raylib opengl32 gdi32 ws2_32 winmm)
+    endif()
+    if (${name} MATCHES "game")
+        if (WIN32)
+            # /ENTRY:mainCRTStartup keeps the same "main" function instead of requiring "WinMain"
+            # set(CMAKE_EXE_LINKER_FLAGS " /SUBSYSTEM:WINDOWS /ENTRY:mainCRTStartup")
+            target_compile_options(game PRIVATE " /SUBSYSTEM:WINDOWS /ENTRY:mainCRTStartup")
+        else()
+
+        endif()
     endif()
 endforeach( sourcefile ${DRIVER_SOURCES} )
