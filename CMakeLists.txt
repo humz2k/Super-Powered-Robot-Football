@@ -56,7 +56,7 @@ foreach( sourcefile ${DRIVER_SOURCES} )
         if (WIN32)
             # /ENTRY:mainCRTStartup keeps the same "main" function instead of requiring "WinMain"
             # set(CMAKE_EXE_LINKER_FLAGS " /SUBSYSTEM:WINDOWS /ENTRY:mainCRTStartup")
-            target_compile_options(game PRIVATE " /SUBSYSTEM:WINDOWS /ENTRY:mainCRTStartup")
+            target_link_options( ${name} PRIVATE "/SUBSYSTEM:WINDOWS /ENTRY:mainCRTStartup" )
         else()
 
         endif()
