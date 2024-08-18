@@ -5,12 +5,14 @@
 #include <functional>
 #include <iostream>
 #include <memory>
+#include <mini/ini.hpp>
 #include <string>
 #include <vector>
 
 #include "camera.hpp"
 #include "ecs.hpp"
 #include "model.hpp"
+#include "rss.hpp"
 #include "shaders.hpp"
 
 #include "base.hpp"
@@ -19,20 +21,23 @@
 #include "loading_screen.hpp"
 #include "ui.hpp"
 
+#define STRINGIFY(x) #x
+#define TOSTRING(x) STRINGIFY(x)
+
 namespace SPRF {
 
 extern bool game_should_quit;
 
 void quit();
 
-class DirectoryChanger{
-    public:
-        DirectoryChanger(){
-            TraceLog(LOG_INFO, "working in %s", GetWorkingDirectory());
-            TraceLog(LOG_INFO, "cd %s", GetApplicationDirectory());
-            ChangeDirectory(GetApplicationDirectory());
-            TraceLog(LOG_INFO, "now working in %s", GetWorkingDirectory());
-        }
+class DirectoryChanger {
+  public:
+    DirectoryChanger() {
+        TraceLog(LOG_INFO, "working in %s", GetWorkingDirectory());
+        TraceLog(LOG_INFO, "cd %s", GetApplicationDirectory());
+        ChangeDirectory(GetApplicationDirectory());
+        TraceLog(LOG_INFO, "now working in %s", GetWorkingDirectory());
+    }
 };
 
 class Game : public Logger {
@@ -64,13 +69,29 @@ class Game : public Logger {
         return m_window.GetSize();
     }
 
+    bool fullscreen() { return IsWindowFullscreen(); }
+
+    bool fullscreen(bool v) {
+        if (IsWindowFullscreen()) {
+            if (!v) {
+                ToggleFullscreen();
+            }
+        } else {
+            if (v) {
+                ToggleFullscreen();
+            }
+        }
+        return fullscreen();
+    }
+
     Game() {}
 
     Game(int window_width, int window_height, std::string window_name,
-         int render_width, int render_height, int fps_max = 200)
+         int render_width, int render_height, int fps_max = 200,
+         bool start_fullscreen = false)
         : Logger("GAME"), m_window(window_width, window_height, window_name),
           m_render_view(render_width, render_height), m_fps_max(fps_max) {
-
+        fullscreen(start_fullscreen);
         // monitor size in inches
         int monitor = GetCurrentMonitor();
         game_info.monitor_size =
@@ -95,6 +116,16 @@ class Game : public Logger {
         game_info.unload_debug_font();
         m_current_scene->destroy();
         log(LOG_INFO, "Closed game");
+        TraceLog(LOG_INFO, "mem usage: current = %g gb, peak = %g gb",
+                 1e-9 * (double)getCurrentRSS(), 1e-9 * (double)getPeakRSS());
+    }
+
+    void change_render_size(int render_width, int render_height) {
+        m_render_view = raylib::RenderTexture2D(render_width, render_height);
+    }
+
+    void change_window_size(int window_width, int window_height) {
+        SetWindowSize(window_width, window_height);
     }
 
     bool running() { return (!game_should_quit); }
@@ -127,9 +158,16 @@ class Game : public Logger {
             m_current_scene->on_close();
             m_load_next();
             m_scene_to_load = false;
+            TraceLog(LOG_INFO, "mem usage: current = %g gb, peak = %g gb",
+                     1e-9 * (double)getCurrentRSS(),
+                     1e-9 * (double)getPeakRSS());
         } else if (m_current_scene->should_close()) {
             m_current_scene->on_close();
         }
+    }
+
+    raylib::Vector2 render_size() {
+        return m_render_view.GetTexture().GetSize();
     }
 };
 
@@ -267,6 +305,82 @@ class BindCommand : public DevConsoleCommand {
     }
 };
 
+class FullscreenCommand : public DevConsoleCommand {
+  public:
+    using DevConsoleCommand::DevConsoleCommand;
+    void handle(std::vector<std::string>& args) {
+        if (args.size() > 1) {
+            return;
+        } else if (args.size() == 0) {
+            TraceLog(LOG_CONSOLE, "fullscreen %d", game->fullscreen());
+            return;
+        } else {
+            if (args[0] == "1") {
+                game->fullscreen(true);
+            } else if (args[0] == "0") {
+                game->fullscreen(false);
+            }
+            TraceLog(LOG_CONSOLE, "fullscreen %d", game->fullscreen());
+            return;
+        }
+    }
+};
+
+class RenderSizeCommand : public DevConsoleCommand {
+  public:
+    using DevConsoleCommand::DevConsoleCommand;
+    void handle(std::vector<std::string>& args) {
+        if (args.size() == 0) {
+            auto tmp = game->render_size();
+            TraceLog(LOG_CONSOLE, "render_size %d %d", (int)tmp.x, (int)tmp.y);
+            return;
+        }
+        if (args.size() != 2) {
+            return;
+        }
+        int rx = std::stoi(args[0]);
+        int ry = std::stoi(args[1]);
+        if (!((rx > 0) && (ry > 0))) {
+            return;
+        }
+        game->change_render_size(rx, ry);
+        auto tmp = game->render_size();
+        TraceLog(LOG_CONSOLE, "render_size %d %d", (int)tmp.x, (int)tmp.y);
+    }
+};
+
+class WindowSizeCommand : public DevConsoleCommand {
+  public:
+    using DevConsoleCommand::DevConsoleCommand;
+    void handle(std::vector<std::string>& args) {
+        if (args.size() == 0) {
+            TraceLog(LOG_CONSOLE, "window_size %d %d", GetDisplayWidth(),
+                     GetDisplayHeight());
+            return;
+        }
+        if (args.size() != 2) {
+            return;
+        }
+        int wx = std::stoi(args[0]);
+        int wy = std::stoi(args[1]);
+        if (!((wx > 0) && (wy > 0))) {
+            return;
+        }
+        game->change_window_size(wx, wy);
+        TraceLog(LOG_CONSOLE, "window_size %d %d", GetDisplayWidth(),
+                 GetDisplayHeight());
+    }
+};
+
+class MemUsageCommand : public DevConsoleCommand {
+  public:
+    using DevConsoleCommand::DevConsoleCommand;
+    void handle(std::vector<std::string>& args) {
+        TraceLog(LOG_CONSOLE, "mem usage: current = %g gb, peak = %g gb",
+                 1e-9 * (double)getCurrentRSS(), 1e-9 * (double)getPeakRSS());
+    }
+};
+
 class DefaultDevConsole : public DevConsole {
   public:
     DefaultDevConsole() {
@@ -276,6 +390,10 @@ class DefaultDevConsole : public DevConsole {
         add_command<FPSMaxCommand>("fps_max");
         add_command<ConfigCommand>("config");
         add_command<BindCommand>("bind");
+        add_command<FullscreenCommand>("fullscreen");
+        add_command<WindowSizeCommand>("window_size");
+        add_command<RenderSizeCommand>("render_size");
+        add_command<MemUsageCommand>("mem_usage");
     }
 
     void init() { exec("autoexec.cfg"); }

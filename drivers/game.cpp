@@ -99,8 +99,8 @@ class LocalScene : public DefaultScene {
 
         auto player = this->create_entity();
         player->add_component<Crosshair>();
-        m_client = player->add_component<Client>("127.0.0.1", 31201, init_player,
-                                                 dev_console());
+        m_client = player->add_component<Client>("127.0.0.1", 31201,
+                                                 init_player, dev_console());
         auto camera = player->create_child()->add_component<Camera>();
         camera->set_active();
 
@@ -198,9 +198,41 @@ class MenuScene : public DefaultScene {
 
 int main() {
     assert(enet_initialize() == 0);
-    SPRF::game = new SPRF::Game(1920, 1080, "test", 1024 * 2, 768 * 2, 200);
-    // SPRF::game = new SPRF::Game(1600, 900, "test", 1024*2, 768*2, 200);
-    ToggleFullscreen();
+
+    int window_width = 0;
+    int window_height = 0;
+    int render_width = 1920;
+    int render_height = 1080;
+    int fps_max = 200;
+    int fullscreen = 1;
+
+#define DUMB_HACK(field, token)                                                \
+    if (field.has(TOSTRING(token))) {                                          \
+        token = std::stoi(field[TOSTRING(token)]);                             \
+        field[TOSTRING(token)] = std::to_string(token);                        \
+    }
+
+    mINI::INIFile file("client_cfg.ini");
+    mINI::INIStructure ini;
+    if (file.read(ini)) { // Ensure the INI file is successfully read
+        if (ini.has("display")) {
+            auto& display = ini["display"];
+            DUMB_HACK(display, window_width);
+            DUMB_HACK(display, window_height);
+            DUMB_HACK(display, render_width);
+            DUMB_HACK(display, render_height);
+            DUMB_HACK(display, fps_max);
+            DUMB_HACK(display, fullscreen);
+        }
+    }
+
+#undef DUMB_HACK
+
+    SPRF::game =
+        new SPRF::Game(window_width, window_height, "SPRF", render_width,
+                       render_height, fps_max, fullscreen);
+    // SPRF::game = new SPRF::Game("client_cfg.ini");
+    //  SPRF::game = new SPRF::Game(1600, 900, "test", 1024*2, 768*2, 200);
 
     // SPRF::game->load_scene<SPRF::MenuScene>();
     SPRF::game->load_scene<SPRF::MenuScene>();

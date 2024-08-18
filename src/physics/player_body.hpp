@@ -94,8 +94,7 @@ class PlayerBody : public PlayerBodyBase {
         m_jumped = false;
         if (m_jump && m_can_jump && (!m_last_was_jump)) {
             m_jumped = true;
-            add_force(raylib::Vector3(0, 1, 0) *
-                        m_sim_params.jump_force);
+            add_force(raylib::Vector3(0, 1, 0) * m_sim_params.jump_force);
             m_can_jump = false;
         }
         m_last_was_jump = m_jump;

@@ -32,6 +32,7 @@ target_include_directories(SPRF PUBLIC src raylib-cpp/include raylib/src src/sol
 if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
     SET(CMAKE_EXE_LINKER_FLAGS  "-framework CoreVideo -framework IOKit -framework Cocoa -framework GLUT -framework OpenGL")
     SET( CMAKE_CXX_FLAGS  "-Wall -Wpedantic -g -fsanitize=address -fsanitize=undefined -fno-omit-frame-pointer -fno-inline -fPIC")
+    #SET( CMAKE_CXX_FLAGS  "-fPIC")
 endif()
 
 add_custom_command(
@@ -43,6 +44,9 @@ add_custom_command(
         COMMAND ${CMAKE_COMMAND} -E copy
                 ${CMAKE_SOURCE_DIR}/server_cfg.ini
                 ${PROJECT_BINARY_DIR}/${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/package/server_cfg.ini
+        COMMAND ${CMAKE_COMMAND} -E copy
+                ${CMAKE_SOURCE_DIR}/client_cfg.ini
+                ${PROJECT_BINARY_DIR}/${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/package/client_cfg.ini
         COMMAND ${CMAKE_COMMAND} -E copy
                 ${CMAKE_SOURCE_DIR}/autoexec.cfg
                 ${PROJECT_BINARY_DIR}/${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/package/autoexec.cfg

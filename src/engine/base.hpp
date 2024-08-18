@@ -2,6 +2,7 @@
 #define _SPRF_BASE_HPP_
 
 #include "raylib-cpp.hpp"
+#include "rss.hpp"
 #include <cassert>
 #include <iostream>
 #include <memory>
@@ -69,6 +70,7 @@ class GameInfo {
     // raylib::Vector2 mouse_sense_ratio = raylib::Vector2(0.0165, 0.022);
     int packet_queue_size = 0;
     GameInfo() {}
+    ~GameInfo() {}
 
     template <class T>
     void draw_debug_var(std::string name, T var, int x, int y,

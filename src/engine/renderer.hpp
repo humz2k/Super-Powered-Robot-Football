@@ -315,9 +315,7 @@ class RenderModel : public Logger {
         return m_tint;
     }
 
-    raylib::Color tint() {
-        return m_tint;
-    }
+    raylib::Color tint() { return m_tint; }
 
     /**
      * @brief Sets whether this model should be frustrum culled
@@ -603,13 +601,15 @@ class Renderer : public Logger {
         game_info.hidden_meshes = 0;
         draw_skybox(camera->GetPosition());
         for (auto& i : m_render_models) {
-            if (i->tint().a != 255)continue;
+            if (i->tint().a != 255)
+                continue;
             i->draw(m_shader, camera->GetMatrix(), frustrum);
             // i->draw(m_shader, cam.GetMatrix());
             i->clear_instances();
         }
         for (auto& i : m_render_models) {
-            if (i->tint().a == 255)continue;
+            if (i->tint().a == 255)
+                continue;
             i->draw(m_shader, camera->GetMatrix(), frustrum);
             // i->draw(m_shader, cam.GetMatrix());
             i->clear_instances();

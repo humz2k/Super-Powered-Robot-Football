@@ -1,8 +1,8 @@
 #include "log_manager.hpp"
 #include "base.hpp"
 
-#include <iostream>
 #include <fstream>
+#include <iostream>
 #include <mutex>
 
 namespace SPRF {
@@ -17,20 +17,18 @@ static std::string last_source = "NONE";
 
 static std::mutex log_mutex;
 
-class LogFile{
-    private:
+class LogFile {
+  private:
     std::ofstream m_file;
-    public:
-        LogFile() : m_file(std::string(GetApplicationDirectory()) + "/tracelog.log"){
 
-        }
-        void write(std::string str){
-            std::cout << str << std::endl;
-            m_file << str << "\n";
-        }
-        ~LogFile(){
-            m_file.close();
-        }
+  public:
+    LogFile()
+        : m_file(std::string(GetApplicationDirectory()) + "/tracelog.log") {}
+    void write(std::string str) {
+        std::cout << str << std::endl;
+        m_file << str << "\n";
+    }
+    ~LogFile() { m_file.close(); }
 };
 
 LogFile log_file;
