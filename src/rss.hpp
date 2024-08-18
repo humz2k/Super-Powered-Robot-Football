@@ -3,8 +3,12 @@
 
 #include <cstdlib>
 
+extern "C" {
+
 size_t getPeakRSS();
 
 size_t getCurrentRSS();
+
+}
 
 #endif // _SPRF_RSS_HPP_
