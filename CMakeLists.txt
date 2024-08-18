@@ -1,12 +1,18 @@
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 3.16.3)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
+
+cmake_policy(SET CMP0091 NEW)
 
 #set(CMAKE_BUILD_TYPE Debug)
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG "package")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE "package")
+
+
+set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+
 
 project(SPRF)
 
@@ -56,7 +62,7 @@ foreach( sourcefile ${DRIVER_SOURCES} )
         if (WIN32)
             # /ENTRY:mainCRTStartup keeps the same "main" function instead of requiring "WinMain"
             # set(CMAKE_EXE_LINKER_FLAGS " /SUBSYSTEM:WINDOWS /ENTRY:mainCRTStartup")
-            target_link_options( ${name} PRIVATE "/SUBSYSTEM:WINDOWS" "/ENTRY:mainCRTStartup" )
+            target_link_options( ${name} PRIVATE "/SUBSYSTEM:WINDOWS" "/ENTRY:mainCRTStartup")
         else()
 
         endif()
