@@ -5,8 +5,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 #set(CMAKE_BUILD_TYPE Debug)
 
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG "")
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE "")
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG "package")
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE "package")
 
 project(SPRF)
 
@@ -15,43 +15,9 @@ add_subdirectory(raylib)
 file(GLOB_RECURSE sources src/*.cpp src/*.c src/*.h src/*.hpp)
 
 add_custom_target(
-    my_custom_target_that_always_runs ALL
-    DEPENDS ${PROJECT_BINARY_DIR}/${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/nothing1
+    my_custom_target_that_always_runs4 ALL
+    DEPENDS ${PROJECT_BINARY_DIR}/${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/nothing4
 )
-
-add_custom_target(
-    my_custom_target_that_always_runs2 ALL
-    DEPENDS ${PROJECT_BINARY_DIR}/${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/nothing2
-)
-
-add_custom_target(
-    my_custom_target_that_always_runs3 ALL
-    DEPENDS ${PROJECT_BINARY_DIR}/${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/nothing3
-)
-
-add_custom_command(
-    OUTPUT ${PROJECT_BINARY_DIR}/${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/nothing1
-            ${PROJECT_BINARY_DIR}/${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/assets
-
-    COMMAND ${CMAKE_COMMAND} -E copy_directory
-        ${CMAKE_SOURCE_DIR}/assets
-        ${PROJECT_BINARY_DIR}/${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/assets)
-
-add_custom_command(
-    OUTPUT ${PROJECT_BINARY_DIR}/${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/nothing2
-            ${PROJECT_BINARY_DIR}/${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/server_cfg.ini
-
-    COMMAND ${CMAKE_COMMAND} -E copy
-        ${CMAKE_SOURCE_DIR}/server_cfg.ini
-        ${PROJECT_BINARY_DIR}/${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/server_cfg.ini)
-
-add_custom_command(
-    OUTPUT ${PROJECT_BINARY_DIR}/${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/nothing3
-        ${PROJECT_BINARY_DIR}/${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/autoexec.cfg
-
-    COMMAND ${CMAKE_COMMAND} -E copy
-        ${CMAKE_SOURCE_DIR}/autoexec.cfg
-        ${PROJECT_BINARY_DIR}/${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/autoexec.cfg)
 
 add_library(SPRF ${sources})
 
@@ -61,6 +27,20 @@ if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
     SET(CMAKE_EXE_LINKER_FLAGS  "-framework CoreVideo -framework IOKit -framework Cocoa -framework GLUT -framework OpenGL")
     SET( CMAKE_CXX_FLAGS  "-Wall -Wpedantic -g -fsanitize=address -fsanitize=undefined -fno-omit-frame-pointer -fno-inline -fPIC")
 endif()
+
+add_custom_command(
+    OUTPUT ${PROJECT_BINARY_DIR}/${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/nothing4 ${PROJECT_BINARY_DIR}/${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/package
+        COMMAND ${CMAKE_COMMAND} -E make_directory ${PROJECT_BINARY_DIR}/${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/package
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+                ${CMAKE_SOURCE_DIR}/assets
+                ${PROJECT_BINARY_DIR}/${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/package/assets
+        COMMAND ${CMAKE_COMMAND} -E copy
+                ${CMAKE_SOURCE_DIR}/server_cfg.ini
+                ${PROJECT_BINARY_DIR}/${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/package/server_cfg.ini
+        COMMAND ${CMAKE_COMMAND} -E copy
+                ${CMAKE_SOURCE_DIR}/autoexec.cfg
+                ${PROJECT_BINARY_DIR}/${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/package/autoexec.cfg
+        )
 
 file( GLOB DRIVER_SOURCES drivers/*.cpp )
 foreach( sourcefile ${DRIVER_SOURCES} )
@@ -72,6 +52,4 @@ foreach( sourcefile ${DRIVER_SOURCES} )
     else()
         target_link_libraries( ${name} SPRF raylib opengl32 gdi32 ws2_32 winmm)
     endif()
-
-
 endforeach( sourcefile ${DRIVER_SOURCES} )

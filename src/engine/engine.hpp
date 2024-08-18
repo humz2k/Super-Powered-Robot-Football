@@ -25,9 +25,20 @@ extern bool game_should_quit;
 
 void quit();
 
+class DirectoryChanger{
+    public:
+        DirectoryChanger(){
+            TraceLog(LOG_INFO, "working in %s", GetWorkingDirectory());
+            TraceLog(LOG_INFO, "cd %s", GetApplicationDirectory());
+            ChangeDirectory(GetApplicationDirectory());
+            TraceLog(LOG_INFO, "now working in %s", GetWorkingDirectory());
+        }
+};
+
 class Game : public Logger {
   private:
     raylib::Window m_window;
+    DirectoryChanger m_dir_changer;
     raylib::RenderTexture2D m_render_view;
     int m_fps_max;
     std::shared_ptr<Scene> m_current_scene;
@@ -59,11 +70,6 @@ class Game : public Logger {
          int render_width, int render_height, int fps_max = 200)
         : Logger("GAME"), m_window(window_width, window_height, window_name),
           m_render_view(render_width, render_height), m_fps_max(fps_max) {
-
-        TraceLog(LOG_INFO, "working in %s", GetWorkingDirectory());
-        TraceLog(LOG_INFO, "cd %s", GetApplicationDirectory());
-        ChangeDirectory(GetApplicationDirectory());
-        TraceLog(LOG_INFO, "now working in %s", GetWorkingDirectory());
 
         // monitor size in inches
         int monitor = GetCurrentMonitor();
