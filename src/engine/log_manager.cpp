@@ -25,6 +25,7 @@ class LogFile{
 
         }
         void write(std::string str){
+            std::cout << str << std::endl;
             m_file << str << "\n";
         }
         ~LogFile(){
@@ -84,7 +85,6 @@ void CustomLog(int msgType, const char* text, va_list args) {
 
     std::string out = log_type + std::string(msg);
 
-    std::cout << out << std::endl;
     log_file.write(out);
     log_manager.log_stack.push_back(LogMessage(out, source, msgType));
 }
