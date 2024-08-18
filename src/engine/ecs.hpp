@@ -322,8 +322,8 @@ class Entity : public Logger {
         for (const auto& [key, value] : m_components) {
             value->init();
         }
-        for (auto i : m_children) {
-            i->init();
+        for (int i = 0; i < m_children.size(); i++){
+            m_children[i]->init();
         }
     }
 
