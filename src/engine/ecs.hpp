@@ -111,6 +111,12 @@ class Transform : public Logger {
             raylib::Matrix::Translate(position.x, position.y, position.z);
         return mat_rotation * mat_translation; // * mat_scale;
     }
+
+    raylib::Matrix rotation_matrix() {
+        auto [rotationAxis, rotationAngle] =
+            raylib::Quaternion::FromEuler(rotation).ToAxisAngle();
+        return raylib::Matrix::Rotate(rotationAxis, rotationAngle);
+    }
 };
 
 extern int id_counter;
@@ -228,6 +234,13 @@ class Entity : public Logger {
             return m_transform.matrix();
         }
         return m_transform.matrix() * m_parent->global_transform();
+    }
+
+    raylib::Matrix global_rotation() {
+        if (!m_parent) {
+            return m_transform.rotation_matrix();
+        }
+        return m_transform.rotation_matrix() * m_parent->global_rotation();
     }
 
     /**

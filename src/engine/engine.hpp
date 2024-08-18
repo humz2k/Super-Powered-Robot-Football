@@ -19,6 +19,8 @@
 
 #include "console.hpp"
 #include "loading_screen.hpp"
+#include "soloud.h"
+#include "soloud_wav.h"
 #include "ui.hpp"
 
 #define STRINGIFY(x) #x
@@ -54,6 +56,7 @@ class Game : public Logger {
   public:
     LoadingScreen loading_screen;
     float deltaTime = 0;
+    SoLoud::Soloud soloud;
 
     raylib::Rectangle render_rect() {
         raylib::Rectangle out(
@@ -88,9 +91,12 @@ class Game : public Logger {
 
     Game(int window_width, int window_height, std::string window_name,
          int render_width, int render_height, int fps_max = 200,
-         bool start_fullscreen = false)
+         bool start_fullscreen = false, float volume = 1.0)
         : Logger("GAME"), m_window(window_width, window_height, window_name),
           m_render_view(render_width, render_height), m_fps_max(fps_max) {
+        log(LOG_INFO, "initializing soloud");
+        soloud.init();
+        soloud.setGlobalVolume(volume);
         fullscreen(start_fullscreen);
         // monitor size in inches
         int monitor = GetCurrentMonitor();
@@ -99,8 +105,14 @@ class Game : public Logger {
                             GetMonitorPhysicalHeight(monitor)) *
             0.039;
 
-        TraceLog(LOG_INFO, "Physical Monitor Size: %gx%g",
-                 game_info.monitor_size.x, game_info.monitor_size.y);
+        log(LOG_INFO, "Physical Monitor Size: %gx%g", game_info.monitor_size.x,
+            game_info.monitor_size.y);
+        SoLoud::Wav wav;
+        log(LOG_INFO, "loading startup.wav");
+        if (wav.load("assets/startup.wav") != SoLoud::SO_NO_ERROR) {
+            log(LOG_ERROR, "loading startup.wav failed");
+        }
+        soloud.play(wav);
         loading_screen.draw_splash_screen();
         loading_screen.draw();
         log(LOG_INFO, "Launching game");
@@ -115,9 +127,11 @@ class Game : public Logger {
         log(LOG_INFO, "Closing game");
         game_info.unload_debug_font();
         m_current_scene->destroy();
+        log(LOG_INFO, "deinitializing soloud");
+        soloud.deinit();
         log(LOG_INFO, "Closed game");
-        TraceLog(LOG_INFO, "mem usage: current = %g gb, peak = %g gb",
-                 1e-9 * (double)getCurrentRSS(), 1e-9 * (double)getPeakRSS());
+        log(LOG_INFO, "mem usage: current = %g gb, peak = %g gb",
+            1e-9 * (double)getCurrentRSS(), 1e-9 * (double)getPeakRSS());
     }
 
     void change_render_size(int render_width, int render_height) {
@@ -158,9 +172,8 @@ class Game : public Logger {
             m_current_scene->on_close();
             m_load_next();
             m_scene_to_load = false;
-            TraceLog(LOG_INFO, "mem usage: current = %g gb, peak = %g gb",
-                     1e-9 * (double)getCurrentRSS(),
-                     1e-9 * (double)getPeakRSS());
+            log(LOG_INFO, "mem usage: current = %g gb, peak = %g gb",
+                1e-9 * (double)getCurrentRSS(), 1e-9 * (double)getPeakRSS());
         } else if (m_current_scene->should_close()) {
             m_current_scene->on_close();
         }
@@ -381,6 +394,19 @@ class MemUsageCommand : public DevConsoleCommand {
     }
 };
 
+class VolumeCommand : public DevConsoleCommand {
+  public:
+    using DevConsoleCommand::DevConsoleCommand;
+    void handle(std::vector<std::string>& args) {
+        if (args.size() > 1)
+            return;
+        if (args.size() == 1) {
+            game->soloud.setGlobalVolume(std::stof(args[0]));
+        }
+        TraceLog(LOG_CONSOLE, "volume %g", game->soloud.getGlobalVolume());
+    }
+};
+
 class DefaultDevConsole : public DevConsole {
   public:
     DefaultDevConsole() {
@@ -394,6 +420,7 @@ class DefaultDevConsole : public DevConsole {
         add_command<WindowSizeCommand>("window_size");
         add_command<RenderSizeCommand>("render_size");
         add_command<MemUsageCommand>("mem_usage");
+        add_command<VolumeCommand>("volume");
     }
 
     void init() { exec("autoexec.cfg"); }

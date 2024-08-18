@@ -1,6 +1,7 @@
 #include "crosshair.hpp"
 #include "custom_mesh.hpp"
 #include "engine/engine.hpp"
+#include "engine/sound.hpp"
 #include "mouselook.hpp"
 #include "networking/client.hpp"
 #include "networking/map.hpp"
@@ -105,6 +106,7 @@ class LocalScene : public DefaultScene {
         camera->set_active();
 
         player->get_child(0)->add_component<MouseLook>();
+        player->get_child(0)->add_component<SoundListener>();
 
         std::function<void()> callback = [this]() { disconnect(); };
         dev_console()->add_command<DisconnectCommand>("disconnect", callback);
@@ -135,6 +137,7 @@ class Scene1 : public DefaultScene {
         camera->set_active();
 
         player->get_child(0)->add_component<MouseLook>();
+        player->get_child(0)->add_component<SoundListener>();
 
         std::function<void()> callback = [this]() { disconnect(); };
         dev_console()->add_command<DisconnectCommand>("disconnect", callback);
@@ -205,17 +208,17 @@ int main() {
     int render_height = 1080;
     int fps_max = 200;
     int fullscreen = 1;
-
+    float volume = 1.0;
+    mINI::INIFile file(std::string(GetApplicationDirectory()) +
+                       "/client_cfg.ini");
+    mINI::INIStructure ini;
+    if (file.read(ini)) { // Ensure the INI file is successfully read
+        if (ini.has("display")) {
 #define DUMB_HACK(field, token)                                                \
     if (field.has(TOSTRING(token))) {                                          \
         token = std::stoi(field[TOSTRING(token)]);                             \
         field[TOSTRING(token)] = std::to_string(token);                        \
     }
-
-    mINI::INIFile file("client_cfg.ini");
-    mINI::INIStructure ini;
-    if (file.read(ini)) { // Ensure the INI file is successfully read
-        if (ini.has("display")) {
             auto& display = ini["display"];
             DUMB_HACK(display, window_width);
             DUMB_HACK(display, window_height);
@@ -223,14 +226,23 @@ int main() {
             DUMB_HACK(display, render_height);
             DUMB_HACK(display, fps_max);
             DUMB_HACK(display, fullscreen);
+#undef DUMB_HACK
+        }
+        if (ini.has("sound")) {
+#define DUMB_HACK(field, token)                                                \
+    if (field.has(TOSTRING(token))) {                                          \
+        token = std::stof(field[TOSTRING(token)]);                             \
+        field[TOSTRING(token)] = std::to_string(token);                        \
+    }
+            auto& sound = ini["sound"];
+            DUMB_HACK(sound, volume);
+#undef DUMB_HACK
         }
     }
 
-#undef DUMB_HACK
-
     SPRF::game =
         new SPRF::Game(window_width, window_height, "SPRF", render_width,
-                       render_height, fps_max, fullscreen);
+                       render_height, fps_max, fullscreen, volume);
     // SPRF::game = new SPRF::Game("client_cfg.ini");
     //  SPRF::game = new SPRF::Game(1600, 900, "test", 1024*2, 768*2, 200);
 
