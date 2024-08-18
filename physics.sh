@@ -1,3 +1,3 @@
 #!/usr/bin/env bash
 
-leaks --atExit -- build/physics
+leaks --atExit -- build/package/physics

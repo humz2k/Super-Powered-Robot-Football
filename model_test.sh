@@ -1,3 +1,3 @@
 #!/usr/bin/env bash
 
-leaks --atExit -- build/model_test
+leaks --atExit -- build/package/model_test

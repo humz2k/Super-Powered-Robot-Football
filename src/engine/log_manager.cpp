@@ -2,6 +2,7 @@
 #include "base.hpp"
 
 #include <iostream>
+#include <fstream>
 #include <mutex>
 
 namespace SPRF {
@@ -15,6 +16,23 @@ LogManager log_manager;
 static std::string last_source = "NONE";
 
 static std::mutex log_mutex;
+
+class LogFile{
+    private:
+    std::ofstream m_file;
+    public:
+        LogFile() : m_file(std::string(GetApplicationDirectory()) + "/tracelog.log"){
+
+        }
+        void write(std::string str){
+            m_file << str << "\n";
+        }
+        ~LogFile(){
+            m_file.close();
+        }
+};
+
+LogFile log_file;
 
 void CustomLog(int msgType, const char* text, va_list args) {
     std::lock_guard<std::mutex> guard(log_mutex);
@@ -67,7 +85,7 @@ void CustomLog(int msgType, const char* text, va_list args) {
     std::string out = log_type + std::string(msg);
 
     std::cout << out << std::endl;
-
+    log_file.write(out);
     log_manager.log_stack.push_back(LogMessage(out, source, msgType));
 }
 

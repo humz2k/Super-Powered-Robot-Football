@@ -1,3 +1,3 @@
 #!/usr/bin/env bash
-cd build
+cd build/package
 leaks --atExit -- ./server server_cfg.ini
