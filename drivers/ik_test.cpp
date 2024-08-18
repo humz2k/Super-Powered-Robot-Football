@@ -58,12 +58,14 @@ class IKNode{
             rotation(rot);
             m_entity = solver.entity()->create_child();
             m_entity->add_component<Model>(solver.node_model());
+            //m_raw->rotation_weight = 1.0f;
         }
         IKNode(IKSolver& solver, IKNode* parent, raylib::Vector3 pos = raylib::Vector3(0,0,0), raylib::Vector3 rot = raylib::Vector3(0,0,0)) : m_solver(solver), m_id(m_solver.next_id()), m_raw(m_solver.raw()->node->create_child(parent->raw(), m_id)){
             position(pos);
             rotation(rot);
             m_entity = parent->entity()->create_child();
             m_entity->add_component<Model>(solver.node_model());
+            //m_raw->rotation_weight = 1.0f;
         }
 
         void update(){
@@ -224,8 +226,9 @@ class IKComponent : public Component{
             ModelAnimation current_anim = m_anims[2];
 
             m_solver = IKSolver(this->entity(),m_algo);
-            m_solver.raw()->flags |= IK_ENABLE_TARGET_ROTATIONS;// | IK_ENABLE_JOINT_ROTATIONS;
-            //m_solver.raw()->flags |= IK_ENABLE_CONSTRAINTS;
+            //m_solver.raw()->flags |= IK_ENABLE_TARGET_ROTATIONS;// | IK_ENABLE_JOINT_ROTATIONS;
+            m_solver.raw()->flags &= ~IK_ENABLE_TARGET_ROTATIONS;
+            //m_solver.raw()->flags &= ~IK_ENABLE_JOINT_ROTATIONS;
 
             for (int i = 0; i < current_anim.boneCount; i++){
                 auto bone = current_anim.bones[i];
@@ -282,11 +285,11 @@ class IKComponent : public Component{
                 effector->get_component<Transform>()->position = (raylib::Vector3(current_anim.framePoses[0][effs2[i]].translation) - raylib::Vector3(current_anim.framePoses[0][0].translation)) * 0.01;
             }*/
 
-            int effs3[] = {32};
+            int effs3[] = {10};
             for (int i = 0; i < sizeof(effs)/sizeof(int); i++){
                 auto effector = this->entity()->create_child();//new IKEffector(m_solver,child2,raylib::Vector3(1,1,1));
                 m_effectors.push_back(effector);
-                effector->add_component<IKEffector>(m_solver,m_nodes[effs3[i]],1,true);
+                effector->add_component<IKEffector>(m_solver,m_nodes[effs3[i]],2,true);
                 effector->add_component<Model>(m_solver.effector_model());
                 effector->get_component<Transform>()->position = (raylib::Vector3(current_anim.framePoses[0][effs3[i]].translation) - raylib::Vector3(current_anim.framePoses[0][0].translation)) * 0.01;
             }
