@@ -30,9 +30,9 @@ endif()
 
 if (WIN32)
     # /ENTRY:mainCRTStartup keeps the same "main" function instead of requiring "WinMain"
-    set(SUBSYSTEM_LINKER_OPTIONS "/SUBSYSTEM:WINDOWS /ENTRY:mainCRTStartup")
+    set(CMAKE_EXE_LINKER_FLAGS " /SUBSYSTEM:WINDOWS /ENTRY:mainCRTStartup")
 else()
-    set(SUBSYSTEM_LINKER_OPTIONS "-mwindows")
+
 endif()
 
 add_custom_command(
@@ -58,6 +58,5 @@ foreach( sourcefile ${DRIVER_SOURCES} )
         target_link_libraries( ${name} SPRF raylib )
     else()
         target_link_libraries( ${name} SPRF raylib opengl32 gdi32 ws2_32 winmm)
-        target_link_options(${name} PRIVATE ${SUBSYSTEM_LINKER_OPTIONS})
     endif()
 endforeach( sourcefile ${DRIVER_SOURCES} )
