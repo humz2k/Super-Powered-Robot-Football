@@ -93,13 +93,13 @@ class LocalScene : public DefaultScene {
 
   public:
     LocalScene(Game* game)
-        : DefaultScene(game), m_server("server_cfg.ini", "127.0.0.1", 9999) {
+        : DefaultScene(game), m_server("server_cfg.ini", "127.0.0.1", 31201) {
 
         simple_map()->load(this);
 
         auto player = this->create_entity();
         player->add_component<Crosshair>();
-        m_client = player->add_component<Client>("127.0.0.1", 9999, init_player,
+        m_client = player->add_component<Client>("127.0.0.1", 31201, init_player,
                                                  dev_console());
         auto camera = player->create_child()->add_component<Camera>();
         camera->set_active();
