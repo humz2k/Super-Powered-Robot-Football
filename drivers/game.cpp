@@ -198,9 +198,9 @@ class MenuScene : public DefaultScene {
 
 int main() {
     assert(enet_initialize() == 0);
-    SPRF::game = new SPRF::Game(900, 900, "test", 900 * 2, 900 * 2, 200);
+    SPRF::game = new SPRF::Game(1920, 1080, "test", 1024 * 2, 768 * 2, 200);
     // SPRF::game = new SPRF::Game(1600, 900, "test", 1024*2, 768*2, 200);
-    //   ToggleFullscreen();
+    ToggleFullscreen();
 
     // SPRF::game->load_scene<SPRF::MenuScene>();
     SPRF::game->load_scene<SPRF::MenuScene>();
