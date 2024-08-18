@@ -139,6 +139,7 @@ class Entity : public Logger {
     /** @brief Pointer to the parent entity */
     Entity* m_parent = NULL;
     int m_id;
+    bool m_enabled;
 
     /**
      * @brief Add a child entity.
@@ -151,6 +152,8 @@ class Entity : public Logger {
      * @param parent_transform Transformation matrix of the parent.
      */
     void draw3D(raylib::Matrix parent_transform) {
+        if (!m_enabled)
+            return;
         raylib::Matrix transform = m_transform.matrix() * parent_transform;
         for (const auto& [key, value] : m_components) {
             value->draw3D(transform);
@@ -191,6 +194,7 @@ class Entity : public Logger {
      */
     Entity(Scene* scene) : m_scene(scene) {
         m_id = id_counter++;
+        m_enabled = true;
         TraceLog(LOG_INFO, "created entity %d", m_id);
     };
 
@@ -201,6 +205,7 @@ class Entity : public Logger {
      */
     Entity(Scene* scene, Entity* parent) : m_scene(scene), m_parent(parent) {
         m_id = id_counter++;
+        m_enabled = true;
         TraceLog(LOG_INFO, "created entity %d", m_id);
     };
 
@@ -225,6 +230,8 @@ class Entity : public Logger {
         return m_children[idx];
     }
 
+    std::vector<Entity*>& children() { return m_children; }
+
     /**
      * @brief Get the global transformation matrix.
      * @return Global transformation matrix.
@@ -243,6 +250,16 @@ class Entity : public Logger {
         return m_transform.rotation_matrix() * m_parent->global_rotation();
     }
 
+    void enable() {
+        TraceLog(LOG_INFO, "enabling entity %d", m_id);
+        m_enabled = true;
+    }
+
+    void disable() {
+        TraceLog(LOG_INFO, "disabling entity %d", m_id);
+        m_enabled = false;
+    }
+
     /**
      * @brief Create a child entity.
      * @return Pointer to the child entity.
@@ -257,6 +274,8 @@ class Entity : public Logger {
      * @brief Call update on components.
      */
     void update() {
+        if (!m_enabled)
+            return;
         before_update();
         for (const auto& [key, value] : m_components) {
             value->update();
@@ -271,6 +290,8 @@ class Entity : public Logger {
      * @brief Call draw3D on components.
      */
     void draw3D() {
+        if (!m_enabled)
+            return;
         raylib::Matrix transform = m_transform.matrix();
         for (const auto& [key, value] : m_components) {
             value->draw3D(transform);
@@ -284,6 +305,8 @@ class Entity : public Logger {
      * @brief Call draw2D on components.
      */
     void draw2D() {
+        if (!m_enabled)
+            return;
         for (const auto& [key, value] : m_components) {
             value->draw2D();
         }
@@ -320,6 +343,8 @@ class Entity : public Logger {
      * @brief Call draw_debug on components.
      */
     void draw_debug() {
+        if (!m_enabled)
+            return;
         for (const auto& [key, value] : m_components) {
             value->draw_debug();
         }

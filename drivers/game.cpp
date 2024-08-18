@@ -29,6 +29,7 @@ class PlayerComponent : public Component {
     Transform* m_transform;
     Transform* m_head_transform;
     NetworkEntity* m_network_entity;
+    bool m_enabled = true;
 
   public:
     void init() {
@@ -42,11 +43,24 @@ class PlayerComponent : public Component {
         m_transform->position = m_network_entity->position;
         m_transform->rotation.y = m_network_entity->rotation.y;
         m_head_transform->rotation.x = m_network_entity->rotation.x;
+        if (m_network_entity->active && (!m_enabled)) {
+            for (auto& i : this->entity()->children()) {
+                TraceLog(LOG_INFO, "enabling");
+                i->enable();
+            }
+            m_enabled = true;
+        } else if ((!m_network_entity->active) && (m_enabled)) {
+            for (auto& i : this->entity()->children()) {
+                TraceLog(LOG_INFO, "disabling");
+                i->disable();
+            }
+            m_enabled = false;
+        }
     }
 
     void draw2D() {
-        game_info.draw_debug_var("net_rotation", m_network_entity->rotation,
-                                 300, 300);
+        // game_info.draw_debug_var("net_rotation", m_network_entity->rotation,
+        //                          300, 300);
     }
 };
 
