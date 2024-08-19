@@ -51,4 +51,15 @@ void ScriptingManager::register_function(std::function<int(lua_State*)> func,
     lua_setfield(m_L, -2, name.c_str());
     lua_pop(m_L, 1);
 }
+
+int ScriptingManager::run_file(std::string filename) {
+    std::lock_guard<std::mutex> guard(script_mutex);
+    if (luaL_dofile(m_L, filename.c_str())) {
+        fprintf(stderr, "%s", lua_tostring(m_L, -1));
+        lua_pop(m_L, 1);
+        return 1;
+    }
+    return 0;
+}
+
 }; // namespace SPRF

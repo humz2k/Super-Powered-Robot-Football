@@ -28,14 +28,7 @@ class ScriptingManager {
                            std::string name);
 
     // returns non zero on failure
-    int run_file(std::string filename) {
-        if (luaL_dofile(m_L, filename.c_str())) {
-            fprintf(stderr, "%s", lua_tostring(m_L, -1));
-            lua_pop(m_L, 1);
-            return 1;
-        }
-        return 0;
-    }
+    int run_file(std::string filename);
 
     lua_State* state() { return m_L; }
 };
