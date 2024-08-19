@@ -62,4 +62,16 @@ int ScriptingManager::run_file(std::string filename) {
     return 0;
 }
 
+int ScriptingManager::run_string(std::string script){
+    std::lock_guard<std::mutex> guard(script_mutex);
+    if (luaL_dostring(m_L,script.c_str())){
+        fprintf(stderr, "%s", lua_tostring(m_L, -1));
+        lua_pop(m_L, 1);
+        return 1;
+    }
+    return 0;
+}
+
+ScriptingManager scripting;
+
 }; // namespace SPRF

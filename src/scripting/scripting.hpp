@@ -30,8 +30,12 @@ class ScriptingManager {
     // returns non zero on failure
     int run_file(std::string filename);
 
+    int run_string(std::string lua_script);
+
     lua_State* state() { return m_L; }
 };
+
+extern ScriptingManager scripting;
 
 } // namespace SPRF
 

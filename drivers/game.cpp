@@ -101,6 +101,26 @@ void init_player(Entity* player) {
     gun->get_component<Transform>()->rotation.y = 0.05;
 }
 
+class LocalSceneServerCommands : public DevConsoleCommand{
+    public:
+        using DevConsoleCommand::DevConsoleCommand;
+        void handle(std::vector<std::string>& args){
+            if (args.size() == 0)return;
+            if (args[0] == "set_ball_position"){
+                if (args.size() != 4)return;
+                std::string lua_command = "sprf.set_ball_position(" + args[1] + "," + args[2] + "," + args[3] + ")";
+                scripting.run_string(lua_command);
+                return;
+            }
+            if (args[0] == "set_ball_velocity"){
+                if (args.size() != 4)return;
+                std::string lua_command = "sprf.set_ball_velocity(" + args[1] + "," + args[2] + "," + args[3] + ")";
+                scripting.run_string(lua_command);
+                return;
+            }
+        }
+};
+
 class LocalScene : public DefaultScene {
   private:
     SPRF::Server m_server;
@@ -124,6 +144,8 @@ class LocalScene : public DefaultScene {
 
         std::function<void()> callback = [this]() { disconnect(); };
         dev_console()->add_command<DisconnectCommand>("disconnect", callback);
+
+        dev_console()->add_command<LocalSceneServerCommands>("server");
     }
 
     ~LocalScene() {

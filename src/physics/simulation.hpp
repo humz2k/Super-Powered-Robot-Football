@@ -156,7 +156,7 @@ static void near_callback(void* data, dGeomID o1, dGeomID o2);
 
 class Simulation {
   private:
-    ScriptingManager& m_scripting;
+    //ScriptingManager& m_scripting;
     /** @brief Mutex to protect simulation state */
     std::mutex simulation_mutex;
     /** @brief Simulation tick rate */
@@ -275,9 +275,9 @@ class Simulation {
      * @param tickrate The simulation tick rate.
      * @param server_config The path to the server configuration file.
      */
-    Simulation(ScriptingManager& scripting, enet_uint32 tickrate,
+    Simulation(enet_uint32 tickrate,
                std::string server_config = "")
-        : m_scripting(scripting), m_tickrate(tickrate),
+        : m_tickrate(tickrate),
           m_time_per_tick(1000000000L / m_tickrate),
           m_dt(1.0f / (float)m_tickrate), m_sim_params(server_config) {
         TraceLog(LOG_INFO, "Initializing ODE");
@@ -442,7 +442,7 @@ class Simulation {
     }
 
     void register_scripts(){
-        m_scripting.register_function(
+        scripting.register_function(
             [this](lua_State* L) {
                 float x = luaL_checknumber(L, 1);
                 float y = luaL_checknumber(L, 2);
@@ -453,7 +453,7 @@ class Simulation {
             },
             "set_ball_position");
 
-        m_scripting.register_function(
+        scripting.register_function(
             [this](lua_State* L) {
                 float x = luaL_checknumber(L, 1);
                 float y = luaL_checknumber(L, 2);

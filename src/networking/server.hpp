@@ -39,7 +39,7 @@ namespace SPRF {
  */
 class Server {
   private:
-    ScriptingManager m_scripting;
+    //ScriptingManager m_scripting;
 
     /** @brief Server configuration parameters */
     ServerConfig config;
@@ -211,7 +211,7 @@ class Server {
      * signaled to quit.
      */
     void run() {
-        m_scripting.run_file("assets/server/scripts/on_load.lua");
+        scripting.run_file("assets/server/scripts/on_load.lua");
         while (!should_quit()) {
             get_event();
         }
@@ -256,7 +256,7 @@ class Server {
           m_peer_count(config.peer_count),
           m_channel_count(config.channel_count), m_iband(config.iband),
           m_oband(config.oband), m_tickrate(config.tickrate),
-          m_simulation(m_scripting, m_tickrate, server_config) {
+          m_simulation(m_tickrate, server_config) {
         enet_address_set_host(&m_address, m_host.c_str());
         m_address.port = m_port;
         TraceLog(LOG_INFO,
@@ -292,7 +292,7 @@ class Server {
           m_peer_count(config.peer_count),
           m_channel_count(config.channel_count), m_iband(config.iband),
           m_oband(config.oband), m_tickrate(config.tickrate),
-          m_simulation(m_scripting, m_tickrate, server_config) {
+          m_simulation(m_tickrate, server_config) {
         enet_address_set_host(&m_address, m_host.c_str());
         m_address.port = m_port;
         TraceLog(LOG_INFO,

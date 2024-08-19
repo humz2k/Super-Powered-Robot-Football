@@ -11,8 +11,21 @@ class LuaCommand : public DevConsoleCommand {
     using DevConsoleCommand::DevConsoleCommand;
     void handle(std::vector<std::string>& args) {
         if (args.size() == 1) {
-            game->scripting.run_file(args[0]);
+            scripting.run_file(args[0]);
         }
+    }
+};
+
+class CallLuaCommand : public DevConsoleCommand {
+  public:
+    using DevConsoleCommand::DevConsoleCommand;
+    void handle(std::vector<std::string>& args) {
+        if (args.size() == 0)return;
+        std::string input = "";
+        for (auto& i : args){
+            input += i;
+        }
+        scripting.run_string(input);
     }
 };
 
@@ -20,6 +33,7 @@ class MyScene : public TestScene {
   public:
     MyScene(Game* game) : TestScene(game, false) {
         dev_console()->add_command<LuaCommand>("lua");
+        dev_console()->add_command<CallLuaCommand>("exec_lua");
         simple_map()->load_editor(this);
     }
 };
