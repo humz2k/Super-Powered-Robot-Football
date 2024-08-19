@@ -102,8 +102,14 @@ class Selectable : public Component {
     }
 
     void draw_debug() {
-        if (m_selected && m_highlight)
-            DrawBoundingBox(bounding_box(), GREEN);
+        if (m_selected && m_highlight){
+            if (this->entity()->has_component<Model>()){
+                DrawBoundingBox(bounding_box(), GREEN);
+            } else {
+                DrawSphereWires(raylib::Vector3(0,0,0).Transform(this->entity()->global_transform()),1,10,10,GREEN);
+            }
+        }
+
     }
 
     bool selected() { return m_selected; }
