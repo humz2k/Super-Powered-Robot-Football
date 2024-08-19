@@ -24,6 +24,9 @@
 
 #define KEY_EXISTS(map, key) ((map).find((key)) != (map).end())
 
+#define MAX(a,b) (((a) > (b)) ? (a) : (b))
+#define MIN(a,b) (((a) < (b)) ? (a) : (b))
+
 namespace SPRF {
 
 class GameSettings {

@@ -162,11 +162,13 @@ class Entity : public Logger {
             i->draw3D(transform);
         }
     }
-
+    public:
     /**
      * @brief Call after_update on components.
      */
     void after_update() {
+        if (!m_enabled)
+            return;
         for (const auto& [key, value] : m_components) {
             value->after_update();
         }
@@ -179,6 +181,8 @@ class Entity : public Logger {
      * @brief Call before_update on components.
      */
     void before_update() {
+        if (!m_enabled)
+            return;
         for (const auto& [key, value] : m_components) {
             value->before_update();
         }
@@ -187,7 +191,7 @@ class Entity : public Logger {
         }
     }
 
-  public:
+
     /**
      * @brief Construct a new Entity object.
      * @param scene Pointer to the scene.
@@ -276,14 +280,14 @@ class Entity : public Logger {
     void update() {
         if (!m_enabled)
             return;
-        before_update();
+        //before_update();
         for (const auto& [key, value] : m_components) {
             value->update();
         }
         for (auto i : m_children) {
             i->update();
         }
-        after_update();
+        //after_update();
     }
 
     /**
@@ -364,6 +368,11 @@ class Entity : public Logger {
         return dynamic_cast<T*>(temp->second);
     }
 
+    template <class T> bool has_component() {
+        auto temp = m_components.find(std::type_index(typeid(T)));
+        return (temp != m_components.end());
+    }
+
     /**
      * @brief Add a component to the entity.
      * @tparam T Type of the component.
@@ -428,7 +437,13 @@ class Scene : public Logger {
     void update() {
         size_t len = m_entities.size();
         for (size_t i = 0; i < len; i++) {
+            m_entities[i]->before_update();
+        }
+        for (size_t i = 0; i < len; i++) {
             m_entities[i]->update();
+        }
+        for (size_t i = 0; i < len; i++) {
+            m_entities[i]->after_update();
         }
     }
 
@@ -449,7 +464,7 @@ class Scene : public Logger {
             i->draw_debug();
         }
     }
-
+public:
     /**
      * @brief Get the active camera of the scene.
      * @return Reference to the active camera.
@@ -461,7 +476,7 @@ class Scene : public Logger {
         return m_active_camera;
     }
 
-  public:
+
     template <typename... Args> Scene(Args... args) {}
 
     virtual ~Scene() {

@@ -24,6 +24,8 @@ class Model : public Component {
     void enable() { m_enabled = true; }
 
     void disable() { m_enabled = false; }
+
+    RenderModel* render_model(){ return m_model; }
 };
 
 } // namespace SPRF

@@ -229,6 +229,33 @@ struct BBoxCorners {
         }
         return false;
     }
+
+    BBoxCorners transform(const Matrix& mat){
+        Vector3* points = (Vector3*)this;
+        BBoxCorners out;
+        Vector3* out_ptr = (Vector3*)&out;
+        for (int i = 0; i < 8; i++){
+            out_ptr[i] = Vector3Transform(points[i],mat);
+        }
+        return out;
+    }
+
+    BoundingBox axis_align(){
+        BoundingBox out;
+        out.max = c1;
+        out.min = c1;
+        Vector3* points = (Vector3*)this;
+        for (int i = 0; i < 8; i++){
+            auto& p = points[i];
+            out.max.x = MAX(out.max.x,p.x);
+            out.max.y = MAX(out.max.y,p.y);
+            out.max.z = MAX(out.max.z,p.z);
+            out.min.x = MIN(out.min.x,p.x);
+            out.min.y = MIN(out.min.y,p.y);
+            out.min.z = MIN(out.min.z,p.z);
+        }
+        return out;
+    }
 };
 
 /**
@@ -439,6 +466,8 @@ class RenderModel : public Logger {
      * @brief Draw the model with its default shader.
      */
     void draw(raylib::Matrix vp) { draw(m_model->materials[0].shader, vp); }
+
+    raylib::Model* model(){return m_model;}
 };
 
 /**
