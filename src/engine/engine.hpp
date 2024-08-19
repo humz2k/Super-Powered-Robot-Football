@@ -22,6 +22,7 @@
 #include "soloud.h"
 #include "soloud_wav.h"
 #include "ui.hpp"
+#include "scripting/scripting.hpp"
 
 #define STRINGIFY(x) #x
 #define TOSTRING(x) STRINGIFY(x)
@@ -57,6 +58,7 @@ class Game : public Logger {
     LoadingScreen loading_screen;
     float deltaTime = 0;
     SoLoud::Soloud soloud;
+    ScriptingManager scripting;
 
     raylib::Rectangle render_rect() {
         raylib::Rectangle out(

@@ -326,7 +326,7 @@ class DevConsole : public Component, public UITextInputBox {
                 if ((msg.source == "SHADER") || (msg.source == "TEXTURE") ||
                     (msg.source == "MODEL") || (msg.source == "IMAGE")) {
                     out_color = BLUE;
-                } else if (msg.source == "GAME") {
+                } else if ((msg.source == "GAME") || (msg.source == "LUA")) {
                     out_color = GREEN;
                 } else if ((msg.source == "GL") || (msg.source == "GLAD") ||
                            (msg.source == "RLGL") || (msg.source == "VAO") ||
