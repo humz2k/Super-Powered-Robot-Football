@@ -311,15 +311,7 @@ class Simulation {
         m_ball =
             new Ball(m_sim_params, &simulation_mutex, m_world, m_space, m_dt);
 
-        std::function<int(lua_State*)> ball_pos_func = [this](lua_State* L) {
-            float x = luaL_checknumber(L, 1);
-            float y = luaL_checknumber(L, 2);
-            float z = luaL_checknumber(L, 3);
-            TraceLog(LOG_INFO, "setting ball position %g %g %g", x, y, z);
-            this->set_ball_position(raylib::Vector3(x, y, z));
-            return 0;
-        };
-        m_scripting.register_function(ball_pos_func, "set_ball_position");
+        register_scripts();
     }
 
     /**
@@ -442,6 +434,35 @@ class Simulation {
     void set_ball_position(raylib::Vector3 pos) {
         std::lock_guard<std::mutex> guard(simulation_mutex);
         m_ball->position(pos);
+    }
+
+    void set_ball_velocity(raylib::Vector3 pos) {
+        std::lock_guard<std::mutex> guard(simulation_mutex);
+        m_ball->velocity(pos);
+    }
+
+    void register_scripts(){
+        m_scripting.register_function(
+            [this](lua_State* L) {
+                float x = luaL_checknumber(L, 1);
+                float y = luaL_checknumber(L, 2);
+                float z = luaL_checknumber(L, 3);
+                TraceLog(LOG_INFO, "LUA: setting ball position %g %g %g", x, y, z);
+                this->set_ball_position(raylib::Vector3(x, y, z));
+                return 0;
+            },
+            "set_ball_position");
+
+        m_scripting.register_function(
+            [this](lua_State* L) {
+                float x = luaL_checknumber(L, 1);
+                float y = luaL_checknumber(L, 2);
+                float z = luaL_checknumber(L, 3);
+                TraceLog(LOG_INFO, "LUA: setting ball velocity %g %g %g", x, y, z);
+                this->set_ball_velocity(raylib::Vector3(x, y, z));
+                return 0;
+            },
+            "set_ball_velocity");
     }
 };
 
