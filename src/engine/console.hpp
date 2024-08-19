@@ -2,11 +2,11 @@
 #define _SPRF_CONSOLE_HPP_
 
 #include "ecs.hpp"
+#include "imgui/imgui.h"
+#include "imgui/rlImGui.h"
 #include "log_manager.hpp"
 #include "raylib-cpp.hpp"
 #include "ui.hpp"
-#include "imgui/imgui.h"
-#include "imgui/rlImGui.h"
 
 #include <fstream>
 #include <sstream>
@@ -341,65 +341,65 @@ class DevConsole : public Component, public UITextInputBox {
         UITextInputBox::draw(m_offset);
     }
 
-    void draw_editor(){
+    void draw_editor() {
         ImGui::Text("DevConsole");
-        if (ImGui::TreeNode("commands")){
-            for (auto& i : m_commands){
-                ImGui::Text("%s",i.first.c_str());
+        if (ImGui::TreeNode("commands")) {
+            for (auto& i : m_commands) {
+                ImGui::Text("%s", i.first.c_str());
             }
             ImGui::TreePop();
         }
-        if (ImGui::TreeNode("aliases")){
-            ImGui::BeginTable("aliases_table",2);
+        if (ImGui::TreeNode("aliases")) {
+            ImGui::BeginTable("aliases_table", 2);
             ImGui::TableNextColumn();
             ImGui::Text("alias");
             ImGui::TableNextColumn();
             ImGui::Text("command");
             ImGui::TableNextRow();
-            for (auto& i : m_aliases){
+            for (auto& i : m_aliases) {
                 std::string alias_command = i.second.command;
-                for (auto& i : i.second.args){
+                for (auto& i : i.second.args) {
                     alias_command += " ";
                     alias_command += i;
                 }
                 ImGui::TableNextColumn();
-                ImGui::Text("%s",i.first.c_str());
+                ImGui::Text("%s", i.first.c_str());
                 ImGui::TableNextColumn();
-                ImGui::Text("%s",alias_command.c_str());
+                ImGui::Text("%s", alias_command.c_str());
                 ImGui::TableNextRow();
             }
             ImGui::EndTable();
             ImGui::TreePop();
         }
-        if (ImGui::TreeNode("binds")){
-            ImGui::BeginTable("binds_table",2);
+        if (ImGui::TreeNode("binds")) {
+            ImGui::BeginTable("binds_table", 2);
             ImGui::TableNextColumn();
             ImGui::Text("bind");
             ImGui::TableNextColumn();
             ImGui::Text("command");
             ImGui::TableNextRow();
-            for (auto& i : m_binds){
+            for (auto& i : m_binds) {
                 std::string key_name = "";
                 auto key = i.first;
-                if (key == KEY_NULL){
+                if (key == KEY_NULL) {
                     key_name = "mwheel";
-                } else if (key == KEY_LEFT){
+                } else if (key == KEY_LEFT) {
                     key_name = "left_arrow";
-                } else if (key == KEY_RIGHT){
+                } else if (key == KEY_RIGHT) {
                     key_name = "right_arrow";
-                } else if (key == KEY_UP){
+                } else if (key == KEY_UP) {
                     key_name = "up_arrow";
-                } else if (key == KEY_DOWN){
+                } else if (key == KEY_DOWN) {
                     key_name = "down_arrow";
-                } else if (key == KEY_SPACE){
+                } else if (key == KEY_SPACE) {
                     key_name = "space";
-                } else{
-                    key_name = std::string(1,std::tolower(((char)key)));
+                } else {
+                    key_name = std::string(1, std::tolower(((char)key)));
                 }
                 ImGui::TableNextColumn();
-                ImGui::Text("%s",key_name.c_str());
+                ImGui::Text("%s", key_name.c_str());
                 ImGui::TableNextColumn();
-                ImGui::Text("%s",i.second.c_str());
+                ImGui::Text("%s", i.second.c_str());
                 ImGui::TableNextRow();
             }
             ImGui::EndTable();

@@ -2,10 +2,10 @@
 #define _SPRB_ECS_HPP_
 
 #include "base.hpp"
-#include "raylib-cpp.hpp"
-#include "renderer.hpp"
 #include "imgui/imgui.h"
 #include "imgui/rlImGui.h"
+#include "raylib-cpp.hpp"
+#include "renderer.hpp"
 #include <cassert>
 #include <iostream>
 #include <memory>
@@ -76,11 +76,11 @@ class Component : public Logger {
      */
     virtual void draw2D() {}
 
-    virtual void before_draw2D(){}
-    virtual void after_draw2D(){}
+    virtual void before_draw2D() {}
+    virtual void after_draw2D() {}
 
-    virtual void draw_editor(){
-        ImGui::Text("Component %s",typeid(*this).name());
+    virtual void draw_editor() {
+        ImGui::Text("Component %s", typeid(*this).name());
     }
 };
 
@@ -127,10 +127,10 @@ class Transform : public Logger {
         return raylib::Matrix::Rotate(rotationAxis, rotationAngle);
     }
 
-    void draw_editor(){
+    void draw_editor() {
         ImGui::Text("Transform");
-        ImGui::InputFloat3("pos",(float*)&this->position);
-        ImGui::InputFloat3("rot",(float*)&this->rotation);
+        ImGui::InputFloat3("pos", (float*)&this->position);
+        ImGui::InputFloat3("rot", (float*)&this->rotation);
     }
 };
 
@@ -178,7 +178,8 @@ class Entity : public Logger {
             i->draw3D(transform);
         }
     }
-    public:
+
+  public:
     /**
      * @brief Call after_update on components.
      */
@@ -207,7 +208,6 @@ class Entity : public Logger {
         }
     }
 
-
     /**
      * @brief Construct a new Entity object.
      * @param scene Pointer to the scene.
@@ -223,7 +223,8 @@ class Entity : public Logger {
      * @param scene Pointer to the scene.
      * @param parent Pointer to the parent entity.
      */
-    Entity(Scene* scene, Entity* parent, std::string name = "") : m_scene(scene), m_parent(parent), m_name(name) {
+    Entity(Scene* scene, Entity* parent, std::string name = "")
+        : m_scene(scene), m_parent(parent), m_name(name) {
         m_id = id_counter++;
         m_enabled = true;
         TraceLog(LOG_INFO, "created entity %d", m_id);
@@ -242,7 +243,7 @@ class Entity : public Logger {
         }
     }
 
-    std::string& name() {return m_name;}
+    std::string& name() { return m_name; }
 
     size_t n_children() { return m_children.size(); }
 
@@ -252,7 +253,7 @@ class Entity : public Logger {
         return m_children[idx];
     }
 
-    int id(){return m_id;}
+    int id() { return m_id; }
 
     std::vector<Entity*>& children() { return m_children; }
 
@@ -300,14 +301,14 @@ class Entity : public Logger {
     void update() {
         if (!m_enabled)
             return;
-        //before_update();
+        // before_update();
         for (const auto& [key, value] : m_components) {
             value->update();
         }
         for (auto i : m_children) {
             i->update();
         }
-        //after_update();
+        // after_update();
     }
 
     /**
@@ -339,7 +340,7 @@ class Entity : public Logger {
         }
     }
 
-    void before_draw2D(){
+    void before_draw2D() {
         if (!m_enabled)
             return;
         for (const auto& [key, value] : m_components) {
@@ -350,7 +351,7 @@ class Entity : public Logger {
         }
     }
 
-    void after_draw2D(){
+    void after_draw2D() {
         if (!m_enabled)
             return;
         for (const auto& [key, value] : m_components) {
@@ -368,7 +369,7 @@ class Entity : public Logger {
         for (const auto& [key, value] : m_components) {
             value->init();
         }
-        for (int i = 0; i < m_children.size(); i++){
+        for (int i = 0; i < m_children.size(); i++) {
             m_children[i]->init();
         }
     }
@@ -415,7 +416,7 @@ class Entity : public Logger {
         return (temp != m_components.end());
     }
 
-    std::unordered_map<std::type_index, Component*>& components(){
+    std::unordered_map<std::type_index, Component*>& components() {
         return m_components;
     }
 
@@ -510,7 +511,8 @@ class Scene : public Logger {
             i->draw_debug();
         }
     }
-public:
+
+  public:
     /**
      * @brief Get the active camera of the scene.
      * @return Reference to the active camera.
@@ -521,7 +523,6 @@ public:
         }
         return m_active_camera;
     }
-
 
     template <typename... Args> Scene(Args... args) {}
 
@@ -553,7 +554,7 @@ public:
      * @return Pointer to the created entity.
      */
     Entity* create_entity(std::string name = "entity") {
-        auto out = new Entity(this,name);
+        auto out = new Entity(this, name);
         add_entity(out);
         return out;
     }
@@ -636,9 +637,7 @@ public:
         }
     }
 
-    std::vector<Entity*>& entities(){
-        return m_entities;
-    }
+    std::vector<Entity*>& entities() { return m_entities; }
 };
 } // namespace SPRF
 

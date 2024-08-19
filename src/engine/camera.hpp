@@ -38,8 +38,8 @@ class Camera : public Component {
      */
     void set_active() { this->entity()->scene()->set_active_camera(&m_camera); }
 
-    bool active(){
-      return (&m_camera) == this->entity()->scene()->get_active_camera();
+    bool active() {
+        return (&m_camera) == this->entity()->scene()->get_active_camera();
     }
 
     void init() { update_camera(); }
@@ -49,22 +49,26 @@ class Camera : public Component {
      */
     void update() { update_camera(); }
 
-    void draw_editor(){
-      bool before = active();
-      bool v = active();
-      ImGui::Text("Camera");
-      ImGui::Checkbox("enabled",&v);
-      ImGui::Text("%g fov",m_camera.fovy);
-      ImGui::Text("%.3f %.3f %.3f target",m_camera.target.x,m_camera.target.y,m_camera.target.z);
-      ImGui::Text("%.3f %.3f %.3f up",m_camera.up.x,m_camera.up.y,m_camera.up.z);
-      ImGui::Text("%.3f %.3f %.3f pos",m_camera.position.x,m_camera.position.y,m_camera.position.z);
+    void draw_editor() {
+        bool before = active();
+        bool v = active();
+        ImGui::Text("Camera");
+        ImGui::Checkbox("enabled", &v);
+        ImGui::Text("%g fov", m_camera.fovy);
+        ImGui::Text("%.3f %.3f %.3f target", m_camera.target.x,
+                    m_camera.target.y, m_camera.target.z);
+        ImGui::Text("%.3f %.3f %.3f up", m_camera.up.x, m_camera.up.y,
+                    m_camera.up.z);
+        ImGui::Text("%.3f %.3f %.3f pos", m_camera.position.x,
+                    m_camera.position.y, m_camera.position.z);
 
-      if (v == before)return;
-      if (v){
-        set_active();
-      } else {
-        this->entity()->scene()->set_active_camera();
-      }
+        if (v == before)
+            return;
+        if (v) {
+            set_active();
+        } else {
+            this->entity()->scene()->set_active_camera();
+        }
     }
 };
 

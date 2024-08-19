@@ -1,5 +1,5 @@
 #include "raylib-cpp.hpp"
-//#include <ik/ik.h>
+// #include <ik/ik.h>
 #include <cassert>
 #include <iostream>
 
@@ -39,18 +39,25 @@ int main() {
         int parent = bone.parent;
         //if (bone.parent != -1){
             //break;
-        //    transform.translation = Vector3Subtract(transform.translation,current_anim.framePoses[0][bone.parent].translation);
-        //    transform.rotation = raylib::Quaternion::FromMatrix(MatrixMultiply(raylib::Quaternion(transform.rotation).ToMatrix(), (raylib::Quaternion(current_anim.framePoses[0][bone.parent].rotation).Invert().ToMatrix())));
+        //    transform.translation =
+    Vector3Subtract(transform.translation,current_anim.framePoses[0][bone.parent].translation);
+        //    transform.rotation =
+    raylib::Quaternion::FromMatrix(MatrixMultiply(raylib::Quaternion(transform.rotation).ToMatrix(),
+    (raylib::Quaternion(current_anim.framePoses[0][bone.parent].rotation).Invert().ToMatrix())));
         //}
 
         //transform.translation = raylib::Vector3(transform.translation);
-        nodes[i]->position = ik.vec3.vec3(1,0,0);//ik.vec3.vec3(transform.translation.x,transform.translation.y,transform.translation.z);
-        //nodes[i]->rotation = ik.quat.quat(transform.rotation.x,transform.rotation.y,transform.rotation.z,transform.rotation.w);
+        nodes[i]->position =
+    ik.vec3.vec3(1,0,0);//ik.vec3.vec3(transform.translation.x,transform.translation.y,transform.translation.z);
+        //nodes[i]->rotation =
+    ik.quat.quat(transform.rotation.x,transform.rotation.y,transform.rotation.z,transform.rotation.w);
         assert(parent != i);
         //if (parent == -1)
-        printf("pos %d -> %d: %g %g %g\n",i,parent,nodes[i]->position.x,nodes[i]->position.y,nodes[i]->position.z);
+        printf("pos %d -> %d: %g %g
+    %g\n",i,parent,nodes[i]->position.x,nodes[i]->position.y,nodes[i]->position.z);
         //else
-        //    printf("pos %d: %g %g %g, %d, %g %g %g\n",i,nodes[i]->position.x,nodes[i]->position.y,nodes[i]->position.z,parent,current_anim.framePoses[0][parent].translation.x,current_anim.framePoses[0][parent].translation.y,current_anim.framePoses[0][parent].translation.z);
+        //    printf("pos %d: %g %g %g, %d, %g %g
+    %g\n",i,nodes[i]->position.x,nodes[i]->position.y,nodes[i]->position.z,parent,current_anim.framePoses[0][parent].translation.x,current_anim.framePoses[0][parent].translation.y,current_anim.framePoses[0][parent].translation.z);
     }
 
     int eff = 2;
@@ -63,7 +70,8 @@ int main() {
     ik_effector_t* effector = solver->effector->create();
     solver->effector->attach(effector,hand_node);
     //raylib::Quaternion q = current_anim.framePoses[0][eff].rotation;
-    //q = raylib::Quaternion::FromMatrix(MatrixMultiply(q.ToMatrix(), (raylib::Quaternion(current_anim.framePoses[0][0].rotation).Invert().ToMatrix())));
+    //q = raylib::Quaternion::FromMatrix(MatrixMultiply(q.ToMatrix(),
+    (raylib::Quaternion(current_anim.framePoses[0][0].rotation).Invert().ToMatrix())));
     //effector->target_rotation = ik.quat.quat(q.x,q.y,q.z,q.w);
 
     solver->flags |= IK_ENABLE_TARGET_ROTATIONS;
@@ -86,7 +94,8 @@ int main() {
             hand_pos.z += GetFrameTime() * 10;
         }
 
-        effector->target_position = ik.vec3.vec3(hand_pos.x,hand_pos.y,hand_pos.z);
+        effector->target_position =
+    ik.vec3.vec3(hand_pos.x,hand_pos.y,hand_pos.z);
 
 
         ik.solver.rebuild(solver);
@@ -99,7 +108,8 @@ int main() {
             auto cur_pos = raylib::Vector3(0);
             while (cur_parent != -1){
                 bone = current_anim.bones[cur_parent];
-                auto p = raylib::Vector3(nodes[cur_parent]->position.x,nodes[cur_parent]->position.y,nodes[cur_parent]->position.z);
+                auto p =
+    raylib::Vector3(nodes[cur_parent]->position.x,nodes[cur_parent]->position.y,nodes[cur_parent]->position.z);
                 cur_pos += p;
                 cur_parent = bone.parent;
             }
@@ -120,13 +130,15 @@ int main() {
         camera.Update(CAMERA_THIRD_PERSON);
 
         //DrawCube(,0.1,0.1,0.1,RED);
-        auto q = raylib::Quaternion(effector->target_rotation.x,effector->target_rotation.y,effector->target_rotation.z,effector->target_rotation.w);
+        auto q =
+    raylib::Quaternion(effector->target_rotation.x,effector->target_rotation.y,effector->target_rotation.z,effector->target_rotation.w);
         auto [v,a] = q.ToAxisAngle();
         //printf("%g %g %g, %g\n",v.x,v.y,v.z,a);
         DrawModelEx(cube_model,raylib::Vector3(effector->target_position.x,effector->target_position.y,effector->target_position.z),v,a,raylib::Vector3(1.0,1.0,1.0),raylib::Color::Red());
-        //std::cout << raylib::Vector3(effector->target_position.x,effector->target_position.y,effector->target_position.z).Transform(mat_transform).ToString() << std::endl;
-        std::vector<raylib::Vector3> world_positions;
-        for (int i = 0; i < nbones; i++){
+        //std::cout <<
+    raylib::Vector3(effector->target_position.x,effector->target_position.y,effector->target_position.z).Transform(mat_transform).ToString()
+    << std::endl; std::vector<raylib::Vector3> world_positions; for (int i = 0;
+    i < nbones; i++){
             //ik_node_t* node = nodes[i];
             BoneInfo bone = current_anim.bones[i];
             int cur_parent = i;
@@ -134,9 +146,11 @@ int main() {
             auto rot = raylib::Matrix::Identity();
             while (cur_parent != -1){
                 bone = current_anim.bones[cur_parent];
-                auto p = raylib::Vector3(nodes[cur_parent]->position.x,nodes[cur_parent]->position.y,nodes[cur_parent]->position.z);
+                auto p =
+    raylib::Vector3(nodes[cur_parent]->position.x,nodes[cur_parent]->position.y,nodes[cur_parent]->position.z);
                 cur_pos += p;
-                rot = MatrixMultiply(raylib::Quaternion(nodes[cur_parent]->rotation.x,nodes[cur_parent]->rotation.y,nodes[cur_parent]->rotation.z,nodes[cur_parent]->rotation.w).ToMatrix(),rot);
+                rot =
+    MatrixMultiply(raylib::Quaternion(nodes[cur_parent]->rotation.x,nodes[cur_parent]->rotation.y,nodes[cur_parent]->rotation.z,nodes[cur_parent]->rotation.w).ToMatrix(),rot);
                 cur_parent = bone.parent;
             }
 
@@ -163,9 +177,11 @@ int main() {
             auto rot = raylib::Matrix::Identity();
             while (cur_parent != -1){
                 bone = current_anim.bones[cur_parent];
-                auto p = raylib::Vector3(nodes[cur_parent]->position.x,nodes[cur_parent]->position.y,nodes[cur_parent]->position.z);
+                auto p =
+    raylib::Vector3(nodes[cur_parent]->position.x,nodes[cur_parent]->position.y,nodes[cur_parent]->position.z);
                 cur_pos += p;
-                rot = MatrixMultiply(raylib::Quaternion(nodes[cur_parent]->rotation.x,nodes[cur_parent]->rotation.y,nodes[cur_parent]->rotation.z,nodes[cur_parent]->rotation.w).ToMatrix(),rot);
+                rot =
+    MatrixMultiply(raylib::Quaternion(nodes[cur_parent]->rotation.x,nodes[cur_parent]->rotation.y,nodes[cur_parent]->rotation.z,nodes[cur_parent]->rotation.w).ToMatrix(),rot);
                 cur_parent = bone.parent;
             }
 

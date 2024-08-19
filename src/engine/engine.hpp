@@ -433,8 +433,8 @@ class DefaultScene : public Scene {
 
   public:
     DefaultScene(Game* game)
-        : m_dev_console(
-              this->create_entity("dev_console")->add_component<DefaultDevConsole>()),
+        : m_dev_console(this->create_entity("dev_console")
+                            ->add_component<DefaultDevConsole>()),
           m_game(game) {}
 
     DefaultDevConsole* dev_console() { return m_dev_console; }

@@ -7,11 +7,11 @@
 #include "networking/client.hpp"
 #include "networking/map.hpp"
 #include "networking/server.hpp"
-#include <cassert>
-#include <string>
 #include "testing.hpp"
+#include <cassert>
 #include <ik/ik.h>
 #include <ik/transform.h>
+#include <string>
 
 namespace SPRF {
 
@@ -413,6 +413,4 @@ int main(){
 }
 #endif
 
-int main(){
-    return 0;
-}
+int main() { return 0; }

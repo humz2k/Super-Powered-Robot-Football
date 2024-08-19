@@ -24,8 +24,8 @@
 
 #define KEY_EXISTS(map, key) ((map).find((key)) != (map).end())
 
-#define MAX(a,b) (((a) > (b)) ? (a) : (b))
-#define MIN(a,b) (((a) < (b)) ? (a) : (b))
+#define MAX(a, b) (((a) > (b)) ? (a) : (b))
+#define MIN(a, b) (((a) < (b)) ? (a) : (b))
 
 namespace SPRF {
 
@@ -117,12 +117,12 @@ class GameInfo {
     }
 
     void draw_debug() {
-        if (game_settings.int_values["cl_info"]){
+        if (game_settings.int_values["cl_info"]) {
             draw_debug_var("pos", position, 0, 0);
             draw_debug_var("vel", velocity, 0, 20);
             draw_debug_var("xz_vel_mag",
-                        raylib::Vector3(velocity.x, 0, velocity.z).Length(), 0,
-                        40);
+                           raylib::Vector3(velocity.x, 0, velocity.z).Length(),
+                           0, 40);
             draw_debug_var("rot", rotation, 0, 60);
             draw_debug_var("ping", ping, 0, 80);
             draw_debug_var("send_delta", send_delta, 0, 100);

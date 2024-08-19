@@ -3,18 +3,17 @@
 
 #include "crosshair.hpp"
 #include "custom_mesh.hpp"
+#include "editor/editor_tools.hpp"
 #include "engine/engine.hpp"
 #include "engine/sound.hpp"
 #include "mouselook.hpp"
 #include "networking/client.hpp"
 #include "networking/map.hpp"
 #include "networking/server.hpp"
-#include "editor/editor_tools.hpp"
 #include <cassert>
 #include <string>
 
-namespace SPRF{
-
+namespace SPRF {
 
 class Rotation : public Component {
   private:
@@ -26,20 +25,22 @@ class Rotation : public Component {
     bool m_left = false;
     bool m_right = false;
 
-    void reset_inputs(){
-        m_forward = m_backward = m_left = m_right = false;
-    }
+    void reset_inputs() { m_forward = m_backward = m_left = m_right = false; }
 
   public:
-    Rotation(DevConsole* dev_console){
+    Rotation(DevConsole* dev_console) {
         dev_console->add_command<UpdateInput>("+forward", &m_forward);
         dev_console->add_command<UpdateInput>("+backward", &m_backward);
         dev_console->add_command<UpdateInput>("+left", &m_left);
         dev_console->add_command<UpdateInput>("+right", &m_right);
     }
-    void init() { transform = this->entity()->get_component<Transform>(); m_camera = this->entity()->get_child(0); reset_inputs(); }
+    void init() {
+        transform = this->entity()->get_component<Transform>();
+        m_camera = this->entity()->get_child(0);
+        reset_inputs();
+    }
     void update() {
-        if (!m_camera->get_component<Camera>()->active()){
+        if (!m_camera->get_component<Camera>()->active()) {
             return;
         }
         if (!IsKeyDown(KEY_Z)) {
@@ -47,13 +48,19 @@ class Rotation : public Component {
             transform->rotation.x += GetMouseWheelMoveV().y * 0.2;
         }
         auto cam = *this->entity()->scene()->get_active_camera();
-        auto forward = (raylib::Vector3(cam.target) - raylib::Vector3(cam.position));
+        auto forward =
+            (raylib::Vector3(cam.target) - raylib::Vector3(cam.position));
         forward.y = 0;
         forward = forward.Normalize();
-        auto left = raylib::Vector3(Vector3RotateByAxisAngle(forward,raylib::Vector3(0,1,0),M_PI_2)).Normalize();
+        auto left =
+            raylib::Vector3(Vector3RotateByAxisAngle(
+                                forward, raylib::Vector3(0, 1, 0), M_PI_2))
+                .Normalize();
 
-        transform->position += forward * game_info.frame_time * m_speed * (m_forward - m_backward);
-        transform->position += left * game_info.frame_time * m_speed * (m_left - m_right);
+        transform->position +=
+            forward * game_info.frame_time * m_speed * (m_forward - m_backward);
+        transform->position +=
+            left * game_info.frame_time * m_speed * (m_left - m_right);
 
         reset_inputs();
     }
@@ -81,7 +88,7 @@ class TestScene : public DefaultScene {
         IMGui_Manager->add_component<IMGuiManager>();
         IMGui_Manager->add_component<Selectable>();
 
-        if (create_light){
+        if (create_light) {
             auto light = this->renderer()->add_light();
             light->enabled(1);
             light->L(raylib::Vector3(1, 2, 0.02));

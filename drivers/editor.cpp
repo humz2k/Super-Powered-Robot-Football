@@ -1,31 +1,31 @@
 #include "crosshair.hpp"
 #include "custom_mesh.hpp"
+#include "editor/editor_tools.hpp"
 #include "engine/engine.hpp"
 #include "engine/sound.hpp"
+#include "imgui/imgui.h"
+#include "imgui/imgui_impl_raylib.h"
+#include "imgui/rlImGui.h"
 #include "mouselook.hpp"
 #include "networking/client.hpp"
 #include "networking/map.hpp"
 #include "networking/server.hpp"
+#include "testing.hpp"
 #include <cassert>
 #include <string>
-#include "testing.hpp"
-#include "editor/editor_tools.hpp"
-#include "imgui/imgui.h"
-#include "imgui/rlImGui.h"
-#include "imgui/imgui_impl_raylib.h"
 
-namespace SPRF{
+namespace SPRF {
 
-class MyScene : public TestScene{
-    public:
-        MyScene(Game* game) : TestScene(game,false){
-            simple_map()->load_editor(this);
-        }
+class MyScene : public TestScene {
+  public:
+    MyScene(Game* game) : TestScene(game, false) {
+        simple_map()->load_editor(this);
+    }
 };
 
-}
+} // namespace SPRF
 
-int main(){
+int main() {
     assert(enet_initialize() == 0);
 
     int window_width = 1400;
@@ -49,7 +49,7 @@ int main(){
     }
 
     delete SPRF::game;
-    //ImGui::PopFont();
+    // ImGui::PopFont();
     rlImGuiShutdown();
     enet_deinitialize();
     return 0;

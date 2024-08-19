@@ -2,9 +2,9 @@
 #define _SPRF_NETWORKING_MAP_HPP_
 
 #include "custom_mesh.hpp"
+#include "editor/editor_tools.hpp"
 #include "engine/engine.hpp"
 #include "raylib-cpp.hpp"
-#include "editor/editor_tools.hpp"
 #include <ode/ode.h>
 #include <string>
 #include <vector>
@@ -38,9 +38,7 @@ class MapElement {
 
     virtual void load(dWorldID world, dSpaceID space) = 0;
 
-    virtual void load_editor(Scene* scene){
-        this->load(scene);
-    }
+    virtual void load_editor(Scene* scene) { this->load(scene); }
 };
 
 class MapCubeElement : public MapElement {
@@ -79,7 +77,7 @@ class MapCubeElement : public MapElement {
             entity->add_component<Model>(model);
             entity->get_component<Transform>()->position = i.position;
             entity->get_component<Transform>()->rotation = i.rotation;
-            entity->add_component<Selectable>(true,true);
+            entity->add_component<Selectable>(true, true);
         }
     }
 
@@ -147,7 +145,7 @@ class MapPlaneElement : public MapElement {
             entity->add_component<Model>(plane);
             entity->get_component<Transform>()->position = i.position;
             entity->get_component<Transform>()->rotation = i.rotation;
-            entity->add_component<Selectable>(true,true);
+            entity->add_component<Selectable>(true, true);
         }
     }
 
@@ -188,8 +186,6 @@ class MapSkyboxElement : public MapElement {
         scene->renderer()->enable_skybox();
     }
     void load(dWorldID world, dSpaceID space) {}
-
-
 };
 
 class Map {
@@ -209,7 +205,7 @@ class Map {
         }
     }
 
-    void load_editor(Scene* scene){
+    void load_editor(Scene* scene) {
         for (auto i : m_elements) {
             i->load_editor(scene);
         }
