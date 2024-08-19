@@ -135,7 +135,8 @@ class LocalScene : public DefaultScene {
     LocalScene(Game* game)
         : DefaultScene(game), m_server("server_cfg.ini", "127.0.0.1", 31201) {
 
-        simple_map()->load(this);
+        //simple_map()->load(this);
+        load_map("assets/maps/simple_map.json",this);
 
         auto player = this->create_entity();
         player->add_component<Crosshair>();
@@ -171,7 +172,7 @@ class Scene1 : public DefaultScene {
     Scene1(Game* game, std::string host, enet_uint32 port)
         : DefaultScene(game) {
 
-        simple_map()->load(this);
+        load_map("assets/maps/simple_map.json",this);
 
         auto player = this->create_entity();
         player->add_component<Crosshair>();

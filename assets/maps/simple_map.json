@@ -1,0 +1,144 @@
+{
+  "elements": [
+    {
+      "params": {
+        "L": [
+          1.0,
+          2.0,
+          0.019999999552965164
+        ],
+        "fov": 70.0,
+        "target": [
+          2.5,
+          0.0,
+          0.0
+        ]
+      },
+      "type": "MapLightElement"
+    },
+    {
+      "params": {
+        "path": "assets/defaultskybox.png"
+      },
+      "type": "MapSkyboxElement"
+    },
+    {
+      "params": {
+        "instances": [
+          {
+            "pos": [
+              5.0,
+              0.25,
+              5.0
+            ],
+            "rot": [
+              0.20000000298023224,
+              0.20000000298023224,
+              0.20000000298023224
+            ]
+          },
+          {
+            "pos": [
+              3.0,
+              0.25,
+              3.0
+            ],
+            "rot": [
+              0.0,
+              0.0,
+              0.0
+            ]
+          },
+          {
+            "pos": [
+              1.0,
+              0.25,
+              1.0
+            ],
+            "rot": [
+              0.5,
+              0.0,
+              0.0
+            ]
+          },
+          {
+            "pos": [
+              4.0,
+              0.25,
+              4.0
+            ],
+            "rot": [
+              0.0,
+              0.0,
+              0.0
+            ]
+          }
+        ],
+        "size": [
+          0.5,
+          0.5,
+          0.5
+        ],
+        "texture": "assets/prototype_texture/blue2.png"
+      },
+      "type": "MapCubeElement"
+    },
+    {
+      "params": {
+        "instances": [
+          {
+            "pos": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "rot": [
+              0.0,
+              0.0,
+              0.0
+            ]
+          }
+        ],
+        "res": [
+          10,
+          10
+        ],
+        "size": [
+          70.0,
+          60.0
+        ],
+        "texture": "assets/prototype_texture/grey4.png"
+      },
+      "type": "MapPlaneElement"
+    },
+    {
+      "params": {
+        "instances": [
+          {
+            "pos": [
+              0.0,
+              5.0,
+              -30.0
+            ],
+            "rot": [
+              1.5707963705062866,
+              0.0,
+              0.0
+            ]
+          }
+        ],
+        "res": [
+          10,
+          10
+        ],
+        "size": [
+          10.0,
+          10.0
+        ],
+        "texture": "assets/prototype_texture/orange.png"
+      },
+      "type": "MapPlaneElement"
+    }
+  ],
+  "filename": "assets/maps/simple_map.json"
+}

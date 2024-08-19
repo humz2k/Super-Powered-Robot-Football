@@ -440,6 +440,19 @@ class Entity : public Logger {
      * @return Pointer to the scene.
      */
     Scene* scene() { return m_scene; }
+
+    Entity* find_entity(std::string entity_name){
+        if (name() == entity_name){
+            return this;
+        }
+        Entity* out = NULL;
+        for (auto& i : m_children){
+            if ((out = i->find_entity(entity_name))){
+                break;
+            }
+        }
+        return out;
+    }
 };
 
 /**
@@ -638,6 +651,16 @@ class Scene : public Logger {
     }
 
     std::vector<Entity*>& entities() { return m_entities; }
+
+    Entity* find_entity(std::string name){
+        Entity* out = NULL;
+        for (auto& i : m_entities){
+            if ((out = i->find_entity(name))){
+                break;
+            }
+        }
+        return out;
+    }
 };
 } // namespace SPRF
 

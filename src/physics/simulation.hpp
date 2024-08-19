@@ -304,7 +304,7 @@ class Simulation {
         TraceLog(LOG_INFO, "Setting auto disable flag %d", m_auto_disable);
         dWorldSetAutoDisableFlag(m_world, m_auto_disable);
 
-        simple_map()->load(m_world, m_space);
+        load_map("assets/maps/simple_map.json",m_world,m_space);
 
         m_ball =
             new Ball(m_sim_params, &simulation_mutex, m_world, m_space, m_dt);
