@@ -10,32 +10,16 @@
 #include <string>
 #include "testing.hpp"
 #include "editor/editor_tools.hpp"
+#include "imgui/imgui.h"
+#include "imgui/rlImGui.h"
+#include "imgui/imgui_impl_raylib.h"
 
 namespace SPRF{
 
-class TestComp : public Component{
-    public:
-        void update(){
-            if (IsKeyPressed(KEY_J)){
-                this->entity()->get_component<Selectable>()->select();
-            }
-        }
-};
-
 class MyScene : public TestScene{
     public:
-        MyScene(Game* game) : TestScene(game){
-            auto test = this->create_entity();
-            auto model = this->renderer()->create_render_model(raylib::Mesh::Sphere(1,10,10));
-            test->add_component<Model>(model);
-            test->add_component<Selectable>();
-
-            auto test2 = this->create_entity();
-            //auto model = this->renderer()->create_render_model(raylib::Mesh::Sphere(1,10,10));
-            test2->add_component<Model>(model);
-            test2->add_component<Selectable>();
-            test2->get_component<Transform>()->position.x -= 1.5;
-            test2->add_component<TestComp>();
+        MyScene(Game* game) : TestScene(game,false){
+            simple_map()->load_editor(this);
         }
 };
 
@@ -44,10 +28,10 @@ class MyScene : public TestScene{
 int main(){
     assert(enet_initialize() == 0);
 
-    int window_width = 800;
-    int window_height = 800;
-    int render_width = 800 * 2;
-    int render_height = 800 * 2;
+    int window_width = 1400;
+    int window_height = 900;
+    int render_width = 1400 * 2;
+    int render_height = 900 * 2;
     int fps_max = 200;
     int fullscreen = 0;
     float volume = 1.0;
@@ -56,6 +40,8 @@ int main(){
         new SPRF::Game(window_width, window_height, "ik_test", render_width,
                        render_height, fps_max, fullscreen, volume);
 
+    rlImGuiSetup(true);
+
     SPRF::game->load_scene<SPRF::MyScene>();
 
     while (SPRF::game->running()) {
@@ -63,6 +49,8 @@ int main(){
     }
 
     delete SPRF::game;
+    //ImGui::PopFont();
+    rlImGuiShutdown();
     enet_deinitialize();
     return 0;
 }

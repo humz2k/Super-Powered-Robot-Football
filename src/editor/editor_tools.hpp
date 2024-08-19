@@ -2,6 +2,8 @@
 #define _SPRF_EDITOR_MODELS_HPP_
 
 #include "engine/engine.hpp"
+#include "imgui/imgui.h"
+#include "imgui/rlImGui.h"
 
 namespace SPRF{
 
@@ -16,9 +18,10 @@ class Selectable : public Component{
         BBoxCorners m_bbox;
         int m_id;
         bool m_highlight;
+        bool m_clickable;
 
     public:
-        Selectable(bool highlight = true) : m_id(next_id), m_highlight(highlight){
+        Selectable(bool highlight = true, bool clickable = false) : m_id(next_id), m_highlight(highlight), m_clickable(clickable){
             //TraceLog(LOG_INFO,"assigned id = %d",m_id);
             next_id++;
         }
@@ -38,6 +41,7 @@ class Selectable : public Component{
         }
 
         void before_update(){
+            if (!m_clickable)return;
             Selectable::closest = (float)INFINITY;
             Selectable::closest_id = -1;
             //if (!IsMouseButtonPressed(0))return;
@@ -46,7 +50,8 @@ class Selectable : public Component{
         }
 
         void update(){
-            if (!IsMouseButtonPressed(0))return;
+            if (!m_clickable)return;
+            if (!(IsMouseButtonPressed(0) && IsKeyDown(KEY_LEFT_SHIFT)))return;
             auto bbox = bounding_box();
             auto cam = this->entity()->scene()->get_active_camera();
             /*auto display_size = GetDisplaySize();
@@ -74,12 +79,13 @@ class Selectable : public Component{
         }
 
         void after_update(){
-            if (!IsMouseButtonPressed(0))return;
+            if (!m_clickable)return;
+            if (!(IsMouseButtonPressed(0) && IsKeyDown(KEY_LEFT_SHIFT)))return;
             //TraceLog(LOG_INFO,"closest_id = %d",Selectable::closest_id);
             if (Selectable::closest_id == m_id){
                 select();
             } else {
-                unselect();
+                //unselect();
             }
         }
 
@@ -96,6 +102,65 @@ class Selectable : public Component{
                 //TraceLog(LOG_INFO,"unselected id %d",m_id);
             }
             m_selected = false;
+        }
+};
+
+class IMGuiManager : public Component{
+    private:
+        void parse_entity_tree(Entity* entity){
+            std::string entity_name = "(" + std::to_string(entity->id()) + ") " + entity->name();
+
+            if (ImGui::TreeNode(entity_name.c_str())){
+
+                if (ImGui::IsItemToggledOpen()){
+                    if (entity->has_component<Selectable>()){
+                        entity->get_component<Selectable>()->select();
+                    }
+                } else if (ImGui::IsItemClicked()){
+                    if (entity->has_component<Selectable>()){
+                        if (entity->get_component<Selectable>()->selected()){
+                            entity->get_component<Selectable>()->unselect();
+                        }
+                    }
+                }
+                for (int i = 0; i < entity->n_children(); i++){
+                    parse_entity_tree(entity->get_child(i));
+                }
+                ImGui::TreePop();
+            }
+        }
+    public:
+        void before_draw2D(){
+            rlImGuiBegin();
+        }
+
+        void after_draw2D(){
+            rlImGuiEnd();
+        }
+
+        void draw2D(){
+            if (game_info.dev_console_active)return;
+
+            ImGui::Begin("Properties");
+            if (Selectable::currently_selected){
+                Entity* entity = Selectable::currently_selected;
+                ImGui::Text("(%d) %s",entity->id(),entity->name().c_str());
+                //float pos[] = {transform->position.x,transform->position.y,transform->position.z};
+                ImGui::NewLine();
+                entity->get_component<Transform>()->draw_editor();
+                for (auto& i : entity->components()){
+                    ImGui::NewLine();
+                    i.second->draw_editor();
+                }
+
+            }
+            ImGui::End();
+            ImGui::Begin("hierarchy");
+            for (auto& i : this->entity()->scene()->entities()){
+                parse_entity_tree(i);
+            }
+
+            ImGui::End();
         }
 };
 

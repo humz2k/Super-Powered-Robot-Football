@@ -5,6 +5,8 @@
 #include "log_manager.hpp"
 #include "raylib-cpp.hpp"
 #include "ui.hpp"
+#include "imgui/imgui.h"
+#include "imgui/rlImGui.h"
 
 #include <fstream>
 #include <sstream>
@@ -337,6 +339,72 @@ class DevConsole : public Component, public UITextInputBox {
             text_box.draw(m_offset);
         }
         UITextInputBox::draw(m_offset);
+    }
+
+    void draw_editor(){
+        ImGui::Text("DevConsole");
+        if (ImGui::TreeNode("commands")){
+            for (auto& i : m_commands){
+                ImGui::Text("%s",i.first.c_str());
+            }
+            ImGui::TreePop();
+        }
+        if (ImGui::TreeNode("aliases")){
+            ImGui::BeginTable("aliases_table",2);
+            ImGui::TableNextColumn();
+            ImGui::Text("alias");
+            ImGui::TableNextColumn();
+            ImGui::Text("command");
+            ImGui::TableNextRow();
+            for (auto& i : m_aliases){
+                std::string alias_command = i.second.command;
+                for (auto& i : i.second.args){
+                    alias_command += " ";
+                    alias_command += i;
+                }
+                ImGui::TableNextColumn();
+                ImGui::Text("%s",i.first.c_str());
+                ImGui::TableNextColumn();
+                ImGui::Text("%s",alias_command.c_str());
+                ImGui::TableNextRow();
+            }
+            ImGui::EndTable();
+            ImGui::TreePop();
+        }
+        if (ImGui::TreeNode("binds")){
+            ImGui::BeginTable("binds_table",2);
+            ImGui::TableNextColumn();
+            ImGui::Text("bind");
+            ImGui::TableNextColumn();
+            ImGui::Text("command");
+            ImGui::TableNextRow();
+            for (auto& i : m_binds){
+                std::string key_name = "";
+                auto key = i.first;
+                if (key == KEY_NULL){
+                    key_name = "mwheel";
+                } else if (key == KEY_LEFT){
+                    key_name = "left_arrow";
+                } else if (key == KEY_RIGHT){
+                    key_name = "right_arrow";
+                } else if (key == KEY_UP){
+                    key_name = "up_arrow";
+                } else if (key == KEY_DOWN){
+                    key_name = "down_arrow";
+                } else if (key == KEY_SPACE){
+                    key_name = "space";
+                } else{
+                    key_name = std::string(1,std::tolower(((char)key)));
+                }
+                ImGui::TableNextColumn();
+                ImGui::Text("%s",key_name.c_str());
+                ImGui::TableNextColumn();
+                ImGui::Text("%s",i.second.c_str());
+                ImGui::TableNextRow();
+            }
+            ImGui::EndTable();
+            ImGui::TreePop();
+        }
     }
 };
 

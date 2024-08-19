@@ -33,10 +33,11 @@ int main(int argc, char* argv[])
 	while (!WindowShouldClose())    // Detect window close button or ESC key
 	{
 		BeginDrawing();
+        rlImGuiBegin();
 		ClearBackground(DARKGRAY);
 
 		// start ImGui Conent
-		rlImGuiBegin();
+
 
 		// show ImGui Content
 		bool open = true;
@@ -44,7 +45,6 @@ int main(int argc, char* argv[])
 
 		// end ImGui Content
 		rlImGuiEnd();
-
 		EndDrawing();
 		//----------------------------------------------------------------------------------
 	}

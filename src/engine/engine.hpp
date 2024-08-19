@@ -434,12 +434,22 @@ class DefaultScene : public Scene {
   public:
     DefaultScene(Game* game)
         : m_dev_console(
-              this->create_entity()->add_component<DefaultDevConsole>()),
+              this->create_entity("dev_console")->add_component<DefaultDevConsole>()),
           m_game(game) {}
 
     DefaultDevConsole* dev_console() { return m_dev_console; }
 
     Game* game() { return m_game; }
+};
+
+class UpdateInput : public DevConsoleCommand {
+  private:
+    bool* m_var;
+
+  public:
+    UpdateInput(DevConsole& console, bool* var)
+        : DevConsoleCommand(console), m_var(var){};
+    void handle(std::vector<std::string>& args) { *m_var = true; }
 };
 
 } // namespace SPRF

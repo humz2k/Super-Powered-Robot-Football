@@ -4,6 +4,7 @@
 #include "custom_mesh.hpp"
 #include "engine/engine.hpp"
 #include "raylib-cpp.hpp"
+#include "editor/editor_tools.hpp"
 #include <ode/ode.h>
 #include <string>
 #include <vector>
@@ -36,6 +37,10 @@ class MapElement {
     virtual void load(Scene* scene) = 0;
 
     virtual void load(dWorldID world, dSpaceID space) = 0;
+
+    virtual void load_editor(Scene* scene){
+        this->load(scene);
+    }
 };
 
 class MapCubeElement : public MapElement {
@@ -61,6 +66,20 @@ class MapCubeElement : public MapElement {
             entity->add_component<Model>(model);
             entity->get_component<Transform>()->position = i.position;
             entity->get_component<Transform>()->rotation = i.rotation;
+        }
+    }
+
+    void load_editor(Scene* scene) {
+        auto model = scene->renderer()->create_render_model(
+            raylib::Mesh::Cube(m_width, m_height, m_length));
+        if (m_texture_path != "")
+            model->add_texture(m_texture_path);
+        for (auto& i : this->instances()) {
+            auto entity = scene->create_entity("cube");
+            entity->add_component<Model>(model);
+            entity->get_component<Transform>()->position = i.position;
+            entity->get_component<Transform>()->rotation = i.rotation;
+            entity->add_component<Selectable>(true,true);
         }
     }
 
@@ -116,6 +135,22 @@ class MapPlaneElement : public MapElement {
         }
     }
 
+    void load_editor(Scene* scene) {
+        auto plane = scene->renderer()->create_render_model(
+            WrappedMesh(m_x_size, m_y_size, m_resX, m_resY));
+        plane->clip(false);
+        if (m_texture_path != "")
+            plane->add_texture(m_texture_path);
+
+        for (auto& i : this->instances()) {
+            auto entity = scene->create_entity("plane");
+            entity->add_component<Model>(plane);
+            entity->get_component<Transform>()->position = i.position;
+            entity->get_component<Transform>()->rotation = i.rotation;
+            entity->add_component<Selectable>(true,true);
+        }
+    }
+
     void load(dWorldID world, dSpaceID space) {}
 };
 
@@ -153,6 +188,8 @@ class MapSkyboxElement : public MapElement {
         scene->renderer()->enable_skybox();
     }
     void load(dWorldID world, dSpaceID space) {}
+
+
 };
 
 class Map {
@@ -169,6 +206,12 @@ class Map {
     void load(Scene* scene) {
         for (auto i : m_elements) {
             i->load(scene);
+        }
+    }
+
+    void load_editor(Scene* scene){
+        for (auto i : m_elements) {
+            i->load_editor(scene);
         }
     }
 

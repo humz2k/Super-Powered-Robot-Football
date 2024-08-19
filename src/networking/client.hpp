@@ -117,16 +117,6 @@ template <> class UpdateVariable<bool> : public DevConsoleCommand {
     }
 };
 
-class UpdateInput : public DevConsoleCommand {
-  private:
-    bool* m_var;
-
-  public:
-    UpdateInput(DevConsole& console, bool* var)
-        : DevConsoleCommand(console), m_var(var){};
-    void handle(std::vector<std::string>& args) { *m_var = true; }
-};
-
 /** NOTE: No fake ping for sends!!! Only recieves... Please fix! */
 class Client : public Component {
   private:
