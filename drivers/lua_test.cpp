@@ -20,9 +20,10 @@ class CallLuaCommand : public DevConsoleCommand {
   public:
     using DevConsoleCommand::DevConsoleCommand;
     void handle(std::vector<std::string>& args) {
-        if (args.size() == 0)return;
+        if (args.size() == 0)
+            return;
         std::string input = "";
-        for (auto& i : args){
+        for (auto& i : args) {
             input += i;
         }
         scripting.run_string(input);

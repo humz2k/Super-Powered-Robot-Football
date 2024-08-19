@@ -58,7 +58,7 @@ class Game : public Logger {
     LoadingScreen loading_screen;
     float deltaTime = 0;
     SoLoud::Soloud soloud;
-    //ScriptingManager scripting;
+    // ScriptingManager scripting;
 
     raylib::Rectangle render_rect() {
         raylib::Rectangle out(
@@ -261,23 +261,23 @@ class LambdaCommand : public DevConsoleCommand {
             return;
         }
         int nargs = std::stoi(args[0]);
-        if (args.size() < 2*nargs+2){
+        if (args.size() < 2 * nargs + 2) {
             TraceLog(LOG_CONSOLE, "Error - not enough arguments");
             return;
         }
         std::vector<std::string> arg_names;
-        for (int i = 1; i < nargs+1; i++){
+        for (int i = 1; i < nargs + 1; i++) {
             arg_names.push_back(args[i]);
         }
-        std::unordered_map<std::string,std::string> arguments;
+        std::unordered_map<std::string, std::string> arguments;
         int start = args.size() - nargs;
-        for (int i = 0; i < nargs; i++){
+        for (int i = 0; i < nargs; i++) {
             arguments[arg_names[i]] = args[i + start];
         }
 
         std::vector<std::string> transformed_arguments;
-        for (int i = nargs+1; i < start; i++){
-            if (KEY_EXISTS(arguments,args[i])){
+        for (int i = nargs + 1; i < start; i++) {
+            if (KEY_EXISTS(arguments, args[i])) {
                 transformed_arguments.push_back(arguments[args[i]]);
             } else {
                 transformed_arguments.push_back(args[i]);
@@ -286,7 +286,7 @@ class LambdaCommand : public DevConsoleCommand {
 
         std::string command = transformed_arguments[0];
         std::vector<std::string> final_args;
-        for (int i = 1; i < transformed_arguments.size(); i++){
+        for (int i = 1; i < transformed_arguments.size(); i++) {
             final_args.push_back(transformed_arguments[i]);
         }
         std::string running = command + " ";
@@ -295,48 +295,26 @@ class LambdaCommand : public DevConsoleCommand {
         }
         TraceLog(LOG_CONSOLE, "%s", running.c_str());
         dev_console().run_command(command, final_args);
-        /*auto& variable = args[0];
-
-        auto& term = args[args.size() - 1];
-
-        std::vector<std::string> out;
-        std::string command = args[1];
-        if (command == variable) {
-            command = term;
-        }
-        for (int i = 2; i < args.size() - 1; i++) {
-            if (args[i] != variable) {
-                out.push_back(args[i]);
-            } else {
-                out.push_back(term);
-            }
-        }
-        std::string running = command + " ";
-        for (auto& i : out) {
-            running += i + " ";
-        }
-        TraceLog(LOG_CONSOLE, "%s", running.c_str());
-        dev_console().run_command(command, out);*/
     }
 };
 
-class DoCommand : public DevConsoleCommand{
-    public:
-        using DevConsoleCommand::DevConsoleCommand;
-        void handle(std::vector<std::string>& args){
-            std::string combined = "";
-            for (auto& i : args){
-                combined += i + " ";
-            }
-            std::istringstream iss(combined);
-            std::string s;
+class DoCommand : public DevConsoleCommand {
+  public:
+    using DevConsoleCommand::DevConsoleCommand;
+    void handle(std::vector<std::string>& args) {
+        std::string combined = "";
+        for (auto& i : args) {
+            combined += i + " ";
+        }
+        std::istringstream iss(combined);
+        std::string s;
 
-            while (getline(iss, s, ';')) {
-                if (s.size() > 0){
-                    dev_console().submit(s);
-                }
+        while (getline(iss, s, ';')) {
+            if (s.size() > 0) {
+                dev_console().submit(s);
             }
         }
+    }
 };
 
 class ConfigCommand : public DevConsoleCommand {
@@ -496,6 +474,12 @@ class VolumeCommand : public DevConsoleCommand {
     }
 };
 
+class PassCommand : public DevConsoleCommand {
+  public:
+    using DevConsoleCommand::DevConsoleCommand;
+    void handle(std::vector<std::string>& args) {}
+};
+
 class DefaultDevConsole : public DevConsole {
   public:
     DefaultDevConsole() {
@@ -512,6 +496,7 @@ class DefaultDevConsole : public DevConsole {
         add_command<VolumeCommand>("volume");
         add_command<DoCommand>("do");
         add_command<LambdaCommand>("lambda");
+        add_command<PassCommand>("pass");
     }
 
     void init() { exec("autoexec.cfg"); }

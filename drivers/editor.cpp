@@ -20,6 +20,7 @@ class MyScene : public TestScene {
   public:
     MyScene(Game* game) : TestScene(game, false) {
         simple_map()->load_editor(this);
+        dev_console()->exec("assets/editor/cfg/init.cfg");
     }
 };
 
