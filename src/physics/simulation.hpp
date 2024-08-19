@@ -85,6 +85,11 @@ class Ball {
         return vel;
     }
 
+    raylib::Vector3 position(raylib::Vector3 pos) {
+        dBodySetPosition(m_body, pos.x, pos.y, pos.z);
+        return position();
+    }
+
     /**
      * @brief Gets the current velocity of the player body.
      *
@@ -151,6 +156,7 @@ static void near_callback(void* data, dGeomID o1, dGeomID o2);
 
 class Simulation {
   private:
+    ScriptingManager& m_scripting;
     /** @brief Mutex to protect simulation state */
     std::mutex simulation_mutex;
     /** @brief Simulation tick rate */
@@ -269,8 +275,10 @@ class Simulation {
      * @param tickrate The simulation tick rate.
      * @param server_config The path to the server configuration file.
      */
-    Simulation(enet_uint32 tickrate, std::string server_config = "")
-        : m_tickrate(tickrate), m_time_per_tick(1000000000L / m_tickrate),
+    Simulation(ScriptingManager& scripting, enet_uint32 tickrate,
+               std::string server_config = "")
+        : m_scripting(scripting), m_tickrate(tickrate),
+          m_time_per_tick(1000000000L / m_tickrate),
           m_dt(1.0f / (float)m_tickrate), m_sim_params(server_config) {
         TraceLog(LOG_INFO, "Initializing ODE");
         dInitODE();
@@ -302,6 +310,16 @@ class Simulation {
 
         m_ball =
             new Ball(m_sim_params, &simulation_mutex, m_world, m_space, m_dt);
+
+        std::function<int(lua_State*)> ball_pos_func = [this](lua_State* L) {
+            float x = luaL_checknumber(L, 1);
+            float y = luaL_checknumber(L, 2);
+            float z = luaL_checknumber(L, 3);
+            TraceLog(LOG_INFO, "setting ball position %g %g %g", x, y, z);
+            this->set_ball_position(raylib::Vector3(x, y, z));
+            return 0;
+        };
+        m_scripting.register_function(ball_pos_func, "set_ball_position");
     }
 
     /**
@@ -417,6 +435,13 @@ class Simulation {
         }
         ball_state.position(m_ball->position());
         ball_state.rotation(m_ball->rotation());
+    }
+
+    // scripting stuff
+
+    void set_ball_position(raylib::Vector3 pos) {
+        std::lock_guard<std::mutex> guard(simulation_mutex);
+        m_ball->position(pos);
     }
 };
 

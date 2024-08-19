@@ -11639,10 +11639,11 @@ bool ImGui::IsMouseReleased(ImGuiMouseButton button) {
     ImGuiContext& g = *GImGui;
     IM_ASSERT(button >= 0 && button < IM_ARRAYSIZE(g.IO.MouseDown));
     return g.IO.MouseReleased[button] &&
-           TestKeyOwner(MouseButtonToKey(button),
-                        ImGuiKeyOwner_Any); // Should be same as
-                                            // IsKeyReleased(MouseButtonToKey(button),
-                                            // ImGuiKeyOwner_Any)
+           TestKeyOwner(
+               MouseButtonToKey(button),
+               ImGuiKeyOwner_Any); // Should be same as
+                                   // IsKeyReleased(MouseButtonToKey(button),
+                                   // ImGuiKeyOwner_Any)
 }
 
 bool ImGui::IsMouseReleased(ImGuiMouseButton button, ImGuiID owner_id) {
@@ -12153,7 +12154,7 @@ static ImGuiWindow* FindBestWheelingWindow(const ImVec2& wheel) {
                 // - a child window has the ImGuiWindowFlags_NoScrollWithMouse
                 // flag.
                 //// - a child window doesn't need scrolling because it is
-                ///already at the edge for the direction we are going in
+                /// already at the edge for the direction we are going in
                 ///(FIXME-WIP)
                 const bool has_scrolling = (window->ScrollMax[axis] != 0.0f);
                 const bool inputs_disabled =
@@ -19035,9 +19036,9 @@ void ImGui::ShowMetricsWindow(bool* p_open) {
                 }
             }; // Hide Native<>ImGuiKey duplicates when both exists in the array
                // Text("Legacy raw:");      for (ImGuiKey key =
-            // ImGuiKey_KeysData_OFFSET; key < ImGuiKey_COUNT; key++) { if
-            // (io.KeysDown[key]) { SameLine(); Text("\"%s\" %d",
-            // GetKeyName(key), key); } }
+               // ImGuiKey_KeysData_OFFSET; key < ImGuiKey_COUNT; key++) { if
+               // (io.KeysDown[key]) { SameLine(); Text("\"%s\" %d",
+               // GetKeyName(key), key); } }
 #endif
             Text("Keys down:");
             for (ImGuiKey key = ImGuiKey_KeysData_OFFSET; key < ImGuiKey_COUNT;

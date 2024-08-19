@@ -6356,11 +6356,12 @@ bool ImGui::InputTextEx(const char* label, const char* hint, char* buf,
                                             // if you change the text!
                         InputTextReconcileUndoStateAfterUserCallback(
                             state, callback_data.Buf,
-                            callback_data.BufTextLen); // FIXME: Move the rest
-                                                       // of this block inside
-                                                       // function and rename to
-                                                       // InputTextReconcileStateAfterUserCallback()
-                                                       // ?
+                            callback_data
+                                .BufTextLen); // FIXME: Move the rest
+                                              // of this block inside
+                                              // function and rename to
+                                              // InputTextReconcileStateAfterUserCallback()
+                                              // ?
                         if (callback_data.BufTextLen >
                                 backup_current_text_length &&
                             is_resizable)
@@ -11255,9 +11256,11 @@ bool ImGui::BeginMenuEx(const char* label, const char* icon, bool enabled) {
         OpenPopup(label);
     } else if (want_open) {
         menu_is_open = true;
-        OpenPopup(label, ImGuiPopupFlags_NoReopen); // | (want_open_nav_init ?
-                                                    // ImGuiPopupFlags_NoReopenAlwaysNavInit
-                                                    // : 0));
+        OpenPopup(
+            label,
+            ImGuiPopupFlags_NoReopen); // | (want_open_nav_init ?
+                                       // ImGuiPopupFlags_NoReopenAlwaysNavInit
+                                       // : 0));
     }
 
     if (menu_is_open) {

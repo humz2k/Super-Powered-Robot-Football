@@ -8122,10 +8122,11 @@ static void ShowDemoWindowTables() {
                 ImGui::TableSetupColumn(column_names[n], column_flags);
             ImGui::TableSetupScrollFreeze(frozen_cols, frozen_rows);
 
-            ImGui::TableAngledHeadersRow(); // Draw angled headers for all
-                                            // columns with the
-                                            // ImGuiTableColumnFlags_AngledHeader
-                                            // flag.
+            ImGui::
+                TableAngledHeadersRow(); // Draw angled headers for all
+                                         // columns with the
+                                         // ImGuiTableColumnFlags_AngledHeader
+                                         // flag.
             ImGui::TableHeadersRow(); // Draw remaining headers and allow access
                                       // to context-menu and other functions.
             for (int row = 0; row < rows_count; row++) {

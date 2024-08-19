@@ -19,10 +19,10 @@
 
 #include "console.hpp"
 #include "loading_screen.hpp"
+#include "scripting/scripting.hpp"
 #include "soloud.h"
 #include "soloud_wav.h"
 #include "ui.hpp"
-#include "scripting/scripting.hpp"
 
 #define STRINGIFY(x) #x
 #define TOSTRING(x) STRINGIFY(x)
