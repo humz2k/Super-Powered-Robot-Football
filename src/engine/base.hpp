@@ -26,6 +26,20 @@
 
 namespace SPRF {
 
+class GameSettings {
+  public:
+    std::unordered_map<std::string, float> float_values;
+    std::unordered_map<std::string, int> int_values;
+    std::unordered_map<std::string, raylib::Color> color_values;
+    GameSettings() {
+        float_values["m_yaw"] = 0.022;
+        float_values["m_pitch"] = 0.022;
+        float_values["m_sensitivity"] = 1;
+    }
+};
+
+extern GameSettings game_settings;
+
 static int GetDisplayWidth() {
     if (IsWindowFullscreen()) {
         return GetRenderWidth();
@@ -100,20 +114,22 @@ class GameInfo {
     }
 
     void draw_debug() {
-        draw_debug_var("pos", position, 0, 0);
-        draw_debug_var("vel", velocity, 0, 20);
-        draw_debug_var("xz_vel_mag",
-                       raylib::Vector3(velocity.x, 0, velocity.z).Length(), 0,
-                       40);
-        draw_debug_var("rot", rotation, 0, 60);
-        draw_debug_var("ping", ping, 0, 80);
-        draw_debug_var("send_delta", send_delta, 0, 100);
-        draw_debug_var("recv_delta", recieve_delta, 0, 120);
-        draw_debug_var("packet_queue_size", packet_queue_size, 0, 140);
-        draw_debug_var("visible_meshes", visible_meshes, 0, 200);
-        draw_debug_var("hidden_meshes", hidden_meshes, 0, 220);
-        draw_debug_var("ball_pos", ball_position, 0, 240);
-        draw_debug_var("ball_rot", ball_rotation, 0, 260);
+        if (game_settings.int_values["cl_info"]){
+            draw_debug_var("pos", position, 0, 0);
+            draw_debug_var("vel", velocity, 0, 20);
+            draw_debug_var("xz_vel_mag",
+                        raylib::Vector3(velocity.x, 0, velocity.z).Length(), 0,
+                        40);
+            draw_debug_var("rot", rotation, 0, 60);
+            draw_debug_var("ping", ping, 0, 80);
+            draw_debug_var("send_delta", send_delta, 0, 100);
+            draw_debug_var("recv_delta", recieve_delta, 0, 120);
+            draw_debug_var("packet_queue_size", packet_queue_size, 0, 140);
+            draw_debug_var("visible_meshes", visible_meshes, 0, 200);
+            draw_debug_var("hidden_meshes", hidden_meshes, 0, 220);
+            draw_debug_var("ball_pos", ball_position, 0, 240);
+            draw_debug_var("ball_rot", ball_rotation, 0, 260);
+        }
     }
 
     void unload_debug_font() { m_font.Unload(); }
@@ -142,20 +158,6 @@ class Logger {
         TraceLog(log_level, "%s: %s", m_log_name.c_str(), msg);
     }
 };
-
-class GameSettings {
-  public:
-    std::unordered_map<std::string, float> float_values;
-    std::unordered_map<std::string, int> int_values;
-    std::unordered_map<std::string, raylib::Color> color_values;
-    GameSettings() {
-        float_values["m_yaw"] = 0.022;
-        float_values["m_pitch"] = 0.022;
-        float_values["m_sensitivity"] = 1;
-    }
-};
-
-extern GameSettings game_settings;
 
 } // namespace SPRF
 

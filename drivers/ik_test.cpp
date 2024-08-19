@@ -1,3 +1,4 @@
+#if 0
 #include "crosshair.hpp"
 #include "custom_mesh.hpp"
 #include "engine/engine.hpp"
@@ -10,6 +11,7 @@
 #include <string>
 #include "testing.hpp"
 #include <ik/ik.h>
+#include <ik/transform.h>
 
 namespace SPRF {
 
@@ -23,9 +25,9 @@ class IKSolver{
     public:
         IKSolver(){}
         IKSolver(Entity* entity, ik_algorithm_e algo = IK_FABRIK) : m_raw(ik.solver.create(algo)), m_entity(entity) {
-            m_node_model = m_entity->scene()->renderer()->create_render_model(raylib::Mesh::Cube(0.05,0.05,0.05));
+            m_node_model = m_entity->scene()->renderer()->create_render_model(raylib::Mesh::Cube(0.1,0.1,0.1));
             m_node_model->tint(raylib::Color::Green());
-            m_effector_model = m_entity->scene()->renderer()->create_render_model(raylib::Mesh::Cube(0.05,0.05,0.05));
+            m_effector_model = m_entity->scene()->renderer()->create_render_model(raylib::Mesh::Cube(0.1,0.1,0.1));
             m_effector_model->tint(raylib::Color::Red());
         }
         ik_solver_t* raw(){return m_raw;}
@@ -58,6 +60,8 @@ class IKNode{
             rotation(rot);
             m_entity = solver.entity()->create_child();
             m_entity->add_component<Model>(solver.node_model());
+            m_entity->get_component<Transform>()->position = position();
+            m_entity->get_component<Transform>()->rotation = rotation();
             //m_raw->rotation_weight = 1.0f;
         }
         IKNode(IKSolver& solver, IKNode* parent, raylib::Vector3 pos = raylib::Vector3(0,0,0), raylib::Vector3 rot = raylib::Vector3(0,0,0)) : m_solver(solver), m_id(m_solver.next_id()), m_raw(m_solver.raw()->node->create_child(parent->raw(), m_id)){
@@ -65,6 +69,8 @@ class IKNode{
             rotation(rot);
             m_entity = parent->entity()->create_child();
             m_entity->add_component<Model>(solver.node_model());
+            m_entity->get_component<Transform>()->position = position();
+            m_entity->get_component<Transform>()->rotation = rotation();
             //m_raw->rotation_weight = 1.0f;
         }
 
@@ -212,11 +218,13 @@ class IKComponent : public Component{
     private:
         ik_algorithm_e m_algo;
         IKSolver m_solver;
+        IKNode* m_root = NULL;
         std::vector<IKNode*> m_nodes;
         std::vector<Entity*> m_effectors;
         raylib::Model m_model;
         ModelAnimation* m_anims = NULL;
         int m_anim_count;
+        IKNode* m_chest;
     public:
         IKComponent(ik_algorithm_e algo = IK_FABRIK) : m_algo(algo), m_model("assets/xbot1.glb"){
             m_anims = LoadModelAnimations("assets/xbot1.glb", &m_anim_count);
@@ -226,55 +234,68 @@ class IKComponent : public Component{
             ModelAnimation current_anim = m_anims[2];
 
             m_solver = IKSolver(this->entity(),m_algo);
-            //m_solver.raw()->flags |= IK_ENABLE_TARGET_ROTATIONS;// | IK_ENABLE_JOINT_ROTATIONS;
-            m_solver.raw()->flags &= ~IK_ENABLE_TARGET_ROTATIONS;
-            //m_solver.raw()->flags &= ~IK_ENABLE_JOINT_ROTATIONS;
+            m_solver.raw()->flags |= IK_ENABLE_TARGET_ROTATIONS | IK_ENABLE_JOINT_ROTATIONS;
+            //m_solver.raw()->flags &= ~IK_ENABLE_TARGET_ROTATIONS;
+            //m_solver.raw()->flags = 0;
 
-            for (int i = 0; i < current_anim.boneCount; i++){
+            m_root = new IKNode(m_solver);
+            m_chest = m_root->create_child(raylib::Vector3(0,2,0),raylib::Vector3(game_settings.float_values["chest_rot_x"],game_settings.float_values["chest_rot_y"],game_settings.float_values["chest_rot_z"]));
+            /*auto pelvis = m_root->create_child(raylib::Vector3(0,-2,0));
+            auto neck = chest->create_child(raylib::Vector3(0,0.5,0));
+            auto head = neck->create_child(raylib::Vector3(0,0.5,0));
+            auto left_shoulder = chest->create_child(raylib::Vector3(-0.2,0,0));*/
+            auto right_shoulder = m_chest->create_child(raylib::Vector3(0.2,0,0),raylib::Vector3(0,0,0));
+            auto right_arm = right_shoulder->create_child(raylib::Vector3(1,0,0));
+            auto right_hand = right_arm->create_child(raylib::Vector3(1,0,0));
+            /*auto left_arm = left_shoulder->create_child(raylib::Vector3(-1,0,0));
+            auto left_hand = left_arm->create_child(raylib::Vector3(-1,0,0));*/
+
+            /*for (int i = 0; i < current_anim.boneCount; i++){
                 auto bone = current_anim.bones[i];
                 TraceLog(LOG_INFO,"bone: %d : %s",i,bone.name);
-                raylib::Vector3 pos = current_anim.framePoses[0][i].translation;
+                raylib::Vector3 pos = raylib::Vector3(current_anim.framePoses[0][i].translation) * 0.01;
                 raylib::Quaternion rot = current_anim.framePoses[0][i].rotation;
-                raylib::Vector3 parent_pos;
+                //raylib::Vector3 parent_pos;
                 //raylib::Vector3 out_rot = raylib::Vector3(0,M_PI,0);//rot.ToEuler();
-                if (bone.parent == -1){
-                    parent_pos = pos;
+                //if (bone.parent == -1){
+                //    parent_pos = pos;
                     //out_rot = rot.ToEuler();//raylib::Vector3(0,0,0);
-                } else {
-                    parent_pos = current_anim.framePoses[0][bone.parent].translation;
+                //} else {
+                //    parent_pos = current_anim.framePoses[0][bone.parent].translation;
                     //raylib::Quaternion parent_rot = current_anim.framePoses[0][bone.parent].rotation;
                     //out_rot = rot.ToEuler() - parent_rot.ToEuler();// - parent_rot.ToEuler();//raylib::Quaternion::FromMatrix(raylib::Matrix(rot.ToMatrix()) * raylib::Matrix(parent_rot.Invert().ToMatrix()) ).ToEuler();
-                }
-                pos = pos - parent_pos;
-                pos *= 0.01;
+                //}
+                //pos = pos - parent_pos;
+                //pos *= 0.01;
                 //TraceLog(LOG_INFO,"%d: rot %g %g %g\n",i,out_rot.x,out_rot.y,out_rot.z);
                 if (bone.parent == -1){
-                    m_nodes.push_back(new IKNode(m_solver,pos));
-                    m_nodes[m_nodes.size()-1]->raw();
+                    //m_nodes.push_back(m_root->create_child(pos,rot.ToEuler()));
+                    m_nodes.push_back(m_root->create_child(pos));
                 } else {
+                    //m_nodes.push_back(m_nodes[bone.parent]->create_child(pos,rot.ToEuler()));
                     m_nodes.push_back(m_nodes[bone.parent]->create_child(pos));
                 }
-            }
+            }*/
 
             //m_nodes.push_back(new IKNode(m_solver));
             //auto child1 = m_nodes[0]->create_child(raylib::Vector3(0,0,1));
             //auto child2 = child1->create_child(raylib::Vector3(0,0,1));
 
 
-            //auto effector = this->entity()->create_child();//new IKEffector(m_solver,child2,raylib::Vector3(1,1,1));
-            //m_effectors.push_back(effector);
-            //effector->add_component<IKEffector>(m_solver,m_nodes[6],2,true);
-            //effector->add_component<Model>(m_solver.effector_model());
-            //effector->get_component<Transform>()->position = (raylib::Vector3(current_anim.framePoses[0][6].translation) - raylib::Vector3(current_anim.framePoses[0][0].translation)) * 0.01;
+            auto effector = this->entity()->create_child();//new IKEffector(m_solver,child2,raylib::Vector3(1,1,1));
+            m_effectors.push_back(effector);
+            effector->add_component<IKEffector>(m_solver,right_hand,2,true);
+            effector->add_component<Model>(m_solver.effector_model());
+            effector->get_component<Transform>()->position = raylib::Vector3(0,0,0).Transform(right_hand->entity()->global_transform());
 
-            int effs[] = {6};
+            /*int effs[] = {6};
             for (int i = 0; i < sizeof(effs)/sizeof(int); i++){
                 auto effector = this->entity()->create_child();//new IKEffector(m_solver,child2,raylib::Vector3(1,1,1));
                 m_effectors.push_back(effector);
-                effector->add_component<IKEffector>(m_solver,m_nodes[effs[i]],2,false);
+                effector->add_component<IKEffector>(m_solver,m_nodes[effs[i]],2,true);
                 effector->add_component<Model>(m_solver.effector_model());
-                effector->get_component<Transform>()->position = (raylib::Vector3(current_anim.framePoses[0][effs[i]].translation) - raylib::Vector3(current_anim.framePoses[0][0].translation)) * 0.01;
-            }
+                effector->get_component<Transform>()->position = (raylib::Vector3(current_anim.framePoses[0][effs[i]].translation)) * 0.01;
+            }*/
 
             /*int effs2[] = {34};
             for (int i = 0; i < sizeof(effs)/sizeof(int); i++){
@@ -285,37 +306,41 @@ class IKComponent : public Component{
                 effector->get_component<Transform>()->position = (raylib::Vector3(current_anim.framePoses[0][effs2[i]].translation) - raylib::Vector3(current_anim.framePoses[0][0].translation)) * 0.01;
             }*/
 
-            int effs3[] = {10};
-            for (int i = 0; i < sizeof(effs)/sizeof(int); i++){
-                auto effector = this->entity()->create_child();//new IKEffector(m_solver,child2,raylib::Vector3(1,1,1));
-                m_effectors.push_back(effector);
-                effector->add_component<IKEffector>(m_solver,m_nodes[effs3[i]],2,true);
-                effector->add_component<Model>(m_solver.effector_model());
-                effector->get_component<Transform>()->position = (raylib::Vector3(current_anim.framePoses[0][effs3[i]].translation) - raylib::Vector3(current_anim.framePoses[0][0].translation)) * 0.01;
-            }
+            //int effs3[] = {10};
+            //for (int i = 0; i < sizeof(effs3)/sizeof(int); i++){
+            //    auto effector = this->entity()->create_child();//new IKEffector(m_solver,child2,raylib::Vector3(1,1,1));
+            //    m_effectors.push_back(effector);
+            //    effector->add_component<IKEffector>(m_solver,m_nodes[effs3[i]],2,true);
+            //    effector->add_component<Model>(m_solver.effector_model());
+            //    effector->get_component<Transform>()->position = (raylib::Vector3(current_anim.framePoses[0][effs3[i]].translation)) * 0.01;
+            //}
 
-            ik.solver.set_tree(m_solver.raw(), m_nodes[0]->raw());
+            ik.solver.set_tree(m_solver.raw(), m_root->raw());
+            //ik_transform_tree(m_root->raw(),TR_G2L);
+            //ik.transform.global_to_local(m_solver.raw()->tree);
 
             ik.solver.rebuild(m_solver.raw());
             ik.solver.solve(m_solver.raw());
         }
 
         void update(){
-            bool solve = false;
-            for (auto& i : m_effectors){
+            m_chest->rotation(raylib::Vector3(game_settings.float_values["chest_rot_x"],game_settings.float_values["chest_rot_y"],game_settings.float_values["chest_rot_z"]));
+
+            bool solve = true;
+            /*for (auto& i : m_effectors){
                 if (i->get_component<IKEffector>()->diff()){
                     solve = true;
                     break;
                 }
-            }
+            }*/
             if (solve){
                 //ik.solver.rebuild(m_solver.raw());
                 ik.solver.solve(m_solver.raw());
             }
 
-            if (m_nodes.size() > 0){
-                m_nodes[0]->update();
-            }
+            //if (m_nodes.size() > 0){
+            m_root->update();
+            //}
 
             /*ModelAnimation current_anim = m_anims[2];
             for (int i = 0; i < current_anim.boneCount; i++){
@@ -329,7 +354,7 @@ class IKComponent : public Component{
         }
 
         void draw_debug(){
-            ModelAnimation current_anim = m_anims[2];
+            /*ModelAnimation current_anim = m_anims[2];
             for (int i = 0; i < current_anim.boneCount; i++){
                 //if (i == 6){
                 //    auto tmp = raylib::Vector3(0,0,0).Transform(m_nodes[i]->entity()->global_transform()) / 0.01;
@@ -339,12 +364,12 @@ class IKComponent : public Component{
                 current_anim.framePoses[1][i].rotation = raylib::Quaternion::FromMatrix(raylib::Matrix(raylib::Quaternion(current_anim.framePoses[0][i].rotation).ToMatrix()) * m_nodes[i]->entity()->global_rotation());//raylib::Quaternion::FromMatrix(m_nodes[i]->entity()->global_rotation());//
             }
             UpdateModelAnimation(m_model,current_anim,1);
-            m_model.DrawWires(raylib::Vector3(0,0,0),0.01,raylib::Color::White());
+            m_model.DrawWires(raylib::Vector3(0,0,0),0.01,raylib::Color::White());*/
         }
 
         void destroy(){
-            if (m_nodes.size() > 0)
-            delete m_nodes[0];
+            //if (m_nodes.size() > 0)
+            delete m_root;
             UnloadModelAnimations(m_anims,m_anim_count);
         }
 };
@@ -352,7 +377,7 @@ class IKComponent : public Component{
 class MyScene : public TestScene{
     public:
         MyScene(Game* game) : TestScene(game){
-            this->create_entity()->add_component<IKComponent>();
+            this->create_entity()->add_component<IKComponent>(IK_MSS);
         }
 };
 
@@ -384,5 +409,10 @@ int main(){
     delete SPRF::game;
     ik.deinit();
     enet_deinitialize();
+    return 0;
+}
+#endif
+
+int main(){
     return 0;
 }

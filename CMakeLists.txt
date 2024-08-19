@@ -17,7 +17,7 @@ set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 project(SPRF)
 
 add_subdirectory(raylib)
-add_subdirectory(ik)
+# add_subdirectory(ik)
 
 file(GLOB_RECURSE sources src/*.cpp src/*.c src/*.h src/*.hpp)
 
@@ -102,7 +102,7 @@ foreach( sourcefile ${DRIVER_SOURCES} )
     get_filename_component( name ${sourcefile} NAME_WE )
     add_executable( ${name} ${sourcefile} )
     target_link_directories( ${name} PUBLIC raylib/src)
-    target_link_libraries( ${name} SPRF raylib ik ${LIBS_PRIVATE})
+    target_link_libraries( ${name} SPRF raylib ${LIBS_PRIVATE})
     if (${name} MATCHES "game")
         if (WIN32)
             # /ENTRY:mainCRTStartup keeps the same "main" function instead of requiring "WinMain"
