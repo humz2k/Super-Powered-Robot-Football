@@ -166,17 +166,19 @@ class DevConsole : public Component, public UITextInputBox {
         m_aliases[alias] = CommandAlias(command, arguments);
     }
 
-    inline void ltrim(std::string &s) {
-        s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](unsigned char ch) {
-            return !std::isspace(ch);
-        }));
+    inline void ltrim(std::string& s) {
+        s.erase(s.begin(),
+                std::find_if(s.begin(), s.end(), [](unsigned char ch) {
+                    return !std::isspace(ch);
+                }));
     }
 
     // trim from end (in place)
-    inline void rtrim(std::string &s) {
-        s.erase(std::find_if(s.rbegin(), s.rend(), [](unsigned char ch) {
-            return !std::isspace(ch);
-        }).base(), s.end());
+    inline void rtrim(std::string& s) {
+        s.erase(std::find_if(s.rbegin(), s.rend(),
+                             [](unsigned char ch) { return !std::isspace(ch); })
+                    .base(),
+                s.end());
     }
 
     void submit(std::string input, bool silent = false) {

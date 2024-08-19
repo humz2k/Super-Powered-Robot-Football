@@ -39,7 +39,7 @@ namespace SPRF {
  */
 class Server {
   private:
-    //ScriptingManager m_scripting;
+    // ScriptingManager m_scripting;
 
     /** @brief Server configuration parameters */
     ServerConfig config;

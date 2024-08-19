@@ -156,7 +156,7 @@ static void near_callback(void* data, dGeomID o1, dGeomID o2);
 
 class Simulation {
   private:
-    //ScriptingManager& m_scripting;
+    // ScriptingManager& m_scripting;
     /** @brief Mutex to protect simulation state */
     std::mutex simulation_mutex;
     /** @brief Simulation tick rate */
@@ -275,10 +275,8 @@ class Simulation {
      * @param tickrate The simulation tick rate.
      * @param server_config The path to the server configuration file.
      */
-    Simulation(enet_uint32 tickrate,
-               std::string server_config = "")
-        : m_tickrate(tickrate),
-          m_time_per_tick(1000000000L / m_tickrate),
+    Simulation(enet_uint32 tickrate, std::string server_config = "")
+        : m_tickrate(tickrate), m_time_per_tick(1000000000L / m_tickrate),
           m_dt(1.0f / (float)m_tickrate), m_sim_params(server_config) {
         TraceLog(LOG_INFO, "Initializing ODE");
         dInitODE();
@@ -441,13 +439,14 @@ class Simulation {
         m_ball->velocity(pos);
     }
 
-    void register_scripts(){
+    void register_scripts() {
         scripting.register_function(
             [this](lua_State* L) {
                 float x = luaL_checknumber(L, 1);
                 float y = luaL_checknumber(L, 2);
                 float z = luaL_checknumber(L, 3);
-                TraceLog(LOG_INFO, "LUA: setting ball position %g %g %g", x, y, z);
+                TraceLog(LOG_INFO, "LUA: setting ball position %g %g %g", x, y,
+                         z);
                 this->set_ball_position(raylib::Vector3(x, y, z));
                 return 0;
             },
@@ -458,7 +457,8 @@ class Simulation {
                 float x = luaL_checknumber(L, 1);
                 float y = luaL_checknumber(L, 2);
                 float z = luaL_checknumber(L, 3);
-                TraceLog(LOG_INFO, "LUA: setting ball velocity %g %g %g", x, y, z);
+                TraceLog(LOG_INFO, "LUA: setting ball velocity %g %g %g", x, y,
+                         z);
                 this->set_ball_velocity(raylib::Vector3(x, y, z));
                 return 0;
             },
