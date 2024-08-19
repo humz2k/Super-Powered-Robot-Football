@@ -2,6 +2,90 @@
   "elements": [
     {
       "params": {
+        "instances": [
+          {
+            "pos": [
+              2.0,
+              2.0,
+              2.0
+            ],
+            "rot": [
+              0.0,
+              0.0,
+              0.0
+            ]
+          }
+        ],
+        "name": "ball_start"
+      },
+      "type": "MapPositionElement"
+    },
+    {
+      "params": {
+        "instances": [
+          {
+            "pos": [
+              5.0,
+              2.0,
+              5.0
+            ],
+            "rot": [
+              0.0,
+              0.0,
+              0.0
+            ]
+          },
+          {
+            "pos": [
+              7.0,
+              2.0,
+              5.0
+            ],
+            "rot": [
+              0.0,
+              0.0,
+              0.0
+            ]
+          }
+        ],
+        "name": "team_1_spawns"
+      },
+      "type": "MapPositionElement"
+    },
+    {
+      "params": {
+        "instances": [
+          {
+            "pos": [
+              5.0,
+              2.0,
+              10.0
+            ],
+            "rot": [
+              0.0,
+              0.0,
+              0.0
+            ]
+          },
+          {
+            "pos": [
+              7.0,
+              2.0,
+              10.0
+            ],
+            "rot": [
+              0.0,
+              0.0,
+              0.0
+            ]
+          }
+        ],
+        "name": "team_2_spawns"
+      },
+      "type": "MapPositionElement"
+    },
+    {
+      "params": {
         "L": [
           1.0,
           2.0,
@@ -57,18 +141,6 @@
             ],
             "rot": [
               0.5,
-              0.0,
-              0.0
-            ]
-          },
-          {
-            "pos": [
-              4.0,
-              0.25,
-              4.0
-            ],
-            "rot": [
-              0.0,
               0.0,
               0.0
             ]

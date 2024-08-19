@@ -197,6 +197,8 @@ class Simulation {
 
     Ball* m_ball = NULL;
 
+    std::unordered_map<std::string,std::vector<MapElementInstance>> m_positions;
+
   public:
     /**
      * @brief Checks if the simulation should quit.
@@ -304,7 +306,7 @@ class Simulation {
         TraceLog(LOG_INFO, "Setting auto disable flag %d", m_auto_disable);
         dWorldSetAutoDisableFlag(m_world, m_auto_disable);
 
-        load_map("assets/maps/simple_map.json",m_world,m_space);
+        Map("assets/maps/simple_map.json").load(m_world,m_space,m_positions);
 
         m_ball =
             new Ball(m_sim_params, &simulation_mutex, m_world, m_space, m_dt);

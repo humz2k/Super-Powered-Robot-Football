@@ -71,6 +71,10 @@ class MapElement {
 
     virtual void load(dWorldID world, dSpaceID space) = 0;
 
+    virtual void load(dWorldID world, dSpaceID space, std::unordered_map<std::string,std::vector<MapElementInstance>>& positions){
+        this->load(world,space);
+    }
+
     virtual void load_editor(Scene* scene) { this->load(scene); }
 
     virtual json serialize() = 0;
@@ -245,6 +249,61 @@ class MapPlaneElement : public MapElement {
     }
 };
 
+class MapPositionElement : public MapElement{
+    private:
+        std::string m_name;
+    public:
+        MapPositionElement(std::string name) : m_name(name){}
+
+        //MapPositionElement(std::string name, json instances){
+        //    read_instances(instances);
+        //    m_name = name;
+        //}
+
+        void load(dWorldID world, dSpaceID space, std::unordered_map<std::string, std::vector<MapElementInstance>>& positions){
+            positions[m_name] = instances();
+        }
+
+        void load(dWorldID world, dSpaceID space){}
+
+        void load(Scene* scene){
+            auto map_entity = scene->find_entity("sprf_map");
+            assert(map_entity);
+            auto parent = map_entity->create_child("map_position_element_" + m_name + "_" + std::to_string(fresh_id()));
+            for (auto& i : this->instances()) {
+                auto entity = parent->create_child("position");
+                entity->get_component<Transform>()->position = i.position;
+                entity->get_component<Transform>()->rotation = i.rotation;
+            }
+        }
+
+        void load_editor(Scene* scene){
+            auto map_entity = scene->find_entity("sprf_map");
+            assert(map_entity);
+            auto parent = map_entity->create_child("map_position_element_" + m_name + "_" + std::to_string(fresh_id()));
+            for (auto& i : this->instances()) {
+                auto entity = parent->create_child("position");
+                entity->get_component<Transform>()->position = i.position;
+                entity->get_component<Transform>()->rotation = i.rotation;
+                entity->add_component<Selectable>(true, true);
+            }
+        }
+
+        json serialize(){
+            json out;
+            out["type"] = "MapPositionElement";
+            json params;
+            params["name"] = m_name;
+            std::vector<json> instances;
+            for (auto& i : this->instances()){
+                instances.push_back(i.serialize());
+            }
+            params["instances"] = instances;
+            out["params"] = params;
+            return out;
+        }
+};
+
 class MapLightElement : public MapElement {
   private:
     raylib::Vector3 m_L;
@@ -309,10 +368,6 @@ class MapSkyboxElement : public MapElement {
         out["params"] = params;
         return out;
     }
-
-    //MapSkyboxElement(json params){
-    //    m_path = params["path"];
-    //}
 };
 
 class Map {
@@ -321,6 +376,10 @@ class Map {
 
   public:
     Map() {}
+
+    Map(std::string filename){
+        read(filename);
+    }
 
     void add_element(std::shared_ptr<MapElement> element) {
         m_elements.push_back(element);
@@ -342,9 +401,9 @@ class Map {
         }
     }
 
-    void load(dWorldID world, dSpaceID space) {
+    void load(dWorldID world, dSpaceID space, std::unordered_map<std::string,std::vector<MapElementInstance>>& positions) {
         for (auto i : m_elements) {
-            i->load(world, space);
+            i->load(world, space, positions);
         }
     }
 
@@ -375,6 +434,10 @@ class Map {
                 add_element(std::make_shared<MapPlaneElement>(i["params"]));
             } else if (i["type"] == "MapCubeElement"){
                 add_element(std::make_shared<MapCubeElement>(i["params"]));
+            } else if (i["type"] == "MapPositionElement"){
+                auto wtf = std::make_shared<MapPositionElement>(std::string(i["params"]["name"]));
+                wtf->read_instances(i["params"]["instances"]);
+                add_element(wtf);
             } else {
                 TraceLog(LOG_ERROR,"unknown element type %s",std::string(i["type"]).c_str());
             }
@@ -382,20 +445,22 @@ class Map {
     }
 };
 
-static void load_map(std::string name, Scene* scene){
-    Map map;
-    map.read(name);
-    map.load(scene);
-}
-
-static void load_map(std::string name, dWorldID world, dSpaceID space){
-    Map map;
-    map.read(name);
-    map.load(world,space);
-}
-
 static std::shared_ptr<Map> simple_map() {
     std::shared_ptr<Map> out = std::make_shared<Map>();
+
+    std::shared_ptr<MapPositionElement> ball_start = std::make_shared<MapPositionElement>("ball_start");
+    ball_start->add_instance(raylib::Vector3(2,2,2),raylib::Vector3(0,0,0));
+    out->add_element(ball_start);
+
+    std::shared_ptr<MapPositionElement> team_1_spawns = std::make_shared<MapPositionElement>("team_1_spawns");
+    team_1_spawns->add_instance(raylib::Vector3(5,2,5),raylib::Vector3(0,0,0));
+    team_1_spawns->add_instance(raylib::Vector3(7,2,5),raylib::Vector3(0,0,0));
+    out->add_element(team_1_spawns);
+
+    std::shared_ptr<MapPositionElement> team_2_spawns = std::make_shared<MapPositionElement>("team_2_spawns");
+    team_2_spawns->add_instance(raylib::Vector3(5,2,10),raylib::Vector3(0,0,0));
+    team_2_spawns->add_instance(raylib::Vector3(7,2,10),raylib::Vector3(0,0,0));
+    out->add_element(team_2_spawns);
 
     out->add_element(std::make_shared<MapLightElement>(
         raylib::Vector3(1, 2, 0.02), raylib::Vector3(2.5, 0, 0), 70));

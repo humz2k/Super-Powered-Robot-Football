@@ -19,8 +19,8 @@ namespace SPRF {
 class MyScene : public TestScene {
   public:
     MyScene(Game* game) : TestScene(game, false) {
-        //auto map = simple_map();
-        //map->save("assets/maps/simple_map.json");
+        auto map = simple_map();
+        map->save("assets/maps/simple_map.json");
         Map tmp;
         tmp.read("assets/maps/simple_map.json");
         tmp.load_editor(this);

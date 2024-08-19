@@ -106,7 +106,7 @@ class Selectable : public Component {
             if (this->entity()->has_component<Model>()){
                 DrawBoundingBox(bounding_box(), GREEN);
             } else {
-                DrawSphereWires(raylib::Vector3(0,0,0).Transform(this->entity()->global_transform()),1,10,10,GREEN);
+                DrawSphereWires(raylib::Vector3(0,0,0).Transform(this->entity()->global_transform()),0.1,10,10,GREEN);
             }
         }
 
