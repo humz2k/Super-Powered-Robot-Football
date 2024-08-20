@@ -24,9 +24,9 @@ static int l_wrapper(lua_State* L) {
     return funcs[index](L);
 }
 
-struct lua_vec3{
-    lua_Number x, y, z;
-};
+//struct lua_vec3{
+//    lua_Number x, y, z;
+//};
 
 static int newvec3(lua_State* L){
     int nargs = lua_gettop(L);
@@ -98,7 +98,7 @@ void ScriptingManager::register_function(std::function<int(lua_State*)> func,
 int ScriptingManager::run_file(std::string filename) {
     std::lock_guard<std::mutex> guard(script_mutex);
     if (luaL_dofile(m_L, filename.c_str())) {
-        fprintf(stderr, "%s", lua_tostring(m_L, -1));
+        TraceLog(LOG_ERROR, "LUA: %s", lua_tostring(m_L, -1));
         lua_pop(m_L, 1);
         return 1;
     }
@@ -108,7 +108,7 @@ int ScriptingManager::run_file(std::string filename) {
 int ScriptingManager::run_string(std::string script) {
     std::lock_guard<std::mutex> guard(script_mutex);
     if (luaL_dostring(m_L, script.c_str())) {
-        fprintf(stderr, "%s", lua_tostring(m_L, -1));
+        TraceLog(LOG_ERROR, "LUA: %s", lua_tostring(m_L, -1));
         lua_pop(m_L, 1);
         return 1;
     }
