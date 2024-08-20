@@ -71,7 +71,8 @@ class ServerConfig {
 
         mINI::INIFile file(filename);
         mINI::INIStructure ini;
-        assert(file.read(ini)); // Ensure the INI file is successfully read
+        bool read_file = file.read(ini);
+        assert(read_file == true); // Ensure the INI file is successfully read
         if (ini.has("server")) {
             auto& server = ini["server"];
             if (server.has("host")) {
@@ -107,23 +108,23 @@ class SimulationParameters {
     /** @brief Default air acceleration */
     float air_acceleration = 20.0f;
     /** @brief Default jump force */
-    float jump_force = 190.0f;
+    float jump_force = 175.0f;
     /** @brief Default ground drag coefficient */
-    float ground_drag = 0.85f;
+    float ground_drag = 0.1f;
     /** @brief Default air drag coefficient */
-    float air_drag = 0.99f;
+    float air_drag = 0.0f;
     /** @brief Default maximum ground velocity */
-    float max_ground_velocity = 5.0f;
+    float max_ground_velocity = 8.0f;
     /** @brief Default maximum air velocity */
-    float max_air_velocity = 5.0f;
+    float max_air_velocity = 10.0f;
     /** @brief Default maximum overall velocity */
-    float max_all_velocity = 15.0f;
+    float max_all_velocity = 20.0f;
     /** @brief Default mass of the player */
-    float mass = 1.0f;
+    float mass = 0.5f;
     /** @brief Default gravity applied to the player */
-    float gravity = -5.0f;
+    float gravity = -10.0f;
     /** @brief Default bunny hop forgiveness time */
-    float bunny_hop_forgiveness = 0.15f;
+    float bunny_hop_forgiveness = 0.078125f;
 
     float ground_friction = 0.5f;
 
@@ -137,7 +138,7 @@ class SimulationParameters {
     /** @brief Error reduction parameter */
     float erp = 0.2;
     /** @brief Constraint force mixing parameter */
-    float cfm = 1e-5;
+    float cfm = 0.01;//1e-5;
 
     /**
      * @brief Construct a new SimulationParameters object.
@@ -164,7 +165,8 @@ class SimulationParameters {
 
         mINI::INIFile file(filename);
         mINI::INIStructure ini;
-        assert(file.read(ini));
+        bool read_file = file.read(ini);
+        assert(read_file == true);
         if (ini.has("physics")) {
             auto& physics = ini["physics"];
             DUMB_HACK(physics, ground_acceleration)

@@ -248,7 +248,9 @@ class MenuScene : public DefaultScene {
 } // namespace SPRF
 
 int main() {
-    assert(enet_initialize() == 0);
+    if(enet_initialize()){
+        assert(1 == 0);
+    }
 
     int window_width = 0;
     int window_height = 0;
@@ -257,8 +259,9 @@ int main() {
     int fps_max = 200;
     int fullscreen = 1;
     float volume = 1.0;
-    mINI::INIFile file(std::string(GetApplicationDirectory()) +
-                       "/client_cfg.ini");
+    ChangeDirectory(GetApplicationDirectory());
+    ChangeDirectory("..");
+    mINI::INIFile file("client_cfg.ini");
     mINI::INIStructure ini;
     if (file.read(ini)) { // Ensure the INI file is successfully read
         if (ini.has("display")) {

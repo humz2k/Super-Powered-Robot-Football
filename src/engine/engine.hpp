@@ -39,6 +39,7 @@ class DirectoryChanger {
         TraceLog(LOG_INFO, "working in %s", GetWorkingDirectory());
         TraceLog(LOG_INFO, "cd %s", GetApplicationDirectory());
         ChangeDirectory(GetApplicationDirectory());
+        ChangeDirectory("..");
         TraceLog(LOG_INFO, "now working in %s", GetWorkingDirectory());
     }
 };

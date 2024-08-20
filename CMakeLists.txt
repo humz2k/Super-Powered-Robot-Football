@@ -5,11 +5,10 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 cmake_policy(SET CMP0091 NEW)
 
-#set(CMAKE_BUILD_TYPE Debug)
+set(CMAKE_BUILD_TYPE Debug)
 
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG "package")
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE "package")
-
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG "package/debug")
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE "package/release")
 
 set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 
@@ -31,8 +30,8 @@ add_library(SPRF ${sources})
 target_include_directories(SPRF PUBLIC src raylib-cpp/include raylib/src src/soloud/include)
 
 if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-    SET( CMAKE_CXX_FLAGS  "-Wall -Wpedantic -g -fsanitize=address -fsanitize=undefined -fno-omit-frame-pointer -fno-inline -fPIC")
-    #SET( CMAKE_CXX_FLAGS  "-fPIC")
+    # SET( CMAKE_CXX_FLAGS  "-Wall -Wpedantic -g -fsanitize=address -fsanitize=undefined -fno-omit-frame-pointer -fno-inline -fPIC")
+    # SET( CMAKE_CXX_FLAGS  "-fPIC")
 endif()
 
 if (APPLE)

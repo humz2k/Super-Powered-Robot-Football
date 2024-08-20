@@ -23,7 +23,9 @@ int main(int argc, char** argv) {
                  config_file.c_str());
         return 1;
     }
-    assert(enet_initialize() == 0);
+    if(enet_initialize()){
+        assert(1 == 0);
+    }
     SPRF::Server server(config_file);
 
     while (true) {

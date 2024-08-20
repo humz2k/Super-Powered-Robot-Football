@@ -31,7 +31,9 @@ class MyScene : public TestScene {
 } // namespace SPRF
 
 int main() {
-    assert(enet_initialize() == 0);
+    if(enet_initialize()){
+        assert(1 == 0);
+    }
 
     int window_width = 1400;
     int window_height = 900;

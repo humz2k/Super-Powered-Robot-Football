@@ -384,7 +384,9 @@ class MyScene : public TestScene{
 }
 
 int main(){
-    assert(enet_initialize() == 0);
+    if(enet_initialize()){
+        assert(1 == 0);
+    }
 
     int window_width = 800;
     int window_height = 800;

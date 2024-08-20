@@ -1,3 +1,3 @@
 #!/usr/bin/env bash
-cd build/package
+cd build/package/release
 leaks --atExit -- ./game

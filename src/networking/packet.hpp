@@ -247,7 +247,7 @@ struct user_action_packet {
           backward(backward_), left(left_), right(right_), jump(jump_) {}
 
     user_action_packet(void* rawptr, size_t datalen) {
-        assert(datalen = sizeof(packet_header) +
+        assert(datalen == sizeof(packet_header) +
                          sizeof(user_action_packet_serialized));
         user_action_packet_serialized raw;
         memcpy(&raw, ((char*)rawptr) + sizeof(packet_header),
