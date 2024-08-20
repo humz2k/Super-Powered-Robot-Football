@@ -330,7 +330,8 @@ class RenderModel : public Logger {
         free(m_visible_instances);
     }
 
-    void add_texture(std::string path, TextureFilter filter = TEXTURE_FILTER_ANISOTROPIC_4X) {
+    void add_texture(std::string path,
+                     TextureFilter filter = TEXTURE_FILTER_ANISOTROPIC_4X) {
         m_texture_loaded = true;
         m_texture = LoadTexture(path.c_str());
         SetTextureFilter(m_texture, filter);

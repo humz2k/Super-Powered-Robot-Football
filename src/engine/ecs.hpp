@@ -441,13 +441,13 @@ class Entity : public Logger {
      */
     Scene* scene() { return m_scene; }
 
-    Entity* find_entity(std::string entity_name){
-        if (name() == entity_name){
+    Entity* find_entity(std::string entity_name) {
+        if (name() == entity_name) {
             return this;
         }
         Entity* out = NULL;
-        for (auto& i : m_children){
-            if ((out = i->find_entity(entity_name))){
+        for (auto& i : m_children) {
+            if ((out = i->find_entity(entity_name))) {
                 break;
             }
         }
@@ -652,10 +652,10 @@ class Scene : public Logger {
 
     std::vector<Entity*>& entities() { return m_entities; }
 
-    Entity* find_entity(std::string name){
+    Entity* find_entity(std::string name) {
         Entity* out = NULL;
-        for (auto& i : m_entities){
-            if ((out = i->find_entity(name))){
+        for (auto& i : m_entities) {
+            if ((out = i->find_entity(name))) {
                 break;
             }
         }

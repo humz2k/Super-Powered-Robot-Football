@@ -123,7 +123,7 @@ class LocalSceneServerCommands : public DevConsoleCommand {
             scripting.run_string(lua_command);
             return;
         }
-        if (args[0] == "reset_game"){
+        if (args[0] == "reset_game") {
             scripting.run_string("reset_game()");
             return;
         }
@@ -139,7 +139,7 @@ class LocalScene : public DefaultScene {
     LocalScene(Game* game)
         : DefaultScene(game), m_server("server_cfg.ini", "127.0.0.1", 31201) {
 
-        //simple_map()->load(this);
+        // simple_map()->load(this);
         Map("assets/maps/simple_map.json").load(this);
 
         auto player = this->create_entity();
