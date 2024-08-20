@@ -36,6 +36,8 @@ class ScriptingManager {
     int run_string(std::string lua_script);
 
     lua_State* state() { return m_L; }
+
+    void refresh();
 };
 
 void l_construct_vec3(lua_State* L, lua_Number x, lua_Number y, lua_Number z);

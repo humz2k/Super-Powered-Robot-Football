@@ -217,6 +217,10 @@ class Server {
         }
     }
 
+    void register_scripts(){
+
+    }
+
   public:
     /**
      * @brief Signals the server to quit.
@@ -277,6 +281,7 @@ class Server {
         enet_time_set(0);
         server_thread = std::thread(&SPRF::Server::run, this);
         m_simulation.launch();
+        register_scripts();
     }
 
     /**
@@ -313,6 +318,7 @@ class Server {
         enet_time_set(0);
         server_thread = std::thread(&SPRF::Server::run, this);
         m_simulation.launch();
+        register_scripts();
     }
 
     /**

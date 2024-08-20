@@ -113,6 +113,18 @@ int ScriptingManager::run_string(std::string script) {
     return 0;
 }
 
+void ScriptingManager::refresh(){
+    funcs.clear();
+    funcs.resize(0);
+    lua_close(m_L);
+    m_L = luaL_newstate();
+    luaL_openlibs(m_L);
+    lua_newtable(m_L);
+    lua_setglobal(m_L, "sprf");
+    init_logger();
+    init_vec();
+}
+
 ScriptingManager scripting;
 
 }; // namespace SPRF
