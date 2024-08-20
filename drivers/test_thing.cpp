@@ -56,8 +56,8 @@ class TestScene : public DefaultScene {
     TestScene(Game* game) : DefaultScene(game) {
         auto light = this->renderer()->add_light();
         light->enabled(1);
-        light->L(raylib::Vector3(1, 2, 0.02));
-        light->target(raylib::Vector3(2.5, 0, 0));
+        light->L(vec3(1, 2, 0.02));
+        light->target(vec3(2.5, 0, 0));
         light->fov(70);
 
         auto origin = this->create_entity();

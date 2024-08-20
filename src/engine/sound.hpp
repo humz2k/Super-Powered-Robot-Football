@@ -14,9 +14,9 @@ class SoundListener : public Component {
 
     void update() {
         auto transform = this->entity()->global_transform();
-        auto feet = raylib::Vector3(0, 0, 0).Transform(transform);
-        // auto head = raylib::Vector3(0, 1, 0).Transform(transform);
-        auto eyes = (raylib::Vector3(0, 0, 1).Transform(
+        auto feet = vec3(0, 0, 0).Transform(transform);
+        // auto head = vec3(0, 1, 0).Transform(transform);
+        auto eyes = (vec3(0, 0, 1).Transform(
             this->entity()->global_rotation()));
         // TraceLog(LOG_INFO,"updating listener: %g %g %g | %g %g
         // %g",feet.x,feet.y,feet.z,eyes.x,eyes.y,eyes.z);
@@ -45,7 +45,7 @@ class SoundEmitter : public Component {
 
     void update() {
         auto transform = this->entity()->global_transform();
-        auto feet = raylib::Vector3(0, 0, 0).Transform(transform);
+        auto feet = vec3(0, 0, 0).Transform(transform);
         for (auto& i : m_handles) {
             // TraceLog(LOG_INFO,"updating %s: %g %g
             // %g",i.first.c_str(),feet.x,feet.y,feet.z);
@@ -60,7 +60,7 @@ class SoundEmitter : public Component {
             return;
         }
         auto transform = this->entity()->global_transform();
-        auto feet = raylib::Vector3(0, 0, 0).Transform(transform);
+        auto feet = vec3(0, 0, 0).Transform(transform);
         game->soloud.play3d(m_sounds[name], feet.x, feet.y, feet.z);
     }
 
@@ -70,7 +70,7 @@ class SoundEmitter : public Component {
             return;
         }
         auto transform = this->entity()->global_transform();
-        auto feet = raylib::Vector3(0, 0, 0).Transform(transform);
+        auto feet = vec3(0, 0, 0).Transform(transform);
         m_handles[name] =
             game->soloud.play3d(m_sounds[name], feet.x, feet.y, feet.z);
         game->soloud.set3dSourceAttenuation(m_handles[name], m_audio_model,

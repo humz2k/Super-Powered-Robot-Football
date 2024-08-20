@@ -27,9 +27,9 @@ namespace SPRF {
 
 class NetworkEntity : public Component {
   public:
-    raylib::Vector3 position;
-    raylib::Vector3 rotation;
-    raylib::Vector3 velocity;
+    vec3 position;
+    vec3 rotation;
+    vec3 velocity;
     float health = 100;
     bool active = false;
     NetworkEntity() {}
@@ -644,7 +644,7 @@ class Client : public Component {
         for (auto& i : interped.states) {
             if (i.id == m_id) {
                 this->entity()->get_component<Transform>()->position =
-                    i.position() + raylib::Vector3(0, PLAYER_HEIGHT * 0.5, 0);
+                    i.position() + vec3(0, PLAYER_HEIGHT * 0.5, 0);
                 game_info.position = i.position();
                 game_info.velocity = i.velocity();
                 continue;
@@ -689,8 +689,8 @@ class Client : public Component {
             if (i.id == m_id)
                 continue;
             DrawCapsuleWires(
-                i.position() - raylib::Vector3(0, PLAYER_HEIGHT * 0.5, 0),
-                i.position() + raylib::Vector3(0, PLAYER_HEIGHT * 0.5, 0),
+                i.position() - vec3(0, PLAYER_HEIGHT * 0.5, 0),
+                i.position() + vec3(0, PLAYER_HEIGHT * 0.5, 0),
                 PLAYER_RADIUS, 10, 10, raylib::Color::Green());
         }
     }

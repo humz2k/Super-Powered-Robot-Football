@@ -27,32 +27,32 @@ class UIElement {
         return GetScreenHeight();
     }
 
-    raylib::Vector2 display_size() {
-        return raylib::Vector2(display_width(), display_height());
+    vec2 display_size() {
+        return vec2(display_width(), display_height());
     }
 
-    raylib::Vector2 relative_to_actual(raylib::Vector2 coord) {
+    vec2 relative_to_actual(vec2 coord) {
         return display_size() * coord;
     }
 
-    virtual void draw(raylib::Vector2 offset = raylib::Vector2(0, 0)) {}
+    virtual void draw(vec2 offset = vec2(0, 0)) {}
 };
 
 class UIWindow : public UIElement {
   private:
-    raylib::Vector2 m_top_left;
-    raylib::Vector2 m_bottom_right;
+    vec2 m_top_left;
+    vec2 m_bottom_right;
     raylib::Color m_color;
 
   public:
-    UIWindow(raylib::Vector2 top_left, raylib::Vector2 bottom_right,
+    UIWindow(vec2 top_left, vec2 bottom_right,
              raylib::Color color)
         : m_top_left(top_left), m_bottom_right(bottom_right), m_color(color) {}
 
     raylib::Rectangle rect() {
-        raylib::Vector2 top_left = relative_to_actual(m_top_left);
-        raylib::Vector2 bottom_right = relative_to_actual(m_bottom_right);
-        raylib::Vector2 size = bottom_right - top_left;
+        vec2 top_left = relative_to_actual(m_top_left);
+        vec2 bottom_right = relative_to_actual(m_bottom_right);
+        vec2 size = bottom_right - top_left;
         return raylib::Rectangle(top_left, size);
     }
 
@@ -63,13 +63,13 @@ class UIWindow : public UIElement {
         return m_color;
     }
 
-    void draw(raylib::Vector2 offset = raylib::Vector2(0, 0)) {
+    void draw(vec2 offset = vec2(0, 0)) {
         auto r = rect();
         r.SetPosition(r.GetPosition() + offset);
         r.Draw(m_color);
     }
 
-    bool mouse_over(raylib::Vector2 offset = raylib::Vector2(0, 0)) {
+    bool mouse_over(vec2 offset = vec2(0, 0)) {
         auto r = rect();
         r.SetPosition(r.GetPosition() + offset);
         return r.CheckCollision(GetMousePosition());
@@ -83,23 +83,23 @@ class UIText : public UIElement {
     std::string m_text;
 
   private:
-    raylib::Vector2 m_pos;
+    vec2 m_pos;
     float m_height;
     raylib::Color m_color;
     raylib::Font* m_font;
 
   public:
-    UIText(raylib::Font* font, raylib::Vector2 pos, float height,
+    UIText(raylib::Font* font, vec2 pos, float height,
            std::string text = "", raylib::Color color = GREEN)
         : m_text(text), m_pos(pos), m_height(height), m_color(color),
           m_font(font) {}
 
     void update_text(std::string text) { m_text = text; }
 
-    void draw(raylib::Vector2 offset = raylib::Vector2(0, 0)) {
-        raylib::Vector2 coord = relative_to_actual(m_pos) + offset;
+    void draw(vec2 offset = vec2(0, 0)) {
+        vec2 coord = relative_to_actual(m_pos) + offset;
         float height = m_height * display_height();
-        raylib::Vector2 first_size =
+        vec2 first_size =
             MeasureTextEx(*m_font, m_text.c_str(), 20, 1);
         DrawTextEx(*m_font, m_text, coord, 20 * (height / first_size.y), 1,
                    m_color);
@@ -118,8 +118,8 @@ class UITextInputBox : public UIText {
     UIWindow m_background;
 
   public:
-    UITextInputBox(raylib::Font* font, raylib::Vector2 top_left,
-                   raylib::Vector2 bottom_right,
+    UITextInputBox(raylib::Font* font, vec2 top_left,
+                   vec2 bottom_right,
                    raylib::Color background_passive_color = DARKGRAY,
                    raylib::Color background_selected_color = GREEN,
                    raylib::Color background_hover_color = BLACK,
@@ -142,7 +142,7 @@ class UITextInputBox : public UIText {
 
     virtual void on_submit(std::string input) {}
 
-    void update(raylib::Vector2 offset = raylib::Vector2(0, 0)) {
+    void update(vec2 offset = vec2(0, 0)) {
         if (IsMouseButtonPressed(0)) {
             set_selected(mouse_over(offset));
         }
@@ -179,12 +179,12 @@ class UITextInputBox : public UIText {
         update_text(current_string);
     }
 
-    void draw(raylib::Vector2 offset = raylib::Vector2(0, 0)) {
+    void draw(vec2 offset = vec2(0, 0)) {
         m_background.draw(offset);
         UIText::draw(offset);
     }
 
-    bool mouse_over(raylib::Vector2 offset = raylib::Vector2(0, 0)) {
+    bool mouse_over(vec2 offset = vec2(0, 0)) {
         return m_background.mouse_over(offset);
     }
 };
@@ -195,7 +195,7 @@ class UITextComponent : public Component {
     UIText m_text;
 
   public:
-    UITextComponent(raylib::Font* font, raylib::Vector2 pos, float height,
+    UITextComponent(raylib::Font* font, vec2 pos, float height,
                     std::string text = "", raylib::Color color = GREEN)
         : m_font(font), m_text(m_font, pos, height, text, color) {
         TraceLog(LOG_INFO, "setting height = %g", height);

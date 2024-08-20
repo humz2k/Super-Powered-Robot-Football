@@ -74,7 +74,7 @@ class PlayerBodyBase {
     dMass m_mass;
 
     /** @brief Player's rotation */
-    raylib::Vector3 m_rotation = raylib::Vector3(0, 0, 0);
+    vec3 m_rotation = vec3(0, 0, 0);
 
     std::vector<dGeomID> m_geom_masks;
 
@@ -116,7 +116,7 @@ class PlayerBodyBase {
     PlayerBodyBase(SimulationParameters& sim_params,
                    std::mutex* simulation_mutex, enet_uint32 id, dWorldID world,
                    dSpaceID space, float dt,
-                   raylib::Vector3 initial_position = raylib::Vector3(0, 5, 0),
+                   vec3 initial_position = vec3(0, 5, 0),
                    float radius = PLAYER_RADIUS, float height = PLAYER_HEIGHT,
                    float foot_radius = PLAYER_FOOT_RADIUS,
                    float foot_offset = PLAYER_FOOT_OFFSET)
@@ -164,7 +164,7 @@ class PlayerBodyBase {
      *
      * @param force The force to be added.
      */
-    void add_force(raylib::Vector3 force) {
+    void add_force(vec3 force) {
         dBodyAddForce(m_body, force.x, force.y, force.z);
     }
 
@@ -173,9 +173,9 @@ class PlayerBodyBase {
      *
      * @param vel The velocity to be set.
      *
-     * @return raylib::Vector3 The current velocity.
+     * @return vec3 The current velocity.
      */
-    raylib::Vector3 velocity(raylib::Vector3 vel) {
+    vec3 velocity(vec3 vel) {
         dBodySetLinearVel(m_body, vel.x, vel.y, vel.z);
         return vel;
     }
@@ -183,11 +183,11 @@ class PlayerBodyBase {
     /**
      * @brief Gets the current velocity of the player body.
      *
-     * @return raylib::Vector3 The current velocity.
+     * @return vec3 The current velocity.
      */
-    raylib::Vector3 velocity() {
+    vec3 velocity() {
         const float* v = dBodyGetLinearVel(m_body);
-        return raylib::Vector3(v[0], v[1], v[2]);
+        return vec3(v[0], v[1], v[2]);
     }
 
     /**
@@ -195,9 +195,9 @@ class PlayerBodyBase {
      *
      * @param max The maximum magnitude.
      *
-     * @return raylib::Vector3 The current velocity.
+     * @return vec3 The current velocity.
      */
-    raylib::Vector3 clamp_xz_velocity(float max) {
+    vec3 clamp_xz_velocity(float max) {
         auto vel = velocity();
         float y = vel.y;
         vel.y = 0;
@@ -211,9 +211,9 @@ class PlayerBodyBase {
     /**
      * @brief Gets the current XZ velocity of the player body.
      *
-     * @return raylib::Vector3 The current XZ velocity.
+     * @return vec3 The current XZ velocity.
      */
-    raylib::Vector3 xz_velocity() {
+    vec3 xz_velocity() {
         auto out = velocity();
         out.y = 0;
         return out;
@@ -224,9 +224,9 @@ class PlayerBodyBase {
      *
      * @param vel The XZ velocity to be set.
      *
-     * @return raylib::Vector3 The current XZ velocity.
+     * @return vec3 The current XZ velocity.
      */
-    raylib::Vector3 xz_velocity(raylib::Vector3 vel) {
+    vec3 xz_velocity(vec3 vel) {
         auto tmp = vel;
         tmp.y = velocity().y;
         velocity(tmp);
@@ -238,7 +238,7 @@ class PlayerBodyBase {
      *
      * @param acceleration The acceleration to be added.
      */
-    void add_acceleration(raylib::Vector3 acceleration) {
+    void add_acceleration(vec3 acceleration) {
         velocity(acceleration * m_dt + velocity());
     }
 
@@ -248,7 +248,7 @@ class PlayerBodyBase {
      * @return bool True if the player body is grounded, false otherwise.
      */
     bool grounded() {
-        auto ray = RaycastQuery(m_space, position(), raylib::Vector3(0, -1, 0),
+        auto ray = RaycastQuery(m_space, position(), vec3(0, -1, 0),
                                 PLAYER_HEIGHT, m_geom_masks);
         return ray.hit;
     }
@@ -283,11 +283,11 @@ class PlayerBodyBase {
     /**
      * @brief Gets the current position of the player body.
      *
-     * @return raylib::Vector3 The current position.
+     * @return vec3 The current position.
      */
-    raylib::Vector3 position() {
+    vec3 position() {
         const float* pos = dBodyGetPosition(m_body);
-        return raylib::Vector3(pos[0], pos[1], pos[2]);
+        return vec3(pos[0], pos[1], pos[2]);
     }
 
     /**
@@ -295,9 +295,9 @@ class PlayerBodyBase {
      *
      * @param pos The position to be set.
      *
-     * @return raylib::Vector3 The current position.
+     * @return vec3 The current position.
      */
-    raylib::Vector3 position(raylib::Vector3 pos) {
+    vec3 position(vec3 pos) {
         dBodySetPosition(m_body, pos.x, pos.y, pos.z);
         return pos;
     }
@@ -305,18 +305,18 @@ class PlayerBodyBase {
     /**
      * @brief Gets the current rotation of the player body.
      *
-     * @return raylib::Vector3 The current rotation.
+     * @return vec3 The current rotation.
      */
-    raylib::Vector3 rotation() { return m_rotation; }
+    vec3 rotation() { return m_rotation; }
 
     /**
      * @brief Sets the current rotation of the player body.
      *
      * @param rot The rotation to be set.
      *
-     * @return raylib::Vector3 The current rotation.
+     * @return vec3 The current rotation.
      */
-    raylib::Vector3 rotation(raylib::Vector3 rot) {
+    vec3 rotation(vec3 rot) {
         m_rotation = rot;
         return m_rotation;
     }

@@ -103,12 +103,12 @@ class IKNode{
         }
 
         raylib::Vector3 rotation(){
-            raylib::Quaternion q(m_raw->rotation.x,m_raw->rotation.y,m_raw->rotation.z,m_raw->rotation.w);
+            quat q(m_raw->rotation.x,m_raw->rotation.y,m_raw->rotation.z,m_raw->rotation.w);
             return q.ToEuler();
         }
 
         raylib::Vector3 rotation(raylib::Vector3 rot){
-            auto q = raylib::Quaternion::FromEuler(rot);
+            auto q = quat::FromEuler(rot);
             m_raw->rotation = ik.quat.quat(q.x,q.y,q.z,q.w);
             return rotation();
         }
@@ -145,12 +145,12 @@ class IKEffector : public Component{
         }
 
         raylib::Vector3 rotation(){
-            raylib::Quaternion q(m_raw->target_rotation.x,m_raw->target_rotation.y,m_raw->target_rotation.z,m_raw->target_rotation.w);
+            quat q(m_raw->target_rotation.x,m_raw->target_rotation.y,m_raw->target_rotation.z,m_raw->target_rotation.w);
             return q.ToEuler();
         }
 
         raylib::Vector3 rotation(raylib::Vector3 rot){
-            auto q = raylib::Quaternion::FromEuler(rot);
+            auto q = quat::FromEuler(rot);
             m_raw->target_rotation = ik.quat.quat(q.x,q.y,q.z,q.w);
             return rotation();
         }
@@ -254,7 +254,7 @@ class IKComponent : public Component{
                 auto bone = current_anim.bones[i];
                 TraceLog(LOG_INFO,"bone: %d : %s",i,bone.name);
                 raylib::Vector3 pos = raylib::Vector3(current_anim.framePoses[0][i].translation) * 0.01;
-                raylib::Quaternion rot = current_anim.framePoses[0][i].rotation;
+                quat rot = current_anim.framePoses[0][i].rotation;
                 //raylib::Vector3 parent_pos;
                 //raylib::Vector3 out_rot = raylib::Vector3(0,M_PI,0);//rot.ToEuler();
                 //if (bone.parent == -1){
@@ -262,8 +262,8 @@ class IKComponent : public Component{
                     //out_rot = rot.ToEuler();//raylib::Vector3(0,0,0);
                 //} else {
                 //    parent_pos = current_anim.framePoses[0][bone.parent].translation;
-                    //raylib::Quaternion parent_rot = current_anim.framePoses[0][bone.parent].rotation;
-                    //out_rot = rot.ToEuler() - parent_rot.ToEuler();// - parent_rot.ToEuler();//raylib::Quaternion::FromMatrix(raylib::Matrix(rot.ToMatrix()) * raylib::Matrix(parent_rot.Invert().ToMatrix()) ).ToEuler();
+                    //quat parent_rot = current_anim.framePoses[0][bone.parent].rotation;
+                    //out_rot = rot.ToEuler() - parent_rot.ToEuler();// - parent_rot.ToEuler();//quat::FromMatrix(mat4x4(rot.ToMatrix()) * mat4x4(parent_rot.Invert().ToMatrix()) ).ToEuler();
                 //}
                 //pos = pos - parent_pos;
                 //pos *= 0.01;
@@ -361,7 +361,7 @@ class IKComponent : public Component{
                     //TraceLog(LOG_INFO,"%g %g %g\n",tmp.x,tmp.y,tmp.z);
                 //}
                 current_anim.framePoses[1][i].translation = raylib::Vector3(0,0,0).Transform(m_nodes[i]->entity()->global_transform()) / 0.01;
-                current_anim.framePoses[1][i].rotation = raylib::Quaternion::FromMatrix(raylib::Matrix(raylib::Quaternion(current_anim.framePoses[0][i].rotation).ToMatrix()) * m_nodes[i]->entity()->global_rotation());//raylib::Quaternion::FromMatrix(m_nodes[i]->entity()->global_rotation());//
+                current_anim.framePoses[1][i].rotation = quat::FromMatrix(mat4x4(quat(current_anim.framePoses[0][i].rotation).ToMatrix()) * m_nodes[i]->entity()->global_rotation());//quat::FromMatrix(m_nodes[i]->entity()->global_rotation());//
             }
             UpdateModelAnimation(m_model,current_anim,1);
             m_model.DrawWires(raylib::Vector3(0,0,0),0.01,raylib::Color::White());*/

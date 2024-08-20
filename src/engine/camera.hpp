@@ -16,9 +16,9 @@ class Camera : public Component {
 
     void update_camera() {
         auto transform = this->entity()->global_transform();
-        auto feet = raylib::Vector3(0, 0, 0).Transform(transform);
-        auto head = raylib::Vector3(0, 1, 0).Transform(transform);
-        auto eyes = raylib::Vector3(0, 0, 1).Transform(transform);
+        auto feet = vec3(0, 0, 0).Transform(transform);
+        auto head = vec3(0, 1, 0).Transform(transform);
+        auto eyes = vec3(0, 0, 1).Transform(transform);
         m_camera.SetPosition(feet);
         m_camera.SetUp((head - feet).Normalize());
         m_camera.SetTarget(eyes);
@@ -30,8 +30,8 @@ class Camera : public Component {
      */
     Camera(float fovy = DEFAULT_FOVY,
            CameraProjection projection = CAMERA_PERSPECTIVE)
-        : m_camera(raylib::Vector3(0, 0, 0), raylib::Vector3(0, 0, 0),
-                   raylib::Vector3(0, 1, 0), fovy, projection) {}
+        : m_camera(vec3(0, 0, 0), vec3(0, 0, 0),
+                   vec3(0, 1, 0), fovy, projection) {}
 
     /**
      * @brief Set the camera as active in the scene.

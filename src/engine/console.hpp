@@ -45,7 +45,7 @@ class DevConsole : public Component, public UITextInputBox {
     int m_console_start = 0;
     raylib::Font m_font;
     bool m_enabled = false;
-    raylib::Vector2 m_offset = raylib::Vector2(0, 0);
+    vec2 m_offset = vec2(0, 0);
     bool m_clicked = false;
     float m_scroll_speed;
     std::unordered_map<std::string, std::shared_ptr<DevConsoleCommand>>
@@ -71,11 +71,11 @@ class DevConsole : public Component, public UITextInputBox {
 
   public:
     DevConsole(int n_lines = 50, float scroll_speed = 2)
-        : UITextInputBox(&m_font, raylib::Vector2(0.12, 0.86),
-                         raylib::Vector2(0.88, 0.88)),
-          m_background(raylib::Vector2(0.1, 0.1), raylib::Vector2(0.9, 0.9),
+        : UITextInputBox(&m_font, vec2(0.12, 0.86),
+                         vec2(0.88, 0.88)),
+          m_background(vec2(0.1, 0.1), vec2(0.9, 0.9),
                        raylib::Color(23, 27, 33, m_transparency)),
-          m_foreground(raylib::Vector2(0.12, 0.12), raylib::Vector2(0.88, 0.86),
+          m_foreground(vec2(0.12, 0.12), vec2(0.88, 0.86),
                        raylib::Color(30, 35, 43, m_transparency)),
           m_font("assets/"
                  "JetBrainsMono-Regular.ttf",
@@ -87,7 +87,7 @@ class DevConsole : public Component, public UITextInputBox {
         for (int i = 0; i < n_lines; i++) {
             m_text_boxes.push_back(
                 UIText(&m_font,
-                       raylib::Vector2(0.12, start + ((float)i) * text_height),
+                       vec2(0.12, start + ((float)i) * text_height),
                        text_height * 0.95, "test"));
         }
         m_console_start = log_manager.log_stack.size() - m_text_boxes.size();

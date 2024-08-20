@@ -65,10 +65,10 @@ class Selectable : public Component {
         auto render_size = game->render_size();
         auto display_aspect = display_size.x/display_size.y;
         auto render_aspect = render_size.x/render_size.y;
-        auto render_corrected = raylib::Vector2(display_size.y *
+        auto render_corrected = vec2(display_size.y *
         render_aspect,display_size.y);*/
         auto ray =
-            cam->GetScreenToWorldRay((raylib::Vector2((GetMousePosition()))));
+            cam->GetScreenToWorldRay((vec2((GetMousePosition()))));
         auto collision = GetRayCollisionBox(ray, bbox);
         if (collision.hit) {
             if (collision.distance < Selectable::closest) {
@@ -106,7 +106,7 @@ class Selectable : public Component {
             if (this->entity()->has_component<Model>()) {
                 DrawBoundingBox(bounding_box(), GREEN);
             } else {
-                DrawSphereWires(raylib::Vector3(0, 0, 0).Transform(
+                DrawSphereWires(vec3(0, 0, 0).Transform(
                                     this->entity()->global_transform()),
                                 0.1, 10, 10, GREEN);
             }

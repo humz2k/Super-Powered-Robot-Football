@@ -29,6 +29,12 @@
 
 namespace SPRF {
 
+typedef raylib::Vector2 vec2;
+typedef raylib::Vector3 vec3;
+typedef raylib::Vector4 vec4;
+typedef raylib::Quaternion quat;
+typedef raylib::Matrix mat4x4;
+
 class GameSettings {
   public:
     std::unordered_map<std::string, float> float_values;
@@ -62,8 +68,8 @@ static float randrange(float min = 0, float max = 1) {
     return unscale * (max - min) + min;
 }
 
-static inline raylib::Vector2 GetDisplaySize() {
-    return raylib::Vector2(GetDisplayWidth(), GetDisplayHeight());
+static inline vec2 GetDisplaySize() {
+    return vec2(GetDisplayWidth(), GetDisplayHeight());
 }
 
 class GameInfo {
@@ -74,17 +80,17 @@ class GameInfo {
     int visible_meshes = 0;
     int hidden_meshes = 0;
     float frame_time = 0;
-    raylib::Vector2 monitor_size; // inches
-    raylib::Vector3 position;
-    raylib::Vector3 rotation;
-    raylib::Vector3 velocity;
-    raylib::Vector3 ball_position;
-    raylib::Vector3 ball_rotation;
+    vec2 monitor_size; // inches
+    vec3 position;
+    vec3 rotation;
+    vec3 velocity;
+    vec3 ball_position;
+    vec3 ball_rotation;
     int ping;
     float recieve_delta;
     float send_delta;
     bool dev_console_active = false;
-    // raylib::Vector2 mouse_sense_ratio = raylib::Vector2(0.0165, 0.022);
+    // vec2 mouse_sense_ratio = vec2(0.0165, 0.022);
     int packet_queue_size = 0;
     GameInfo() {}
     ~GameInfo() {}
@@ -93,21 +99,21 @@ class GameInfo {
     void draw_debug_var(std::string name, T var, int x, int y,
                         Color color = RED) {
         std::string text = (name + ": " + std::to_string(var));
-        raylib::DrawTextEx(m_font, text.c_str(), raylib::Vector2(x, y), 20, 1,
+        raylib::DrawTextEx(m_font, text.c_str(), vec2(x, y), 20, 1,
                            color);
     }
 
     void draw_debug_var(std::string name, std::string var, int x, int y,
                         Color color = RED) {
         std::string text = (name + ": " + var);
-        raylib::DrawTextEx(m_font, text.c_str(), raylib::Vector2(x, y), 20, 1,
+        raylib::DrawTextEx(m_font, text.c_str(), vec2(x, y), 20, 1,
                            color);
     }
 
-    void draw_debug_var(std::string name, raylib::Vector3 var, int x, int y,
+    void draw_debug_var(std::string name, vec3 var, int x, int y,
                         Color color = RED) {
         std::string text = (name + ": " + var.ToString());
-        raylib::DrawTextEx(m_font, text.c_str(), raylib::Vector2(x, y), 20, 1,
+        raylib::DrawTextEx(m_font, text.c_str(), vec2(x, y), 20, 1,
                            color);
     }
 
@@ -121,7 +127,7 @@ class GameInfo {
             draw_debug_var("pos", position, 0, 0);
             draw_debug_var("vel", velocity, 0, 20);
             draw_debug_var("xz_vel_mag",
-                           raylib::Vector3(velocity.x, 0, velocity.z).Length(),
+                           vec3(velocity.x, 0, velocity.z).Length(),
                            0, 40);
             draw_debug_var("rot", rotation, 0, 60);
             draw_debug_var("ping", ping, 0, 80);
@@ -140,8 +146,8 @@ class GameInfo {
 
 extern GameInfo game_info;
 
-static inline raylib::Vector2 GetRawMouseDelta() {
-    raylib::Vector2 sc = raylib::Vector2(GetMouseDelta()) *
+static inline vec2 GetRawMouseDelta() {
+    vec2 sc = vec2(GetMouseDelta()) *
                          DEG2RAD; // * game_info.monitor_size * 400 * 0.022;
     return sc;
 }

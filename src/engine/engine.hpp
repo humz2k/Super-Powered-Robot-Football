@@ -62,7 +62,7 @@ class Game : public Logger {
 
     raylib::Rectangle render_rect() {
         raylib::Rectangle out(
-            -raylib::Vector2(m_render_view.GetTexture().GetSize()));
+            -vec2(m_render_view.GetTexture().GetSize()));
         out.SetWidth(-out.GetWidth());
         return out;
     }
@@ -103,7 +103,7 @@ class Game : public Logger {
         // monitor size in inches
         int monitor = GetCurrentMonitor();
         game_info.monitor_size =
-            raylib::Vector2(GetMonitorPhysicalWidth(monitor),
+            vec2(GetMonitorPhysicalWidth(monitor),
                             GetMonitorPhysicalHeight(monitor)) *
             0.039;
 
@@ -181,7 +181,7 @@ class Game : public Logger {
         }
     }
 
-    raylib::Vector2 render_size() {
+    vec2 render_size() {
         return m_render_view.GetTexture().GetSize();
     }
 };

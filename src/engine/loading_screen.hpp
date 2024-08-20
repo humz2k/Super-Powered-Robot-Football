@@ -107,7 +107,7 @@ class LoadingScreen {
             color.a = alpha * 255.0f;
             BeginDrawing();
             ClearBackground(BLACK);
-            logo_texture.Draw(source_rect, dest_rect, raylib::Vector2(0, 0), 0,
+            logo_texture.Draw(source_rect, dest_rect, vec2(0, 0), 0,
                               color);
             EndDrawing();
             if (IsMouseButtonPressed(0) || (GetKeyPressed() != 0)) {

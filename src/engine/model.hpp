@@ -16,7 +16,7 @@ class Model : public Component {
   public:
     Model(RenderModel* model) : m_model(model) {}
 
-    void draw3D(raylib::Matrix parent_transform) {
+    void draw3D(mat4x4 parent_transform) {
         if (m_enabled)
             m_model->add_instance(parent_transform);
     }

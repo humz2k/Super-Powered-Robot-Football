@@ -1,4 +1,5 @@
 #include "raycast.hpp"
+#include "engine/base.hpp"
 
 #define MAX_CONTACTS 32
 
@@ -37,8 +38,8 @@ static void RayCallback(void* Data, dGeomID Geometry1, dGeomID Geometry2) {
 
 // Performs raycasting on a space and returns the point of collision. Return
 // false for no hit.
-raylib::RayCollision RaycastQuery(dSpaceID Space, raylib::Vector3 start,
-                                  raylib::Vector3 direction, float length,
+raylib::RayCollision RaycastQuery(dSpaceID Space, vec3 start,
+                                  vec3 direction, float length,
                                   std::vector<dGeomID> masks) {
     dVector3 Start = {start.x, start.y, start.z};
     dVector3 Direction = {direction.x, direction.y, direction.z};
@@ -71,9 +72,9 @@ raylib::RayCollision RaycastQuery(dSpaceID Space, raylib::Vector3 start,
 
     return raylib::RayCollision(
         HitPosition.hit, HitPosition.depth,
-        raylib::Vector3(HitPosition.pos[0], HitPosition.pos[1],
+        vec3(HitPosition.pos[0], HitPosition.pos[1],
                         HitPosition.pos[2]),
-        raylib::Vector3(HitPosition.normal[0], HitPosition.normal[1],
+        vec3(HitPosition.normal[0], HitPosition.normal[1],
                         HitPosition.normal[2]));
 }
 

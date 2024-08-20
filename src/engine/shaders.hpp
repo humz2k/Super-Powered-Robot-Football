@@ -168,8 +168,8 @@ class ShaderUniform<raylib::Color> : public ShaderUniformBase<raylib::Color> {
  * @brief Template specialization for Vector2 shader uniform variables.
  */
 template <>
-class ShaderUniform<raylib::Vector2>
-    : public ShaderUniformBase<raylib::Vector2> {
+class ShaderUniform<vec2>
+    : public ShaderUniformBase<vec2> {
   public:
     /**
      * @brief Construct a new Shader Uniform object for Vector2.
@@ -178,7 +178,7 @@ class ShaderUniform<raylib::Vector2>
      * @param value Initial value of the uniform variable.
      * @param shader Reference to the shader.
      */
-    ShaderUniform(std::string name, raylib::Vector2 value,
+    ShaderUniform(std::string name, vec2 value,
                   raylib::Shader& shader)
         : ShaderUniformBase(name, value, shader) {
         update_value();
@@ -197,8 +197,8 @@ class ShaderUniform<raylib::Vector2>
  * @brief Template specialization for Vector3 shader uniform variables.
  */
 template <>
-class ShaderUniform<raylib::Vector3>
-    : public ShaderUniformBase<raylib::Vector3> {
+class ShaderUniform<vec3>
+    : public ShaderUniformBase<vec3> {
   public:
     /**
      * @brief Construct a new Shader Uniform object for Vector3.
@@ -207,7 +207,7 @@ class ShaderUniform<raylib::Vector3>
      * @param value Initial value of the uniform variable.
      * @param shader Reference to the shader.
      */
-    ShaderUniform(std::string name, raylib::Vector3 value,
+    ShaderUniform(std::string name, vec3 value,
                   raylib::Shader& shader)
         : ShaderUniformBase(name, value, shader) {
         update_value();
@@ -226,8 +226,8 @@ class ShaderUniform<raylib::Vector3>
  * @brief Template specialization for Vector4 shader uniform variables.
  */
 template <>
-class ShaderUniform<raylib::Vector4>
-    : public ShaderUniformBase<raylib::Vector4> {
+class ShaderUniform<vec4>
+    : public ShaderUniformBase<vec4> {
   public:
     /**
      * @brief Construct a new Shader Uniform object for Vector4.
@@ -236,7 +236,7 @@ class ShaderUniform<raylib::Vector4>
      * @param value Initial value of the uniform variable.
      * @param shader Reference to the shader.
      */
-    ShaderUniform(std::string name, raylib::Vector4 value,
+    ShaderUniform(std::string name, vec4 value,
                   raylib::Shader& shader)
         : ShaderUniformBase(name, value, shader) {
         update_value();
@@ -282,20 +282,20 @@ class Light : public Logger {
     /** @brief Uniform variable for light color */
     ShaderUniform<raylib::Color> m_cL;
     /** @brief Uniform variable for light position */
-    ShaderUniform<raylib::Vector3> m_pos;
+    ShaderUniform<vec3> m_pos;
     /** @brief Uniform variable for light direction */
-    ShaderUniform<raylib::Vector3> m_L;
+    ShaderUniform<vec3> m_L;
     /** @brief View matrix for light */
-    raylib::Matrix m_light_view;
+    mat4x4 m_light_view;
     /** @brief Projection matrix for light */
-    raylib::Matrix m_light_proj;
+    mat4x4 m_light_proj;
 
     /** @brief Scale of the light */
     float m_scale;
     /** @brief Field of view for the light */
     float m_fov;
 
-    raylib::Vector3 m_target = raylib::Vector3(0, 0, 0);
+    vec3 m_target = vec3(0, 0, 0);
 
     /** @brief Location of the shadow map in the shader */
     int m_shadow_mapLoc;
@@ -305,7 +305,7 @@ class Light : public Logger {
     /** @brief Shadow map texture */
     RenderTexture2D m_shadow_map;
     /** @brief Light view-projection matrix */
-    // raylib::Matrix m_light_vp;
+    // mat4x4 m_light_vp;
 
   public:
     /**
@@ -329,10 +329,10 @@ class Light : public Logger {
                       m_shader),
           m_cL("lights[" + std::to_string(m_id) + "].cL",
                raylib::Color::White(), m_shader),
-          m_pos("lights[" + std::to_string(m_id) + "].pos", raylib::Vector3(0),
+          m_pos("lights[" + std::to_string(m_id) + "].pos", vec3(0),
                 m_shader),
           m_L("lights[" + std::to_string(m_id) + "].L",
-              raylib::Vector3(1, 1, 1).Normalize(), m_shader),
+              vec3(1, 1, 1).Normalize(), m_shader),
           m_scale(scale), m_fov(fov),
           m_shadow_mapLoc(shader.GetLocation("lights[" + std::to_string(m_id) +
                                              "].shadowMap")),
@@ -453,7 +453,7 @@ class Light : public Logger {
      *
      * @return Position of the light.
      */
-    raylib::Vector3 pos() const { return m_pos.value(); }
+    vec3 pos() const { return m_pos.value(); }
 
     /**
      * @brief Set the position of the light.
@@ -461,14 +461,14 @@ class Light : public Logger {
      * @param v New position.
      * @return Updated position.
      */
-    raylib::Vector3 pos(raylib::Vector3 v) { return m_pos.value(v); }
+    vec3 pos(vec3 v) { return m_pos.value(v); }
 
     /**
      * @brief Get the direction of the light.
      *
      * @return Direction of the light.
      */
-    raylib::Vector3 L() const { return m_L.value(); }
+    vec3 L() const { return m_L.value(); }
 
     /**
      * @brief Set the direction of the light.
@@ -476,7 +476,7 @@ class Light : public Logger {
      * @param v New direction.
      * @return Updated direction.
      */
-    raylib::Vector3 L(raylib::Vector3 v) { return m_L.value(v.Normalize()); }
+    vec3 L(vec3 v) { return m_L.value(v.Normalize()); }
 
     /**
      * @brief Get the scale of the light.
@@ -509,9 +509,9 @@ class Light : public Logger {
      */
     ~Light() { UnloadShadowmapRenderTexture(m_shadow_map); }
 
-    raylib::Vector3 target() const { return m_target; }
+    vec3 target() const { return m_target; }
 
-    raylib::Vector3 target(raylib::Vector3 new_target) {
+    vec3 target(vec3 new_target) {
         m_target = new_target;
         return m_target;
     }
@@ -528,7 +528,7 @@ class Light : public Logger {
         out.position = L() * scale() + m_target; // + camera->GetPosition();
         out.projection = CAMERA_ORTHOGRAPHIC;
         out.fovy = fov();
-        out.up = raylib::Vector3(0.0f, 1.0f, 0.0f);
+        out.up = vec3(0.0f, 1.0f, 0.0f);
         return out;
     }
 
@@ -552,7 +552,7 @@ class Light : public Logger {
     void EndShadowMode(int slot_start) {
         EndMode3D();
         EndTextureMode();
-        raylib::Matrix light_view_proj = m_light_view * m_light_proj;
+        mat4x4 light_view_proj = m_light_view * m_light_proj;
         SetShaderValueMatrix(m_shader, m_light_vpLoc, light_view_proj);
         rlEnableShader(m_shader.id);
         int slot = slot_start + id();

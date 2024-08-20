@@ -81,24 +81,24 @@ struct ball_state_data {
         memset(rotation_data, 0, sizeof(rotation_data));
     }
 
-    raylib::Vector3 position() {
-        return raylib::Vector3(position_data[0], position_data[1],
+    vec3 position() {
+        return vec3(position_data[0], position_data[1],
                                position_data[2]);
     }
 
-    raylib::Vector3 position(raylib::Vector3 pos) {
+    vec3 position(vec3 pos) {
         position_data[0] = pos.x;
         position_data[1] = pos.y;
         position_data[2] = pos.z;
         return position();
     }
 
-    raylib::Vector3 rotation() {
-        return raylib::Vector3(rotation_data[0], rotation_data[1],
+    vec3 rotation() {
+        return vec3(rotation_data[0], rotation_data[1],
                                rotation_data[2]);
     }
 
-    raylib::Vector3 rotation(raylib::Vector3 rot) {
+    vec3 rotation(vec3 rot) {
         rotation_data[0] = rot.x;
         rotation_data[1] = rot.y;
         rotation_data[2] = rot.z;
@@ -130,42 +130,42 @@ struct player_state_data {
                  health_data);
     }
 
-    raylib::Vector3 position() {
-        return raylib::Vector3(position_data[0], position_data[1],
+    vec3 position() {
+        return vec3(position_data[0], position_data[1],
                                position_data[2]);
     }
 
-    raylib::Vector3 position(raylib::Vector3 pos) {
+    vec3 position(vec3 pos) {
         position_data[0] = pos.x;
         position_data[1] = pos.y;
         position_data[2] = pos.z;
-        return raylib::Vector3(position_data[0], position_data[1],
+        return vec3(position_data[0], position_data[1],
                                position_data[2]);
     }
 
-    raylib::Vector3 rotation() {
-        return raylib::Vector3(rotation_data[0], rotation_data[1],
+    vec3 rotation() {
+        return vec3(rotation_data[0], rotation_data[1],
                                rotation_data[2]);
     }
 
-    raylib::Vector3 rotation(raylib::Vector3 rot) {
+    vec3 rotation(vec3 rot) {
         rotation_data[0] = rot.x;
         rotation_data[1] = rot.y;
         rotation_data[2] = rot.z;
-        return raylib::Vector3(rotation_data[0], rotation_data[1],
+        return vec3(rotation_data[0], rotation_data[1],
                                rotation_data[2]);
     }
 
-    raylib::Vector3 velocity() {
-        return raylib::Vector3(velocity_data[0], velocity_data[1],
+    vec3 velocity() {
+        return vec3(velocity_data[0], velocity_data[1],
                                velocity_data[2]);
     }
 
-    raylib::Vector3 velocity(raylib::Vector3 vel) {
+    vec3 velocity(vec3 vel) {
         velocity_data[0] = vel.x;
         velocity_data[1] = vel.y;
         velocity_data[2] = vel.z;
-        return raylib::Vector3(velocity_data[0], velocity_data[1],
+        return vec3(velocity_data[0], velocity_data[1],
                                velocity_data[2]);
     }
 };
@@ -234,7 +234,7 @@ struct user_action_packet_serialized {
 
 struct user_action_packet {
     enet_uint32 ping_send;
-    raylib::Vector3 rotation;
+    vec3 rotation;
     bool forward;
     bool backward;
     bool left;
@@ -242,7 +242,7 @@ struct user_action_packet {
     bool jump;
 
     user_action_packet(bool forward_, bool backward_, bool left_, bool right_,
-                       bool jump_, raylib::Vector3 rotation_)
+                       bool jump_, vec3 rotation_)
         : ping_send(enet_time_get()), rotation(rotation_), forward(forward_),
           backward(backward_), left(left_), right(right_), jump(jump_) {}
 

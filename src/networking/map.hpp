@@ -16,10 +16,10 @@ using json = nlohmann::json;
 namespace SPRF {
 
 struct MapElementInstance {
-    raylib::Vector3 position;
-    raylib::Vector3 rotation;
+    vec3 position;
+    vec3 rotation;
     MapElementInstance() {}
-    MapElementInstance(raylib::Vector3 position_, raylib::Vector3 rotation_)
+    MapElementInstance(vec3 position_, vec3 rotation_)
         : position(position_), rotation(rotation_) {}
     json serialize() {
         json out;
@@ -49,14 +49,14 @@ class MapElement {
 
     std::vector<MapElementInstance>& instances() { return m_instances; }
 
-    void add_instance(raylib::Vector3 position, raylib::Vector3 rotation) {
+    void add_instance(vec3 position, vec3 rotation) {
         m_instances.push_back(MapElementInstance(position, rotation));
     }
 
     void read_instances(json j) {
         for (auto& i : j) {
-            raylib::Vector3 pos(i["pos"][0], i["pos"][1], i["pos"][2]);
-            raylib::Vector3 rot(i["rot"][0], i["rot"][1], i["rot"][2]);
+            vec3 pos(i["pos"][0], i["pos"][1], i["pos"][2]);
+            vec3 rot(i["rot"][0], i["rot"][1], i["rot"][2]);
             add_instance(pos, rot);
         }
     }
@@ -134,7 +134,7 @@ class MapCubeElement : public MapElement {
             auto geom = dCreateBox(space, m_width, m_height, m_length);
             dGeomSetPosition(geom, i.position.x, i.position.y, i.position.z);
             dMatrix3 rotation;
-            auto mat = raylib::Matrix::RotateXYZ(i.rotation);
+            auto mat = mat4x4::RotateXYZ(i.rotation);
             rotation[0] = mat.m0;
             rotation[1] = mat.m4;
             rotation[2] = mat.m8;
@@ -318,13 +318,13 @@ class MapPositionElement : public MapElement {
 
 class MapLightElement : public MapElement {
   private:
-    raylib::Vector3 m_L;
-    raylib::Vector3 m_target;
+    vec3 m_L;
+    vec3 m_target;
     float m_fov;
 
   public:
-    MapLightElement(raylib::Vector3 L,
-                    raylib::Vector3 target = raylib::Vector3(0, 0, 0),
+    MapLightElement(vec3 L,
+                    vec3 target = vec3(0, 0, 0),
                     float fov = 70)
         : m_L(L), m_target(target), m_fov(fov) {}
 
@@ -467,28 +467,28 @@ static std::shared_ptr<Map> simple_map() {
 
     std::shared_ptr<MapPositionElement> ball_start =
         std::make_shared<MapPositionElement>("ball_start");
-    ball_start->add_instance(raylib::Vector3(2, 2, 2),
-                             raylib::Vector3(0, 0, 0));
+    ball_start->add_instance(vec3(2, 2, 2),
+                             vec3(0, 0, 0));
     out->add_element(ball_start);
 
     std::shared_ptr<MapPositionElement> team_1_spawns =
         std::make_shared<MapPositionElement>("team_1_spawns");
-    team_1_spawns->add_instance(raylib::Vector3(5, 2, 5),
-                                raylib::Vector3(0, 0, 0));
-    team_1_spawns->add_instance(raylib::Vector3(7, 2, 5),
-                                raylib::Vector3(0, 0, 0));
+    team_1_spawns->add_instance(vec3(5, 2, 5),
+                                vec3(0, 0, 0));
+    team_1_spawns->add_instance(vec3(7, 2, 5),
+                                vec3(0, 0, 0));
     out->add_element(team_1_spawns);
 
     std::shared_ptr<MapPositionElement> team_2_spawns =
         std::make_shared<MapPositionElement>("team_2_spawns");
-    team_2_spawns->add_instance(raylib::Vector3(5, 2, 10),
-                                raylib::Vector3(0, 0, 0));
-    team_2_spawns->add_instance(raylib::Vector3(7, 2, 10),
-                                raylib::Vector3(0, 0, 0));
+    team_2_spawns->add_instance(vec3(5, 2, 10),
+                                vec3(0, 0, 0));
+    team_2_spawns->add_instance(vec3(7, 2, 10),
+                                vec3(0, 0, 0));
     out->add_element(team_2_spawns);
 
     out->add_element(std::make_shared<MapLightElement>(
-        raylib::Vector3(1, 2, 0.02), raylib::Vector3(2.5, 0, 0), 70));
+        vec3(1, 2, 0.02), vec3(2.5, 0, 0), 70));
 
     out->add_element(
         std::make_shared<MapSkyboxElement>("assets/defaultskybox.png"));
@@ -496,26 +496,26 @@ static std::shared_ptr<Map> simple_map() {
     std::shared_ptr<MapCubeElement> basic_block =
         std::make_shared<MapCubeElement>(0.5, 0.5, 0.5,
                                          "assets/prototype_texture/blue2.png");
-    basic_block->add_instance(raylib::Vector3(5, 0.25, 5),
-                              raylib::Vector3(0.2, 0.2, 0.2));
-    basic_block->add_instance(raylib::Vector3(3, 0.25, 3),
-                              raylib::Vector3(0, 0, 0));
-    basic_block->add_instance(raylib::Vector3(1, 0.25, 1),
-                              raylib::Vector3(0.5, 0, 0));
+    basic_block->add_instance(vec3(5, 0.25, 5),
+                              vec3(0.2, 0.2, 0.2));
+    basic_block->add_instance(vec3(3, 0.25, 3),
+                              vec3(0, 0, 0));
+    basic_block->add_instance(vec3(1, 0.25, 1),
+                              vec3(0.5, 0, 0));
     out->add_element(basic_block);
 
     std::shared_ptr<MapPlaneElement> ground_plane =
         std::make_shared<MapPlaneElement>(70, 60,
                                           "assets/prototype_texture/grey4.png");
-    ground_plane->add_instance(raylib::Vector3(0, 0, 0),
-                               raylib::Vector3(0, 0, 0));
+    ground_plane->add_instance(vec3(0, 0, 0),
+                               vec3(0, 0, 0));
     out->add_element(ground_plane);
 
     std::shared_ptr<MapPlaneElement> wall_plane =
         std::make_shared<MapPlaneElement>(
             10, 10, "assets/prototype_texture/orange.png");
-    wall_plane->add_instance(raylib::Vector3(0, 5, -30),
-                             raylib::Vector3(M_PI_2, 0, 0));
+    wall_plane->add_instance(vec3(0, 5, -30),
+                             vec3(M_PI_2, 0, 0));
     out->add_element(wall_plane);
     return out;
 }

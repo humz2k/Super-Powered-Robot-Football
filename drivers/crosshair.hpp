@@ -51,14 +51,14 @@ class Crosshair : public Component {
                 (game_settings.float_values["crosshair_thickness"] / 100.0f) *
                 m_display_width;
             raylib::Color color = game_settings.color_values["crosshair_color"];
-            DrawLineEx(raylib::Vector2(m_display_width * 0.5,
+            DrawLineEx(vec2(m_display_width * 0.5,
                                        m_display_height * 0.5 - y_size),
-                       raylib::Vector2(m_display_width * 0.5,
+                       vec2(m_display_width * 0.5,
                                        m_display_height * 0.5 + y_size),
                        thickness, color);
-            DrawLineEx(raylib::Vector2(m_display_width * 0.5 - x_size,
+            DrawLineEx(vec2(m_display_width * 0.5 - x_size,
                                        m_display_height * 0.5),
-                       raylib::Vector2(m_display_width * 0.5 + x_size,
+                       vec2(m_display_width * 0.5 + x_size,
                                        m_display_height * 0.5),
                        thickness, color);
         }

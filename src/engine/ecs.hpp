@@ -69,7 +69,7 @@ class Component : public Logger {
      * @brief Draw3D.
      * @param transform Transformation matrix for drawing.
      */
-    virtual void draw3D(raylib::Matrix transform) {}
+    virtual void draw3D(mat4x4 transform) {}
     virtual void draw_debug() {}
     /**
      * @brief Draw2D.
@@ -90,11 +90,11 @@ class Component : public Logger {
 class Transform : public Logger {
   public:
     /** @brief Position of the transform */
-    raylib::Vector3 position;
+    vec3 position;
     /** @brief Rotation of the transform */
-    raylib::Vector3 rotation;
+    vec3 rotation;
     /** @brief Scale of the transform */
-    raylib::Vector3 scale;
+    vec3 scale;
 
     /**
      * @brief Construct a new Transform object.
@@ -102,29 +102,29 @@ class Transform : public Logger {
      * @param rotation_ Initial rotation.
      * @param scale_ Initial scale.
      */
-    Transform(raylib::Vector3 position_ = raylib::Vector3(0, 0, 0),
-              raylib::Vector3 rotation_ = raylib::Vector3(0, 0, 0),
-              raylib::Vector3 scale_ = raylib::Vector3(1, 1, 1))
+    Transform(vec3 position_ = vec3(0, 0, 0),
+              vec3 rotation_ = vec3(0, 0, 0),
+              vec3 scale_ = vec3(1, 1, 1))
         : position(position_), rotation(rotation_), scale(scale_) {}
 
     /**
      * @brief Get the transformation matrix.
      * @return Transformation matrix.
      */
-    raylib::Matrix matrix() {
+    mat4x4 matrix() {
         auto [rotationAxis, rotationAngle] =
-            raylib::Quaternion::FromEuler(rotation).ToAxisAngle();
-        // auto mat_scale = raylib::Matrix::Scale(scale.x, scale.y, scale.z);
-        auto mat_rotation = raylib::Matrix::Rotate(rotationAxis, rotationAngle);
+            quat::FromEuler(rotation).ToAxisAngle();
+        // auto mat_scale = mat4x4::Scale(scale.x, scale.y, scale.z);
+        auto mat_rotation = mat4x4::Rotate(rotationAxis, rotationAngle);
         auto mat_translation =
-            raylib::Matrix::Translate(position.x, position.y, position.z);
+            mat4x4::Translate(position.x, position.y, position.z);
         return mat_rotation * mat_translation; // * mat_scale;
     }
 
-    raylib::Matrix rotation_matrix() {
+    mat4x4 rotation_matrix() {
         auto [rotationAxis, rotationAngle] =
-            raylib::Quaternion::FromEuler(rotation).ToAxisAngle();
-        return raylib::Matrix::Rotate(rotationAxis, rotationAngle);
+            quat::FromEuler(rotation).ToAxisAngle();
+        return mat4x4::Rotate(rotationAxis, rotationAngle);
     }
 
     void draw_editor() {
@@ -167,10 +167,10 @@ class Entity : public Logger {
      * @brief Call draw3D on components.
      * @param parent_transform Transformation matrix of the parent.
      */
-    void draw3D(raylib::Matrix parent_transform) {
+    void draw3D(mat4x4 parent_transform) {
         if (!m_enabled)
             return;
-        raylib::Matrix transform = m_transform.matrix() * parent_transform;
+        mat4x4 transform = m_transform.matrix() * parent_transform;
         for (const auto& [key, value] : m_components) {
             value->draw3D(transform);
         }
@@ -261,14 +261,14 @@ class Entity : public Logger {
      * @brief Get the global transformation matrix.
      * @return Global transformation matrix.
      */
-    raylib::Matrix global_transform() {
+    mat4x4 global_transform() {
         if (!m_parent) {
             return m_transform.matrix();
         }
         return m_transform.matrix() * m_parent->global_transform();
     }
 
-    raylib::Matrix global_rotation() {
+    mat4x4 global_rotation() {
         if (!m_parent) {
             return m_transform.rotation_matrix();
         }
@@ -317,7 +317,7 @@ class Entity : public Logger {
     void draw3D() {
         if (!m_enabled)
             return;
-        raylib::Matrix transform = m_transform.matrix();
+        mat4x4 transform = m_transform.matrix();
         for (const auto& [key, value] : m_components) {
             value->draw3D(transform);
         }

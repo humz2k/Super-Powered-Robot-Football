@@ -32,15 +32,15 @@ class PlayerBody : public PlayerBodyBase {
      * Uses the forward and left directions, modified by the player's rotation,
      * to compute the movement direction.
      *
-     * @return raylib::Vector3 The normalized movement direction.
+     * @return vec3 The normalized movement direction.
      */
-    raylib::Vector3 move_direction() {
-        raylib::Vector3 forward = Vector3RotateByAxisAngle(
-            raylib::Vector3(0, 0, 1.0f), raylib::Vector3(0, 1.0f, 0),
+    vec3 move_direction() {
+        vec3 forward = Vector3RotateByAxisAngle(
+            vec3(0, 0, 1.0f), vec3(0, 1.0f, 0),
             this->rotation().y);
 
-        raylib::Vector3 left = Vector3RotateByAxisAngle(
-            raylib::Vector3(1.0f, 0, 0), raylib::Vector3(0, 1.0f, 0),
+        vec3 left = Vector3RotateByAxisAngle(
+            vec3(1.0f, 0, 0), vec3(0, 1.0f, 0),
             this->rotation().y);
 
         return (forward * (this->m_forward - this->m_backward) +
@@ -94,7 +94,7 @@ class PlayerBody : public PlayerBodyBase {
         m_jumped = false;
         if (m_jump && m_can_jump && (!m_last_was_jump)) {
             m_jumped = true;
-            add_force(raylib::Vector3(0, 1, 0) * m_sim_params.jump_force);
+            add_force(vec3(0, 1, 0) * m_sim_params.jump_force);
             m_can_jump = false;
         }
         m_last_was_jump = m_jump;
@@ -104,15 +104,15 @@ class PlayerBody : public PlayerBodyBase {
   public:
     using PlayerBodyBase::PlayerBodyBase;
 
-    raylib::Vector3 get_forward() {
-        return Vector3RotateByAxisAngle(raylib::Vector3(0, 0, 1.0f),
-                                        raylib::Vector3(0, 1.0f, 0),
+    vec3 get_forward() {
+        return Vector3RotateByAxisAngle(vec3(0, 0, 1.0f),
+                                        vec3(0, 1.0f, 0),
                                         this->rotation().y);
     }
 
-    raylib::Vector3 get_left() {
-        return Vector3RotateByAxisAngle(raylib::Vector3(1.0f, 0, 0),
-                                        raylib::Vector3(0, 1.0f, 0),
+    vec3 get_left() {
+        return Vector3RotateByAxisAngle(vec3(1.0f, 0, 0),
+                                        vec3(0, 1.0f, 0),
                                         this->rotation().y);
     }
 
@@ -130,13 +130,13 @@ class PlayerBody : public PlayerBodyBase {
 
         // auto direction = move_direction();
 
-        raylib::Vector3 forward = get_forward();
+        vec3 forward = get_forward();
 
-        raylib::Vector3 left = get_left();
+        vec3 left = get_left();
 
-        raylib::Vector3 direction = raylib::Vector3(0, 0, 0);
+        vec3 direction = vec3(0, 0, 0);
 
-        raylib::Vector3 xz_v_delta = raylib::Vector3(0, 0, 0);
+        vec3 xz_v_delta = vec3(0, 0, 0);
 
         if ((m_forward && m_backward) || ((!m_forward) && (!m_backward))) {
             xz_v_delta -= xz_velocity().Project(forward);
@@ -159,7 +159,7 @@ class PlayerBody : public PlayerBodyBase {
                         xz_v_delta * (m_sim_params.ground_drag));
             clamp_xz_velocity(m_sim_params.max_ground_velocity);
         } else {
-            raylib::Vector3 proj_vel = Vector3Project(velocity(), direction);
+            vec3 proj_vel = Vector3Project(velocity(), direction);
             if ((proj_vel.Length() < m_sim_params.max_air_velocity) ||
                 (direction.DotProduct(proj_vel) <= 0.0f)) {
                 add_force(direction * m_sim_params.air_acceleration);

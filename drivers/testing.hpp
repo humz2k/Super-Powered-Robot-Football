@@ -49,12 +49,12 @@ class Rotation : public Component {
         }
         auto cam = *this->entity()->scene()->get_active_camera();
         auto forward =
-            (raylib::Vector3(cam.target) - raylib::Vector3(cam.position));
+            (vec3(cam.target) - vec3(cam.position));
         forward.y = 0;
         forward = forward.Normalize();
         auto left =
-            raylib::Vector3(Vector3RotateByAxisAngle(
-                                forward, raylib::Vector3(0, 1, 0), M_PI_2))
+            vec3(Vector3RotateByAxisAngle(
+                                forward, vec3(0, 1, 0), M_PI_2))
                 .Normalize();
 
         transform->position +=
@@ -91,8 +91,8 @@ class TestScene : public DefaultScene {
         if (create_light) {
             auto light = this->renderer()->add_light();
             light->enabled(1);
-            light->L(raylib::Vector3(1, 2, 0.02));
-            light->target(raylib::Vector3(2.5, 0, 0));
+            light->L(vec3(1, 2, 0.02));
+            light->target(vec3(2.5, 0, 0));
             light->fov(70);
         }
 

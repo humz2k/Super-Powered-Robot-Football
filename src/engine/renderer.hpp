@@ -17,9 +17,9 @@ namespace SPRF {
  */
 struct Plane {
     /** @brief Normal vector of the plane */
-    raylib::Vector3 normal = raylib::Vector3(0, 1, 0);
+    vec3 normal = vec3(0, 1, 0);
     /** @brief A point on the plane */
-    raylib::Vector3 point = raylib::Vector3(0, 0, 0);
+    vec3 point = vec3(0, 0, 0);
 
     /**
      * @brief Calculate the signed distance from a point to the plane.
@@ -85,15 +85,15 @@ class ViewFrustrum {
      * @brief Get the camera position.
      * @return Camera position.
      */
-    raylib::Vector3 cam_position() { return m_camera.position; }
+    vec3 cam_position() { return m_camera.position; }
 
     /**
      * @brief Get the camera front vector.
      * @return Camera front vector.
      */
-    raylib::Vector3 cam_front() {
-        return (raylib::Vector3(m_camera.target) -
-                raylib::Vector3(m_camera.position))
+    vec3 cam_front() {
+        return (vec3(m_camera.target) -
+                vec3(m_camera.position))
             .Normalize();
     }
 
@@ -101,13 +101,13 @@ class ViewFrustrum {
      * @brief Get the camera up vector.
      * @return Camera up vector.
      */
-    raylib::Vector3 cam_up() { return m_camera.up; }
+    vec3 cam_up() { return m_camera.up; }
 
     /**
      * @brief Get the camera right vector.
      * @return Camera right vector.
      */
-    raylib::Vector3 cam_right() { return cam_front().CrossProduct(cam_up()); }
+    vec3 cam_right() { return cam_front().CrossProduct(cam_up()); }
 
   public:
     /**
@@ -158,7 +158,7 @@ class ViewFrustrum {
  */
 struct BBoxCorners {
     /** @brief Corner points of the bounding box */
-    raylib::Vector3 c1, c2, c3, c4, c5, c6, c7, c8;
+    vec3 c1, c2, c3, c4, c5, c6, c7, c8;
     float m_radius;
 
     /**
@@ -204,7 +204,7 @@ struct BBoxCorners {
      * @param matrix vp matrix.
      * @return True if visible, false otherwise.
      */
-    bool visible(raylib::Matrix vp) {
+    bool visible(mat4x4 vp) {
         Vector3* points = (Vector3*)this;
         for (int i = 0; i < 8; i++) {
             if (Vector3Transform(points[i], vp).z <= 0)
@@ -274,13 +274,13 @@ class RenderModel : public Logger {
     /** @brief Bounding boxes of meshes of the model */
     BBoxCorners* m_bounding_boxes = NULL;
     /** @brief Transformation matrix of the model */
-    raylib::Matrix m_model_transform;
+    mat4x4 m_model_transform;
     /** @brief Number of instances allocated */
     int m_instances_allocated = 0;
     /** @brief Number of instances of the model */
     int m_n_instances = 0;
     /** @brief Instances of the model */
-    raylib::Matrix* m_instances = NULL;
+    mat4x4* m_instances = NULL;
     /** @brief Number of visible instances of the model */
     int m_n_visible_instances = 0;
     /** @brief Visible instances of the model */
@@ -294,8 +294,8 @@ class RenderModel : public Logger {
      * @brief Reallocate memory for instances.
      */
     void realloc_instances() {
-        m_instances = (raylib::Matrix*)realloc(
-            m_instances, sizeof(raylib::Matrix) * m_instances_allocated);
+        m_instances = (mat4x4*)realloc(
+            m_instances, sizeof(mat4x4) * m_instances_allocated);
         m_visible_instances = (Matrix*)realloc(
             m_visible_instances, sizeof(Matrix) * m_instances_allocated);
     }
@@ -310,7 +310,7 @@ class RenderModel : public Logger {
     template <typename... Args>
     RenderModel(Args... args)
         : m_model(new raylib::Model(args...)),
-          m_model_transform(raylib::Matrix(m_model->GetTransform())) {
+          m_model_transform(mat4x4(m_model->GetTransform())) {
         m_bounding_boxes =
             (BBoxCorners*)malloc(sizeof(BBoxCorners) * m_model->meshCount);
         for (int i = 0; i < m_model->meshCount; i++) {
@@ -373,7 +373,7 @@ class RenderModel : public Logger {
      *
      * @param instance Transformation matrix of the instance.
      */
-    void add_instance(raylib::Matrix instance) {
+    void add_instance(mat4x4 instance) {
         if (m_n_instances == m_instances_allocated) {
             m_instances_allocated *= 2;
             realloc_instances();
@@ -391,16 +391,16 @@ class RenderModel : public Logger {
      *
      * @param shader Shader to be used for drawing.
      */
-    void draw(Shader shader, raylib::Matrix vp) {
+    void draw(Shader shader, mat4x4 vp) {
         Shader old_shader = m_model->materials[0].shader;
         for (int i = 0; i < m_model->meshCount; i++) {
 
             BBoxCorners bbox = m_bounding_boxes[i];
             m_n_visible_instances = 0;
 
-            raylib::Matrix* instance_ptr = m_instances;
+            mat4x4* instance_ptr = m_instances;
             for (int j = 0; j < m_n_instances; j++) {
-                raylib::Matrix transform = *instance_ptr++;
+                mat4x4 transform = *instance_ptr++;
                 if (bbox.visible(transform * vp)) {
                     game_info.visible_meshes++;
                     m_visible_instances[m_n_visible_instances] = transform;
@@ -431,7 +431,7 @@ class RenderModel : public Logger {
      * @param vp View-projection matrix.
      * @param frustrum View frustum.
      */
-    void draw(Shader shader, raylib::Matrix vp, ViewFrustrum& frustrum) {
+    void draw(Shader shader, mat4x4 vp, ViewFrustrum& frustrum) {
         if (!m_clip) {
             draw(shader, vp);
             return;
@@ -442,9 +442,9 @@ class RenderModel : public Logger {
             BBoxCorners bbox = m_bounding_boxes[i];
             m_n_visible_instances = 0;
 
-            raylib::Matrix* instance_ptr = m_instances;
+            mat4x4* instance_ptr = m_instances;
             for (int j = 0; j < m_n_instances; j++) {
-                raylib::Matrix transform = *instance_ptr++;
+                mat4x4 transform = *instance_ptr++;
                 if (bbox.visible(transform, frustrum)) {
                     game_info.visible_meshes++;
                     m_visible_instances[m_n_visible_instances] = transform;
@@ -466,7 +466,7 @@ class RenderModel : public Logger {
     /**
      * @brief Draw the model with its default shader.
      */
-    void draw(raylib::Matrix vp) { draw(m_model->materials[0].shader, vp); }
+    void draw(mat4x4 vp) { draw(m_model->materials[0].shader, vp); }
 
     raylib::Model* model() { return m_model; }
 };
@@ -489,7 +489,7 @@ class Renderer : public Logger {
     /** @brief Skybox shader */
     raylib::Shader m_skybox_shader;
     /** @brief Camera position uniform */
-    ShaderUniform<raylib::Vector3> m_camera_position;
+    ShaderUniform<vec3> m_camera_position;
     /** @brief Ambient light coefficient uniform */
     ShaderUniform<float> m_ka;
     /** @brief List of lights */
@@ -505,7 +505,7 @@ class Renderer : public Logger {
      * @brief Draw the skybox.
      * @param camera_position Position of the camera.
      */
-    void draw_skybox(raylib::Vector3 camera_position) {
+    void draw_skybox(vec3 camera_position) {
         if (!m_skybox_enabled)
             return;
         if (!m_skybox_model)
@@ -528,7 +528,7 @@ class Renderer : public Logger {
         : m_shader(raylib::Shader::LoadFromMemory(lights_vs, lights_fs)),
           m_shadow_shader(raylib::Shader::LoadFromMemory(lights_vs, base_fs)),
           m_skybox_shader(raylib::Shader::LoadFromMemory(skybox_vs, skybox_fs)),
-          m_camera_position("camPos", raylib::Vector3(0, 0, 0), m_shader),
+          m_camera_position("camPos", vec3(0, 0, 0), m_shader),
           m_ka("ka", ka, m_shader),
           m_shadow_map_res("shadowMapRes", shadow_scale, m_shader) {
         // reset light count from last scene. This is hacky and bad.

@@ -48,7 +48,7 @@ class Ball {
   public:
     Ball(SimulationParameters& sim_params, std::mutex* simulation_mutex,
          dWorldID world, dSpaceID space, float dt,
-         raylib::Vector3 initial_position = raylib::Vector3(3, 3, 3))
+         vec3 initial_position = vec3(3, 3, 3))
         : m_sim_params(sim_params), m_simulation_mutex(simulation_mutex),
           m_world(world), m_space(space), m_dt(dt),
           m_radius(m_sim_params.ball_radius) {
@@ -62,30 +62,30 @@ class Ball {
         m_geom_masks.push_back(m_geom);
     }
 
-    raylib::Vector3 position() {
+    vec3 position() {
         const float* pos = dBodyGetPosition(m_body);
-        return raylib::Vector3(pos[0], pos[1], pos[2]);
+        return vec3(pos[0], pos[1], pos[2]);
     }
 
-    raylib::Vector3 rotation() {
+    vec3 rotation() {
         dQuaternion q;
         dQfromR(q, dBodyGetRotation(m_body));
         return QuaternionToEuler(raylib::Quaternion(q[0], q[1], q[2], q[3]));
     }
 
-    raylib::Vector3 rotation(raylib::Vector3 rot){
+    vec3 rotation(vec3 rot){
         dMatrix3 R;
         dRFromEulerAngles(R,rot.x,rot.y,rot.z);
         dBodySetRotation(m_body,R);
         return rotation();
     }
 
-    raylib::Vector3 angular_velocity(){
+    vec3 angular_velocity(){
         const float* v = dBodyGetAngularVel(m_body);
-        return raylib::Vector3(v[0], v[1], v[2]);
+        return vec3(v[0], v[1], v[2]);
     }
 
-    raylib::Vector3 angular_velocity(raylib::Vector3 v){
+    vec3 angular_velocity(vec3 v){
         dBodySetAngularVel(m_body,v.x,v.y,v.z);
         return angular_velocity();
     }
@@ -95,14 +95,14 @@ class Ball {
      *
      * @param vel The velocity to be set.
      *
-     * @return raylib::Vector3 The current velocity.
+     * @return vec3 The current velocity.
      */
-    raylib::Vector3 velocity(raylib::Vector3 vel) {
+    vec3 velocity(vec3 vel) {
         dBodySetLinearVel(m_body, vel.x, vel.y, vel.z);
         return vel;
     }
 
-    raylib::Vector3 position(raylib::Vector3 pos) {
+    vec3 position(vec3 pos) {
         dBodySetPosition(m_body, pos.x, pos.y, pos.z);
         return position();
     }
@@ -110,19 +110,19 @@ class Ball {
     /**
      * @brief Gets the current velocity of the player body.
      *
-     * @return raylib::Vector3 The current velocity.
+     * @return vec3 The current velocity.
      */
-    raylib::Vector3 velocity() {
+    vec3 velocity() {
         const float* v = dBodyGetLinearVel(m_body);
-        return raylib::Vector3(v[0], v[1], v[2]);
+        return vec3(v[0], v[1], v[2]);
     }
 
     /**
      * @brief Gets the current XZ velocity of the player body.
      *
-     * @return raylib::Vector3 The current XZ velocity.
+     * @return vec3 The current XZ velocity.
      */
-    raylib::Vector3 xz_velocity() {
+    vec3 xz_velocity() {
         auto out = velocity();
         out.y = 0;
         return out;
@@ -133,9 +133,9 @@ class Ball {
      *
      * @param vel The XZ velocity to be set.
      *
-     * @return raylib::Vector3 The current XZ velocity.
+     * @return vec3 The current XZ velocity.
      */
-    raylib::Vector3 xz_velocity(raylib::Vector3 vel) {
+    vec3 xz_velocity(vec3 vel) {
         auto tmp = vel;
         tmp.y = velocity().y;
         velocity(tmp);
@@ -145,7 +145,7 @@ class Ball {
     dGeomID geom() { return m_geom; }
 
     bool grounded() {
-        auto ray = RaycastQuery(m_space, position(), raylib::Vector3(0, -1, 0),
+        auto ray = RaycastQuery(m_space, position(), vec3(0, -1, 0),
                                 m_radius * 1.05, m_geom_masks);
         return ray.hit;
     }
@@ -448,42 +448,42 @@ class Simulation {
 
     // scripting stuff
 
-    void set_ball_position(raylib::Vector3 pos) {
+    void set_ball_position(vec3 pos) {
         std::lock_guard<std::mutex> guard(simulation_mutex);
         m_ball->position(pos);
     }
 
-    void set_ball_velocity(raylib::Vector3 pos) {
+    void set_ball_velocity(vec3 pos) {
         std::lock_guard<std::mutex> guard(simulation_mutex);
         m_ball->velocity(pos);
     }
 
-    void set_ball_rotation(raylib::Vector3 rot){
+    void set_ball_rotation(vec3 rot){
         std::lock_guard<std::mutex> guard(simulation_mutex);
         m_ball->rotation(rot);
     }
 
-    void set_ball_angular_velocity(raylib::Vector3 rot){
+    void set_ball_angular_velocity(vec3 rot){
         std::lock_guard<std::mutex> guard(simulation_mutex);
         m_ball->angular_velocity(rot);
     }
 
-    raylib::Vector3 get_ball_position(){
+    vec3 get_ball_position(){
         std::lock_guard<std::mutex> guard(simulation_mutex);
         return m_ball->position();
     }
 
-    raylib::Vector3 get_ball_velocity(){
+    vec3 get_ball_velocity(){
         std::lock_guard<std::mutex> guard(simulation_mutex);
         return m_ball->velocity();
     }
 
-    raylib::Vector3 get_ball_rotation(){
+    vec3 get_ball_rotation(){
         std::lock_guard<std::mutex> guard(simulation_mutex);
         return m_ball->rotation();
     }
 
-    raylib::Vector3 get_ball_angular_velocity(){
+    vec3 get_ball_angular_velocity(){
         std::lock_guard<std::mutex> guard(simulation_mutex);
         return m_ball->angular_velocity();
     }
@@ -501,7 +501,7 @@ class Simulation {
                 float z = luaL_checknumber(L, 3);
                 TraceLog(LOG_INFO, "LUA: setting ball position = %g %g %g", x, y,
                         z);
-                this->set_ball_position(raylib::Vector3(x, y, z));
+                this->set_ball_position(vec3(x, y, z));
                 return 0;
             },
             "set_ball_position");
@@ -524,7 +524,7 @@ class Simulation {
                 float z = luaL_checknumber(L, 3);
                 TraceLog(LOG_INFO, "LUA: setting ball rotation = %g %g %g", x, y,
                         z);
-                this->set_ball_rotation(raylib::Vector3(x, y, z));
+                this->set_ball_rotation(vec3(x, y, z));
                 return 0;
             },
             "set_ball_rotation");
@@ -547,7 +547,7 @@ class Simulation {
                 float z = luaL_checknumber(L, 3);
                 TraceLog(LOG_INFO, "LUA: setting ball velocity = %g %g %g", x, y,
                          z);
-                this->set_ball_velocity(raylib::Vector3(x, y, z));
+                this->set_ball_velocity(vec3(x, y, z));
                 return 0;
             },
             "set_ball_velocity");
@@ -570,7 +570,7 @@ class Simulation {
                 float z = luaL_checknumber(L, 3);
                 TraceLog(LOG_INFO, "LUA: setting ball angular velocity = %g %g %g", x, y,
                          z);
-                this->set_ball_angular_velocity(raylib::Vector3(x, y, z));
+                this->set_ball_angular_velocity(vec3(x, y, z));
                 return 0;
             },
             "set_ball_angular_velocity");
@@ -598,8 +598,8 @@ class Simulation {
                     l_construct_vec3(L,0,0,0);
                     return 2;
                 }
-                raylib::Vector3 pos = vec[idx].position;
-                raylib::Vector3 rot = vec[idx].rotation;
+                vec3 pos = vec[idx].position;
+                vec3 rot = vec[idx].rotation;
 
                 TraceLog(LOG_INFO, "LUA: getting named position %s[%d] = %g %g %g, %g %g %g", name.c_str(), idx, pos.x, pos.y,
                          pos.z,rot.x,rot.y,rot.z);
