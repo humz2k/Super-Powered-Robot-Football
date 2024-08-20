@@ -11,7 +11,7 @@
 #ifndef _SPRF_NETWORKING_PACKET_
 #define _SPRF_NETWORKING_PACKET_
 
-#include "raylib-cpp.hpp"
+#include "engine/base.hpp"
 #include <cassert>
 #include <enet/enet.h>
 #include <vector>

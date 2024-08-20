@@ -2,7 +2,7 @@
 #define _SPRF_RENDERER_HPP_
 
 #include "base.hpp"
-#include "raylib-cpp.hpp"
+//#include "raylib-cpp.hpp"
 #include "shader_sources.hpp"
 #include "shaders.hpp"
 #include "shadow_map_texture.hpp"

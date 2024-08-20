@@ -4,7 +4,7 @@
 #define MAX_LIGHTS 2
 
 #include "base.hpp"
-#include "raylib-cpp.hpp"
+//#include "raylib-cpp.hpp"
 #include "shadow_map_texture.hpp"
 #include <string>
 

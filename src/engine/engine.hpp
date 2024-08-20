@@ -1,7 +1,7 @@
 #ifndef _SPRF_ENGINE_HPP_
 #define _SPRF_ENGINE_HPP_
 
-#include "raylib-cpp.hpp"
+//#include "raylib-cpp.hpp"
 #include <functional>
 #include <iostream>
 #include <memory>
@@ -9,13 +9,13 @@
 #include <string>
 #include <vector>
 
+#include "base.hpp"
+
 #include "camera.hpp"
 #include "ecs.hpp"
 #include "model.hpp"
 #include "rss.hpp"
 #include "shaders.hpp"
-
-#include "base.hpp"
 
 #include "console.hpp"
 #include "loading_screen.hpp"

@@ -1,8 +1,9 @@
 #ifndef _SPRF_MODEL_HPP_
 #define _SPRF_MODEL_HPP_
 
+#include "base.hpp"
 #include "ecs.hpp"
-#include "raylib-cpp.hpp"
+//#include "raylib-cpp.hpp"
 #include "renderer.hpp"
 #include <memory>
 

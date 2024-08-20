@@ -1,7 +1,7 @@
 #ifndef _SPRF_LOG_MANAGER_HPP_
 #define _SPRF_LOG_MANAGER_HPP_
 
-#include "raylib-cpp.hpp"
+#include "base.hpp"
 #include <string>
 
 #define LOG_CONSOLE 10

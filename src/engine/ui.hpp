@@ -1,8 +1,9 @@
 #ifndef _SPRF_UI_HPP
 #define _SPRF_UI_HPP
 
+#include "base.hpp"
 #include "ecs.hpp"
-#include "raylib-cpp.hpp"
+//#include "raylib-cpp.hpp"
 
 #include <sstream>
 #include <unordered_map>
