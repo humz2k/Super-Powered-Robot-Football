@@ -441,14 +441,24 @@ class Simulation {
         m_ball->velocity(pos);
     }
 
+    raylib::Vector3 get_ball_position(){
+        std::lock_guard<std::mutex> guard(simulation_mutex);
+        return m_ball->position();
+    }
+
+    std::unordered_map<std::string,std::vector<MapElementInstance>>& named_positions(){
+        return m_positions;
+    }
+
     void register_scripts() {
         scripting.register_function(
             [this](lua_State* L) {
+                int nargs = lua_gettop(L);
                 float x = luaL_checknumber(L, 1);
                 float y = luaL_checknumber(L, 2);
                 float z = luaL_checknumber(L, 3);
-                TraceLog(LOG_INFO, "LUA: setting ball position %g %g %g", x, y,
-                         z);
+                TraceLog(LOG_INFO, "LUA: setting ball position = %g %g %g", x, y,
+                        z);
                 this->set_ball_position(raylib::Vector3(x, y, z));
                 return 0;
             },
@@ -456,15 +466,50 @@ class Simulation {
 
         scripting.register_function(
             [this](lua_State* L) {
+                auto pos = this->get_ball_position();
+                TraceLog(LOG_INFO, "LUA: ball position = %g %g %g", pos.x, pos.y,
+                         pos.z);
+                l_construct_vec3(L,pos.x,pos.y,pos.z);
+                return 1;
+            },
+            "get_ball_position");
+
+        scripting.register_function(
+            [this](lua_State* L) {
+                int nargs = lua_gettop(L);
                 float x = luaL_checknumber(L, 1);
                 float y = luaL_checknumber(L, 2);
                 float z = luaL_checknumber(L, 3);
-                TraceLog(LOG_INFO, "LUA: setting ball velocity %g %g %g", x, y,
+                TraceLog(LOG_INFO, "LUA: setting ball velocity = %g %g %g", x, y,
                          z);
                 this->set_ball_velocity(raylib::Vector3(x, y, z));
                 return 0;
             },
             "set_ball_velocity");
+
+        scripting.register_function(
+            [this](lua_State* L) {
+                //auto pos = this->get_ball_position();
+                std::string name = luaL_checkstring(L, 1);
+                int idx = luaL_checkinteger(L,2);
+                auto& positions = this->named_positions();
+
+                auto& vec = positions[name];
+                if ((idx < 0) || (idx >= vec.size())){
+                    l_construct_vec3(L,0,0,0);
+                    l_construct_vec3(L,0,0,0);
+                    return 2;
+                }
+                raylib::Vector3 pos = vec[idx].position;
+                raylib::Vector3 rot = vec[idx].rotation;
+
+                TraceLog(LOG_INFO, "LUA: getting named position %s[%d] = %g %g %g, %g %g %g", name.c_str(), idx, pos.x, pos.y,
+                         pos.z,rot.x,rot.y,rot.z);
+                l_construct_vec3(L,pos.x,pos.y,pos.z);
+                l_construct_vec3(L,rot.x,rot.y,rot.z);
+                return 2;
+            },
+            "get_named_position");
     }
 };
 

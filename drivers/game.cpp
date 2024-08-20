@@ -123,6 +123,10 @@ class LocalSceneServerCommands : public DevConsoleCommand {
             scripting.run_string(lua_command);
             return;
         }
+        if (args[0] == "reset_game"){
+            scripting.run_string("reset_game()");
+            return;
+        }
     }
 };
 

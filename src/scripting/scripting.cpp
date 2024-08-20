@@ -12,7 +12,7 @@ static int l_tracelog(lua_State* L) {
     int nargs = lua_gettop(L);
     std::string out = "";
     for (int i = 2; i <= nargs; i++) {
-        out += std::string(luaL_tolstring(L, i, NULL));
+        out += std::string(luaL_tolstring(L, i, NULL)) + " ";
         lua_pop(L, 1);
     }
     TraceLog(log_type, "LUA: %s", out.c_str());
@@ -22,6 +22,49 @@ static int l_tracelog(lua_State* L) {
 static int l_wrapper(lua_State* L) {
     int index = lua_tointeger(L, lua_upvalueindex(1));
     return funcs[index](L);
+}
+
+struct lua_vec3{
+    lua_Number x, y, z;
+};
+
+static int newvec3(lua_State* L){
+    int nargs = lua_gettop(L);
+    TraceLog(LOG_INFO,"nargs = %d",nargs);
+    if (!((nargs == 0) || (nargs == 3))){
+        lua_error(L);
+        return 0;
+    }
+    lua_newtable(L);
+    lua_Number x,y,z;
+    x = y = z = 0;
+    if (nargs == 3) {
+        x = luaL_checknumber(L,1);
+        y = luaL_checknumber(L,2);
+        z = luaL_checknumber(L,3);
+    }
+
+    lua_pushnumber(L,x);
+    lua_setfield(L,-2,"x");
+    lua_pushnumber(L,y);
+    lua_setfield(L,-2,"y");
+    lua_pushnumber(L,z);
+    lua_setfield(L,-2,"z");
+    return 1;
+}
+
+void l_construct_vec3(lua_State* L, lua_Number x, lua_Number y, lua_Number z){
+    lua_newtable(L);
+    lua_pushnumber(L,x);
+    lua_setfield(L,-2,"x");
+    lua_pushnumber(L,y);
+    lua_setfield(L,-2,"y");
+    lua_pushnumber(L,z);
+    lua_setfield(L,-2,"z");
+}
+
+void ScriptingManager::init_vec(){
+    register_function(newvec3,"vec3");
 }
 
 void ScriptingManager::init_logger() {

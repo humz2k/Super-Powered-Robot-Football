@@ -18,11 +18,14 @@ class ScriptingManager {
         lua_newtable(m_L);
         lua_setglobal(m_L, "sprf");
         init_logger();
+        init_vec();
     }
 
     ~ScriptingManager() { lua_close(m_L); }
 
     void init_logger();
+
+    void init_vec();
 
     void register_function(std::function<int(lua_State*)> func,
                            std::string name);
@@ -34,6 +37,8 @@ class ScriptingManager {
 
     lua_State* state() { return m_L; }
 };
+
+void l_construct_vec3(lua_State* L, lua_Number x, lua_Number y, lua_Number z);
 
 extern ScriptingManager scripting;
 
