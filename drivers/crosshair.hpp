@@ -5,11 +5,6 @@
 
 namespace SPRF {
 
-/*class CrosshairCommands : public DevConsoleCommand{
-    private:
-
-};*/
-
 class Crosshair : public Component {
   private:
     float m_display_width;

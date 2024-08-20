@@ -24,10 +24,6 @@ static int l_wrapper(lua_State* L) {
     return funcs[index](L);
 }
 
-// struct lua_vec3{
-//     lua_Number x, y, z;
-// };
-
 static int newvec3(lua_State* L) {
     int nargs = lua_gettop(L);
     TraceLog(LOG_INFO, "nargs = %d", nargs);

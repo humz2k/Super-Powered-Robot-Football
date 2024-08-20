@@ -1,3 +1,11 @@
+/** @file map.hpp
+ * @brief mapping stuff
+ *
+ * To add a map element: implement MapElement, and add the element to Map::Read.
+ *
+ */
+
+
 #ifndef _SPRF_NETWORKING_MAP_HPP_
 #define _SPRF_NETWORKING_MAP_HPP_
 
@@ -15,16 +23,21 @@ using json = nlohmann::json;
 
 namespace SPRF {
 
+/** @struct MapElementInstance
+ * @brief this is serialized as a list of {"pos": {x,y,z}, "rot": {x,y,z}, "scale": {x,y,z}}
+ */
 struct MapElementInstance {
     vec3 position;
     vec3 rotation;
+    vec3 scale;
     MapElementInstance() {}
-    MapElementInstance(vec3 position_, vec3 rotation_)
-        : position(position_), rotation(rotation_) {}
+    MapElementInstance(vec3 position_, vec3 rotation_, vec3 scale_ = vec3(1,1,1))
+        : position(position_), rotation(rotation_), scale(scale_) {}
     json serialize() {
         json out;
         out["pos"] = {position.x, position.y, position.z};
         out["rot"] = {rotation.x, rotation.y, rotation.z};
+        out["scale"] = {scale.x, scale.y, scale.z};
         return out;
     }
 };
@@ -49,34 +62,33 @@ class MapElement {
 
     std::vector<MapElementInstance>& instances() { return m_instances; }
 
-    void add_instance(vec3 position, vec3 rotation) {
-        m_instances.push_back(MapElementInstance(position, rotation));
+    void add_instance(vec3 position, vec3 rotation, vec3 scale = vec3(1,1,1)) {
+        m_instances.push_back(MapElementInstance(position, rotation, scale));
     }
 
     void read_instances(json j) {
         for (auto& i : j) {
             vec3 pos(i["pos"][0], i["pos"][1], i["pos"][2]);
             vec3 rot(i["rot"][0], i["rot"][1], i["rot"][2]);
-            add_instance(pos, rot);
+            vec3 scale(i["scale"][0], i["scale"][1], i["scale"][2]);
+            add_instance(pos, rot, scale);
         }
     }
 
-    // void load_instances(json j){
+    // load into the scene. try to keep everything organized -> make child of sprf_map etc..
+    // editor flag is set when loading into the editor instead of game.
+    virtual void load(Scene* scene, bool editor) = 0;
 
-    //}
-
-    virtual void load(Scene* scene) = 0;
-
+    // load into physics world -> without needing to specify positions for any reason
     virtual void load(dWorldID world, dSpaceID space) = 0;
 
+    // load into physics world -> with specifying positions
     virtual void
     load(dWorldID world, dSpaceID space,
          std::unordered_map<std::string, std::vector<MapElementInstance>>&
              positions) {
         this->load(world, space);
     }
-
-    virtual void load_editor(Scene* scene) { this->load(scene); }
 
     virtual json serialize() = 0;
 };
@@ -94,7 +106,7 @@ class MapCubeElement : public MapElement {
         : m_width(width), m_height(height), m_length(length),
           m_texture_path(texture_path) {}
 
-    void load(Scene* scene) {
+    void load(Scene* scene, bool editor) {
         auto model = scene->renderer()->create_render_model(
             Mesh::Cube(m_width, m_height, m_length));
         if (m_texture_path != "")
@@ -108,24 +120,9 @@ class MapCubeElement : public MapElement {
             entity->add_component<Model>(model);
             entity->get_component<Transform>()->position = i.position;
             entity->get_component<Transform>()->rotation = i.rotation;
-        }
-    }
-
-    void load_editor(Scene* scene) {
-        auto model = scene->renderer()->create_render_model(
-            Mesh::Cube(m_width, m_height, m_length));
-        if (m_texture_path != "")
-            model->add_texture(m_texture_path);
-        auto map_entity = scene->find_entity("sprf_map");
-        assert(map_entity);
-        auto parent = map_entity->create_child("map_cube_element_" +
-                                               std::to_string(fresh_id()));
-        for (auto& i : this->instances()) {
-            auto entity = parent->create_child("cube");
-            entity->add_component<Model>(model);
-            entity->get_component<Transform>()->position = i.position;
-            entity->get_component<Transform>()->rotation = i.rotation;
-            entity->add_component<Selectable>(true, true);
+            if (editor){
+                entity->add_component<Selectable>(true, true);
+            }
         }
     }
 
@@ -189,7 +186,7 @@ class MapPlaneElement : public MapElement {
         : m_x_size(x_size), m_y_size(y_size), m_texture_path(texture_path),
           m_resX(resX), m_resY(resY) {}
 
-    void load(Scene* scene) {
+    void load(Scene* scene, bool editor) {
         auto plane = scene->renderer()->create_render_model(
             WrappedMesh(m_x_size, m_y_size, m_resX, m_resY));
         plane->clip(false);
@@ -204,25 +201,9 @@ class MapPlaneElement : public MapElement {
             entity->add_component<Model>(plane);
             entity->get_component<Transform>()->position = i.position;
             entity->get_component<Transform>()->rotation = i.rotation;
-        }
-    }
-
-    void load_editor(Scene* scene) {
-        auto plane = scene->renderer()->create_render_model(
-            WrappedMesh(m_x_size, m_y_size, m_resX, m_resY));
-        plane->clip(false);
-        if (m_texture_path != "")
-            plane->add_texture(m_texture_path);
-        auto map_entity = scene->find_entity("sprf_map");
-        assert(map_entity);
-        auto parent = map_entity->create_child("map_plane_element_" +
-                                               std::to_string(fresh_id()));
-        for (auto& i : this->instances()) {
-            auto entity = parent->create_child("plane");
-            entity->add_component<Model>(plane);
-            entity->get_component<Transform>()->position = i.position;
-            entity->get_component<Transform>()->rotation = i.rotation;
-            entity->add_component<Selectable>(true, true);
+            if (editor){
+                entity->add_component<Selectable>(true, true);
+            }
         }
     }
 
@@ -261,11 +242,6 @@ class MapPositionElement : public MapElement {
   public:
     MapPositionElement(std::string name) : m_name(name) {}
 
-    // MapPositionElement(std::string name, json instances){
-    //     read_instances(instances);
-    //     m_name = name;
-    // }
-
     void load(dWorldID world, dSpaceID space,
               std::unordered_map<std::string, std::vector<MapElementInstance>>&
                   positions) {
@@ -274,7 +250,7 @@ class MapPositionElement : public MapElement {
 
     void load(dWorldID world, dSpaceID space) {}
 
-    void load(Scene* scene) {
+    void load(Scene* scene, bool editor) {
         auto map_entity = scene->find_entity("sprf_map");
         assert(map_entity);
         auto parent =
@@ -284,20 +260,9 @@ class MapPositionElement : public MapElement {
             auto entity = parent->create_child("position");
             entity->get_component<Transform>()->position = i.position;
             entity->get_component<Transform>()->rotation = i.rotation;
-        }
-    }
-
-    void load_editor(Scene* scene) {
-        auto map_entity = scene->find_entity("sprf_map");
-        assert(map_entity);
-        auto parent =
-            map_entity->create_child("map_position_element_" + m_name + "_" +
-                                     std::to_string(fresh_id()));
-        for (auto& i : this->instances()) {
-            auto entity = parent->create_child("position");
-            entity->get_component<Transform>()->position = i.position;
-            entity->get_component<Transform>()->rotation = i.rotation;
-            entity->add_component<Selectable>(true, true);
+            if (editor){
+                entity->add_component<Selectable>(true, true);
+            }
         }
     }
 
@@ -338,7 +303,7 @@ class MapLightElement : public MapElement {
         m_fov = params["fov"];
     }
 
-    void load(Scene* scene) {
+    void load(Scene* scene, bool editor) {
         auto light = scene->renderer()->add_light();
         light->L(m_L);
         light->target(m_target);
@@ -366,7 +331,7 @@ class MapSkyboxElement : public MapElement {
 
   public:
     MapSkyboxElement(std::string path) : m_path(path) {}
-    void load(Scene* scene) {
+    void load(Scene* scene, bool editor) {
         scene->renderer()->load_skybox(m_path);
         scene->renderer()->enable_skybox();
     }
@@ -399,7 +364,7 @@ class Map {
         MapElement::reset_ids();
         scene->create_entity("sprf_map");
         for (auto i : m_elements) {
-            i->load(scene);
+            i->load(scene,false);
         }
     }
 
@@ -407,7 +372,7 @@ class Map {
         MapElement::reset_ids();
         scene->create_entity("sprf_map");
         for (auto i : m_elements) {
-            i->load_editor(scene);
+            i->load(scene,true);
         }
     }
 
