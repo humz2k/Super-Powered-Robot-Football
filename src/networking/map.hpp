@@ -120,6 +120,7 @@ class MapCubeElement : public MapElement {
             entity->add_component<Model>(model);
             entity->get_component<Transform>()->position = i.position;
             entity->get_component<Transform>()->rotation = i.rotation;
+            entity->get_component<Transform>()->scale = i.scale;
             if (editor){
                 entity->add_component<Selectable>(true, true);
             }
@@ -128,7 +129,7 @@ class MapCubeElement : public MapElement {
 
     void load(dWorldID world, dSpaceID space) {
         for (auto& i : this->instances()) {
-            auto geom = dCreateBox(space, m_width, m_height, m_length);
+            auto geom = dCreateBox(space, m_width * i.scale.x, m_height * i.scale.y, m_length * i.scale.z);
             dGeomSetPosition(geom, i.position.x, i.position.y, i.position.z);
             dMatrix3 rotation;
             auto mat = mat4x4::RotateXYZ(i.rotation);
