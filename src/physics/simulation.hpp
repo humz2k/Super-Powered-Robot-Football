@@ -73,6 +73,23 @@ class Ball {
         return QuaternionToEuler(raylib::Quaternion(q[0], q[1], q[2], q[3]));
     }
 
+    raylib::Vector3 rotation(raylib::Vector3 rot){
+        dMatrix3 R;
+        dRFromEulerAngles(R,rot.x,rot.y,rot.z);
+        dBodySetRotation(m_body,R);
+        return rotation();
+    }
+
+    raylib::Vector3 angular_velocity(){
+        const float* v = dBodyGetAngularVel(m_body);
+        return raylib::Vector3(v[0], v[1], v[2]);
+    }
+
+    raylib::Vector3 angular_velocity(raylib::Vector3 v){
+        dBodySetAngularVel(m_body,v.x,v.y,v.z);
+        return angular_velocity();
+    }
+
     /**
      * @brief Sets the velocity of the player body.
      *
@@ -441,9 +458,34 @@ class Simulation {
         m_ball->velocity(pos);
     }
 
+    void set_ball_rotation(raylib::Vector3 rot){
+        std::lock_guard<std::mutex> guard(simulation_mutex);
+        m_ball->rotation(rot);
+    }
+
+    void set_ball_angular_velocity(raylib::Vector3 rot){
+        std::lock_guard<std::mutex> guard(simulation_mutex);
+        m_ball->angular_velocity(rot);
+    }
+
     raylib::Vector3 get_ball_position(){
         std::lock_guard<std::mutex> guard(simulation_mutex);
         return m_ball->position();
+    }
+
+    raylib::Vector3 get_ball_velocity(){
+        std::lock_guard<std::mutex> guard(simulation_mutex);
+        return m_ball->velocity();
+    }
+
+    raylib::Vector3 get_ball_rotation(){
+        std::lock_guard<std::mutex> guard(simulation_mutex);
+        return m_ball->rotation();
+    }
+
+    raylib::Vector3 get_ball_angular_velocity(){
+        std::lock_guard<std::mutex> guard(simulation_mutex);
+        return m_ball->angular_velocity();
     }
 
     std::unordered_map<std::string,std::vector<MapElementInstance>>& named_positions(){
@@ -453,7 +495,7 @@ class Simulation {
     void register_scripts() {
         scripting.register_function(
             [this](lua_State* L) {
-                int nargs = lua_gettop(L);
+                //int nargs = lua_gettop(L);
                 float x = luaL_checknumber(L, 1);
                 float y = luaL_checknumber(L, 2);
                 float z = luaL_checknumber(L, 3);
@@ -476,7 +518,30 @@ class Simulation {
 
         scripting.register_function(
             [this](lua_State* L) {
-                int nargs = lua_gettop(L);
+                //int nargs = lua_gettop(L);
+                float x = luaL_checknumber(L, 1);
+                float y = luaL_checknumber(L, 2);
+                float z = luaL_checknumber(L, 3);
+                TraceLog(LOG_INFO, "LUA: setting ball rotation = %g %g %g", x, y,
+                        z);
+                this->set_ball_rotation(raylib::Vector3(x, y, z));
+                return 0;
+            },
+            "set_ball_rotation");
+
+        scripting.register_function(
+            [this](lua_State* L) {
+                auto pos = this->get_ball_rotation();
+                TraceLog(LOG_INFO, "LUA: ball rotation = %g %g %g", pos.x, pos.y,
+                         pos.z);
+                l_construct_vec3(L,pos.x,pos.y,pos.z);
+                return 1;
+            },
+            "get_ball_rotation");
+
+        scripting.register_function(
+            [this](lua_State* L) {
+                //int nargs = lua_gettop(L);
                 float x = luaL_checknumber(L, 1);
                 float y = luaL_checknumber(L, 2);
                 float z = luaL_checknumber(L, 3);
@@ -486,6 +551,39 @@ class Simulation {
                 return 0;
             },
             "set_ball_velocity");
+
+        scripting.register_function(
+            [this](lua_State* L) {
+                auto pos = this->get_ball_velocity();
+                TraceLog(LOG_INFO, "LUA: ball velocity = %g %g %g", pos.x, pos.y,
+                         pos.z);
+                l_construct_vec3(L,pos.x,pos.y,pos.z);
+                return 1;
+            },
+            "get_ball_velocity");
+
+        scripting.register_function(
+            [this](lua_State* L) {
+                //int nargs = lua_gettop(L);
+                float x = luaL_checknumber(L, 1);
+                float y = luaL_checknumber(L, 2);
+                float z = luaL_checknumber(L, 3);
+                TraceLog(LOG_INFO, "LUA: setting ball angular velocity = %g %g %g", x, y,
+                         z);
+                this->set_ball_angular_velocity(raylib::Vector3(x, y, z));
+                return 0;
+            },
+            "set_ball_angular_velocity");
+
+        scripting.register_function(
+            [this](lua_State* L) {
+                auto pos = this->get_ball_angular_velocity();
+                TraceLog(LOG_INFO, "LUA: ball angular velocity = %g %g %g", pos.x, pos.y,
+                         pos.z);
+                l_construct_vec3(L,pos.x,pos.y,pos.z);
+                return 1;
+            },
+            "get_ball_angular_velocity");
 
         scripting.register_function(
             [this](lua_State* L) {
