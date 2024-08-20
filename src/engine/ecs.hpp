@@ -112,25 +112,22 @@ class Transform : public Logger {
      * @return Transformation matrix.
      */
     mat4x4 matrix() {
-        auto [rotationAxis, rotationAngle] =
-            quat::FromEuler(rotation).ToAxisAngle();
-        // auto mat_scale = mat4x4::Scale(scale.x, scale.y, scale.z);
-        auto mat_rotation = mat4x4::Rotate(rotationAxis, rotationAngle);
+        auto mat_scale = mat4x4::Scale(scale.x, scale.y, scale.z);
+        auto mat_rotation = quat::FromEuler(rotation).ToMatrix();
         auto mat_translation =
             mat4x4::Translate(position.x, position.y, position.z);
-        return mat_rotation * mat_translation; // * mat_scale;
+        return mat_scale * mat_rotation * mat_translation;
     }
 
     mat4x4 rotation_matrix() {
-        auto [rotationAxis, rotationAngle] =
-            quat::FromEuler(rotation).ToAxisAngle();
-        return mat4x4::Rotate(rotationAxis, rotationAngle);
+        return quat::FromEuler(rotation).ToMatrix();
     }
 
     void draw_editor() {
         ImGui::Text("Transform");
         ImGui::InputFloat3("pos", (float*)&this->position);
         ImGui::InputFloat3("rot", (float*)&this->rotation);
+        ImGui::InputFloat3("scale", (float*)&this->scale);
     }
 };
 
