@@ -42,11 +42,11 @@ class UIWindow : public UIElement {
   private:
     vec2 m_top_left;
     vec2 m_bottom_right;
-    raylib::Color m_color;
+    Color m_color;
 
   public:
     UIWindow(vec2 top_left, vec2 bottom_right,
-             raylib::Color color)
+             Color color)
         : m_top_left(top_left), m_bottom_right(bottom_right), m_color(color) {}
 
     raylib::Rectangle rect() {
@@ -56,9 +56,9 @@ class UIWindow : public UIElement {
         return raylib::Rectangle(top_left, size);
     }
 
-    raylib::Color color() const { return m_color; }
+    Color color() const { return m_color; }
 
-    raylib::Color color(raylib::Color new_color) {
+    Color color(Color new_color) {
         m_color = new_color;
         return m_color;
     }
@@ -85,12 +85,12 @@ class UIText : public UIElement {
   private:
     vec2 m_pos;
     float m_height;
-    raylib::Color m_color;
+    Color m_color;
     raylib::Font* m_font;
 
   public:
     UIText(raylib::Font* font, vec2 pos, float height,
-           std::string text = "", raylib::Color color = GREEN)
+           std::string text = "", Color color = GREEN)
         : m_text(text), m_pos(pos), m_height(height), m_color(color),
           m_font(font) {}
 
@@ -105,25 +105,25 @@ class UIText : public UIElement {
                    m_color);
     }
 
-    void update_color(raylib::Color color) { m_color = color; }
+    void update_color(Color color) { m_color = color; }
 };
 
 class UITextInputBox : public UIText {
   private:
-    raylib::Color m_background_passive_color;
-    raylib::Color m_background_selected_color;
-    raylib::Color m_background_hover_color;
-    raylib::Color m_text_color;
+    Color m_background_passive_color;
+    Color m_background_selected_color;
+    Color m_background_hover_color;
+    Color m_text_color;
     bool m_selected = false;
     UIWindow m_background;
 
   public:
     UITextInputBox(raylib::Font* font, vec2 top_left,
                    vec2 bottom_right,
-                   raylib::Color background_passive_color = DARKGRAY,
-                   raylib::Color background_selected_color = GREEN,
-                   raylib::Color background_hover_color = BLACK,
-                   raylib::Color text_color = WHITE)
+                   Color background_passive_color = DARKGRAY,
+                   Color background_selected_color = GREEN,
+                   Color background_hover_color = BLACK,
+                   Color text_color = WHITE)
         : UIText(font, top_left, bottom_right.y - top_left.y, "", text_color),
           m_background_passive_color(background_passive_color),
           m_background_selected_color(background_selected_color),
@@ -196,7 +196,7 @@ class UITextComponent : public Component {
 
   public:
     UITextComponent(raylib::Font* font, vec2 pos, float height,
-                    std::string text = "", raylib::Color color = GREEN)
+                    std::string text = "", Color color = GREEN)
         : m_font(font), m_text(m_font, pos, height, text, color) {
         TraceLog(LOG_INFO, "setting height = %g", height);
     }

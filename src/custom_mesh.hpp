@@ -20,8 +20,8 @@ static Vector2 make_vector2(float x, float y) {
     return out;
 }
 
-static Mesh WrappedMesh(float width, float length, int resX, int resZ) {
-    Mesh mesh = {0};
+static MeshUnmanaged WrappedMesh(float width, float length, int resX, int resZ) {
+    MeshUnmanaged mesh;// = {0};
 
     resX++;
     resZ++;

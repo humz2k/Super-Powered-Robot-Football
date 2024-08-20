@@ -96,7 +96,7 @@ class MapCubeElement : public MapElement {
 
     void load(Scene* scene) {
         auto model = scene->renderer()->create_render_model(
-            raylib::Mesh::Cube(m_width, m_height, m_length));
+            Mesh::Cube(m_width, m_height, m_length));
         if (m_texture_path != "")
             model->add_texture(m_texture_path);
         auto map_entity = scene->find_entity("sprf_map");
@@ -113,7 +113,7 @@ class MapCubeElement : public MapElement {
 
     void load_editor(Scene* scene) {
         auto model = scene->renderer()->create_render_model(
-            raylib::Mesh::Cube(m_width, m_height, m_length));
+            Mesh::Cube(m_width, m_height, m_length));
         if (m_texture_path != "")
             model->add_texture(m_texture_path);
         auto map_entity = scene->find_entity("sprf_map");

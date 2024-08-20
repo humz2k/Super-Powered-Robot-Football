@@ -138,7 +138,7 @@ template <> class ShaderUniform<float> : public ShaderUniformBase<float> {
  * @brief Template specialization for Color shader uniform variables.
  */
 template <>
-class ShaderUniform<raylib::Color> : public ShaderUniformBase<raylib::Color> {
+class ShaderUniform<Color> : public ShaderUniformBase<Color> {
   public:
     /**
      * @brief Construct a new Shader Uniform object for colors.
@@ -147,7 +147,7 @@ class ShaderUniform<raylib::Color> : public ShaderUniformBase<raylib::Color> {
      * @param value Initial value of the uniform variable.
      * @param shader Reference to the shader.
      */
-    ShaderUniform(std::string name, raylib::Color value, raylib::Shader& shader)
+    ShaderUniform(std::string name, Color value, raylib::Shader& shader)
         : ShaderUniformBase(name, value, shader) {
         update_value();
     }
@@ -280,7 +280,7 @@ class Light : public Logger {
     /** @brief Uniform variable for light intensity */
     ShaderUniform<float> m_intensity;
     /** @brief Uniform variable for light color */
-    ShaderUniform<raylib::Color> m_cL;
+    ShaderUniform<Color> m_cL;
     /** @brief Uniform variable for light position */
     ShaderUniform<vec3> m_pos;
     /** @brief Uniform variable for light direction */
@@ -328,7 +328,7 @@ class Light : public Logger {
           m_intensity("lights[" + std::to_string(m_id) + "].intensity", 1,
                       m_shader),
           m_cL("lights[" + std::to_string(m_id) + "].cL",
-               raylib::Color::White(), m_shader),
+               Color::White(), m_shader),
           m_pos("lights[" + std::to_string(m_id) + "].pos", vec3(0),
                 m_shader),
           m_L("lights[" + std::to_string(m_id) + "].L",
@@ -438,7 +438,7 @@ class Light : public Logger {
      *
      * @return Color of the light.
      */
-    raylib::Color cL() const { return m_cL.value(); }
+    Color cL() const { return m_cL.value(); }
 
     /**
      * @brief Set the color of the light.
@@ -446,7 +446,7 @@ class Light : public Logger {
      * @param v New color.
      * @return Updated color.
      */
-    raylib::Color cL(raylib::Color v) { return m_cL.value(v); }
+    Color cL(Color v) { return m_cL.value(v); }
 
     /**
      * @brief Get the position of the light.

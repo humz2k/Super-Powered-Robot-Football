@@ -481,7 +481,7 @@ class Scene : public Logger {
     /** @brief Renderer for the scene */
     Renderer m_renderer;
 
-    raylib::Color m_background_color = raylib::Color::White();
+    Color m_background_color = Color::White();
 
     bool m_should_close = false;
 
@@ -552,7 +552,7 @@ class Scene : public Logger {
         m_should_close = true;
     }
 
-    void set_background_color(raylib::Color color) {
+    void set_background_color(Color color) {
         m_background_color = color;
     }
 

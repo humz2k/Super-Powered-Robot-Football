@@ -30,7 +30,7 @@ class Crosshair : public Component {
         }
         if (!KEY_EXISTS(game_settings.color_values, "crosshair_color")) {
             game_settings.color_values["crosshair_color"] =
-                raylib::Color::Green();
+                Color::Green();
         }
     }
 
@@ -50,7 +50,7 @@ class Crosshair : public Component {
             float thickness =
                 (game_settings.float_values["crosshair_thickness"] / 100.0f) *
                 m_display_width;
-            raylib::Color color = game_settings.color_values["crosshair_color"];
+            Color color = game_settings.color_values["crosshair_color"];
             DrawLineEx(vec2(m_display_width * 0.5,
                                        m_display_height * 0.5 - y_size),
                        vec2(m_display_width * 0.5,

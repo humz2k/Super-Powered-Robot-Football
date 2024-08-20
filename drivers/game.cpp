@@ -67,17 +67,17 @@ class PlayerComponent : public Component {
 void init_player(Entity* player) {
     TraceLog(LOG_INFO, "initializing player");
     auto head_model = player->scene()->renderer()->create_render_model(
-        raylib::Mesh::Sphere(0.2, 30, 30));
-    head_model->tint(raylib::Color::Red());
+        Mesh::Sphere(0.2, 30, 30));
+    head_model->tint(Color::Red());
     auto body_model = player->scene()->renderer()->create_render_model(
-        raylib::Mesh::Cone(0.2, 0.6, 100));
-    body_model->tint(raylib::Color::Red());
+        Mesh::Cone(0.2, 0.6, 100));
+    body_model->tint(Color::Red());
     auto eye_model = player->scene()->renderer()->create_render_model(
-        raylib::Mesh::Cube(0.2, 0.1, 0.1));
-    eye_model->tint(raylib::Color::Black());
+        Mesh::Cube(0.2, 0.1, 0.1));
+    eye_model->tint(Color::Black());
     auto arm_model = player->scene()->renderer()->create_render_model(
-        raylib::Mesh::Cylinder(0.05, 0.4, 100));
-    arm_model->tint(raylib::Color::Gray());
+        Mesh::Cylinder(0.05, 0.4, 100));
+    arm_model->tint(Color::Gray());
 
     player->add_component<PlayerComponent>();
     player->get_component<Transform>()->position.y = 0;

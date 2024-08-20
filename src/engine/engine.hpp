@@ -334,7 +334,7 @@ class ConfigCommand : public DevConsoleCommand {
         if (args[0] == "color") {
             if (args.size() == 6) {
                 game_settings.color_values[args[1]] =
-                    raylib::Color(std::stoi(args[2]), std::stoi(args[3]),
+                    Color(std::stoi(args[2]), std::stoi(args[3]),
                                   std::stoi(args[4]), std::stoi(args[5]));
             }
             TraceLog(LOG_CONSOLE, "%s = %d %d %d %d", args[1].c_str(),

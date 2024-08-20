@@ -496,13 +496,13 @@ class Client : public Component {
         }
         auto ball_model =
             this->entity()->scene()->renderer()->create_render_model(
-                raylib::Mesh::Sphere(m_ball_radius, 50, 50));
+                Mesh::Sphere(m_ball_radius, 50, 50));
         auto ball_cube_model =
             this->entity()->scene()->renderer()->create_render_model(
-                raylib::Mesh::Cube(m_ball_radius, m_ball_radius,
+                Mesh::Cube(m_ball_radius, m_ball_radius,
                                    m_ball_radius));
-        ball_model->tint(raylib::Color(255, 255, 255, 100));
-        ball_cube_model->tint(raylib::Color(0, 0, 0, 255));
+        ball_model->tint(Color(255, 255, 255, 100));
+        ball_cube_model->tint(Color(0, 0, 0, 255));
         m_ball_entity = this->entity()->scene()->create_entity();
         m_ball_entity->add_component<Model>(ball_model);
         auto child_comp = m_ball_entity->create_child();
@@ -621,7 +621,7 @@ class Client : public Component {
 
         // if (m_ball_entity == NULL){
         //     auto ball_model =
-        //     this->entity()->scene()->renderer()->create_render_model(raylib::Mesh::Sphere(m_ball_radius,10,10));
+        //     this->entity()->scene()->renderer()->create_render_model(Mesh::Sphere(m_ball_radius,10,10));
         // m_ball_entity = this->entity()->scene()->create_entity();
         // assert(m_ball_entity != NULL);
         //    m_ball_entity->add_component<Model>(ball_model);
@@ -684,14 +684,14 @@ class Client : public Component {
         std::lock_guard<std::mutex> guard(m_queue_mutex);
         auto& latest = m_game_state_queue.back();
         DrawSphereWires(latest.ball_state.position(), m_ball_radius, 10, 10,
-                        raylib::Color::Green());
+                        Color::Green());
         for (auto& i : latest.states) {
             if (i.id == m_id)
                 continue;
             DrawCapsuleWires(
                 i.position() - vec3(0, PLAYER_HEIGHT * 0.5, 0),
                 i.position() + vec3(0, PLAYER_HEIGHT * 0.5, 0),
-                PLAYER_RADIUS, 10, 10, raylib::Color::Green());
+                PLAYER_RADIUS, 10, 10, Color::Green());
         }
     }
 

@@ -87,11 +87,11 @@ class TestScene : public DefaultScene {
         // plane_entity->get_component<Transform>()->position.z = 10;
 
         auto cube =
-            this->renderer()->create_render_model(raylib::Mesh::Cube(1, 1, 1));
+            this->renderer()->create_render_model(Mesh::Cube(1, 1, 1));
         cube->add_texture("assets/prototype_texture/orange-cube.png");
 
         auto sphere = this->renderer()->create_render_model(
-            raylib::Mesh::Sphere(0.5, 30, 30));
+            Mesh::Sphere(0.5, 30, 30));
         // cube->add_texture("assets/prototype_texture/orange-cube.png");
 
         auto sphere1 = this->create_entity();

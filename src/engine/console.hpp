@@ -74,9 +74,9 @@ class DevConsole : public Component, public UITextInputBox {
         : UITextInputBox(&m_font, vec2(0.12, 0.86),
                          vec2(0.88, 0.88)),
           m_background(vec2(0.1, 0.1), vec2(0.9, 0.9),
-                       raylib::Color(23, 27, 33, m_transparency)),
+                       Color(23, 27, 33, m_transparency)),
           m_foreground(vec2(0.12, 0.12), vec2(0.88, 0.86),
-                       raylib::Color(30, 35, 43, m_transparency)),
+                       Color(30, 35, 43, m_transparency)),
           m_font("assets/"
                  "JetBrainsMono-Regular.ttf",
                  128),
@@ -324,7 +324,7 @@ class DevConsole : public Component, public UITextInputBox {
             auto& text_box = m_text_boxes[i];
             LogMessage& msg = log_manager.log_stack[i + m_console_start];
             text_box.update_text(msg.message);
-            raylib::Color out_color;
+            Color out_color;
             switch (msg.type) {
             case LOG_ERROR:
             case LOG_WARNING:

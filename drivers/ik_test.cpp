@@ -25,10 +25,10 @@ class IKSolver{
     public:
         IKSolver(){}
         IKSolver(Entity* entity, ik_algorithm_e algo = IK_FABRIK) : m_raw(ik.solver.create(algo)), m_entity(entity) {
-            m_node_model = m_entity->scene()->renderer()->create_render_model(raylib::Mesh::Cube(0.1,0.1,0.1));
-            m_node_model->tint(raylib::Color::Green());
-            m_effector_model = m_entity->scene()->renderer()->create_render_model(raylib::Mesh::Cube(0.1,0.1,0.1));
-            m_effector_model->tint(raylib::Color::Red());
+            m_node_model = m_entity->scene()->renderer()->create_render_model(Mesh::Cube(0.1,0.1,0.1));
+            m_node_model->tint(Color::Green());
+            m_effector_model = m_entity->scene()->renderer()->create_render_model(Mesh::Cube(0.1,0.1,0.1));
+            m_effector_model->tint(Color::Red());
         }
         ik_solver_t* raw(){return m_raw;}
         Entity* entity(){return m_entity;}
@@ -364,7 +364,7 @@ class IKComponent : public Component{
                 current_anim.framePoses[1][i].rotation = quat::FromMatrix(mat4x4(quat(current_anim.framePoses[0][i].rotation).ToMatrix()) * m_nodes[i]->entity()->global_rotation());//quat::FromMatrix(m_nodes[i]->entity()->global_rotation());//
             }
             UpdateModelAnimation(m_model,current_anim,1);
-            m_model.DrawWires(raylib::Vector3(0,0,0),0.01,raylib::Color::White());*/
+            m_model.DrawWires(raylib::Vector3(0,0,0),0.01,Color::White());*/
         }
 
         void destroy(){

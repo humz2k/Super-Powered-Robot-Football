@@ -35,11 +35,17 @@ typedef raylib::Vector4 vec4;
 typedef raylib::Quaternion quat;
 typedef raylib::Matrix mat4x4;
 
+typedef raylib::Color Color;
+typedef raylib::MeshUnmanaged MeshUnmanaged;
+typedef raylib::Mesh Mesh;
+typedef raylib::Material Material;
+typedef ::Material MaterialUnmanaged;
+
 class GameSettings {
   public:
     std::unordered_map<std::string, float> float_values;
     std::unordered_map<std::string, int> int_values;
-    std::unordered_map<std::string, raylib::Color> color_values;
+    std::unordered_map<std::string, Color> color_values;
     GameSettings() {
         float_values["m_yaw"] = 0.022;
         float_values["m_pitch"] = 0.022;

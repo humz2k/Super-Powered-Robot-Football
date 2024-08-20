@@ -286,7 +286,7 @@ class RenderModel : public Logger {
     /** @brief Visible instances of the model */
     Matrix* m_visible_instances = NULL;
 
-    raylib::Color m_tint = raylib::Color::White();
+    Color m_tint = Color::White();
 
     bool m_clip = true;
 
@@ -338,12 +338,12 @@ class RenderModel : public Logger {
         m_model->materials[0].maps[MATERIAL_MAP_DIFFUSE].texture = m_texture;
     }
 
-    raylib::Color tint(raylib::Color color) {
+    Color tint(Color color) {
         m_tint = color;
         return m_tint;
     }
 
-    raylib::Color tint() { return m_tint; }
+    Color tint() { return m_tint; }
 
     /**
      * @brief Sets whether this model should be frustrum culled
@@ -410,8 +410,8 @@ class RenderModel : public Logger {
                 }
             }
 
-            Mesh mesh = m_model->meshes[i];
-            Material material = m_model->materials[m_model->meshMaterial[i]];
+            MeshUnmanaged mesh = m_model->meshes[i];
+            MaterialUnmanaged material = m_model->materials[m_model->meshMaterial[i]];
             material.maps[MATERIAL_MAP_DIFFUSE].color = m_tint;
             material.shader = shader;
             DrawMeshInstanced(mesh, material, m_visible_instances,
@@ -454,8 +454,8 @@ class RenderModel : public Logger {
                 }
             }
 
-            Mesh mesh = m_model->meshes[i];
-            Material material = m_model->materials[m_model->meshMaterial[i]];
+            MeshUnmanaged mesh = m_model->meshes[i];
+            MaterialUnmanaged material = m_model->materials[m_model->meshMaterial[i]];
             material.shader = shader;
             DrawMeshInstanced(mesh, material, m_visible_instances,
                               m_n_visible_instances);
@@ -617,7 +617,7 @@ class Renderer : public Logger {
      * @param camera Camera used to render the scene.
      */
     void render(raylib::Camera* camera,
-                raylib::Color background_color = raylib::Color::White()) {
+                Color background_color = Color::White()) {
         m_camera_position.value(camera->GetPosition());
         ViewFrustrum frustrum(*camera);
         // raylib::Camera3D cam;
@@ -670,7 +670,7 @@ class Renderer : public Logger {
      */
     void load_skybox(std::string path) {
         m_skybox_model =
-            std::make_shared<raylib::Model>(raylib::Mesh::Cube(1, 1, 1));
+            std::make_shared<raylib::Model>(Mesh::Cube(1, 1, 1));
         m_skybox_model->materials[0].shader = m_skybox_shader;
         int temp = MATERIAL_MAP_CUBEMAP;
         SetShaderValue(m_skybox_model->materials[0].shader,
