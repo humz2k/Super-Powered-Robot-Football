@@ -113,6 +113,8 @@ $(RAYLIB_DIR)/libraylib.a:
 .PHONY: clean
 clean:
 	rm -rf $(BUILD_DIR)
+	rm -rf release
+	rm release.zip
 
 .PHONY: fresh
 fresh: clean

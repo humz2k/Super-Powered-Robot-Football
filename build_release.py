@@ -1,15 +1,34 @@
 import os
 import shutil
 
-os.system("rm -rf build")
-os.system("cmake -B build/")
-os.system("cmake --build build --target game --config Release")
-os.system("cmake --build build --target server --config Release")
-os.system("cmake --build build --target editor --config Release")
+os.chdir(os.path.dirname(__file__))
 
-root_src_dir = 'build/package'    #Path/Location of the source directory
-root_dst_dir = 'release'  #Path to the destination folder
-os.system('rm -rf release')
+print("LOG: working in " + os.curdir)
+
+BUILD_DIR = "build"
+PACKAGE_DIR = "package"
+RELEASE_DIR = "release"
+RELEASE_ZIP = "release"
+
+print("LOG: building game")
+
+os.system(f"rm -rf {BUILD_DIR}")
+
+os.system(f"cmake -B {BUILD_DIR}/")
+os.system(f"cmake --build {BUILD_DIR} --target game --config Release -j")
+os.system(f"cmake --build {BUILD_DIR} --target server --config Release -j")
+os.system(f"cmake --build {BUILD_DIR} --target editor --config Release -j")
+
+print(f"LOG: copying to {RELEASE_DIR}")
+
+root_src_dir = os.path.join(BUILD_DIR,PACKAGE_DIR)
+root_dst_dir = RELEASE_DIR  #Path to the destination folder
+os.system(f"rm -rf {RELEASE_DIR}")
+try:
+    os.remove(RELEASE_ZIP + ".zip")
+except:
+    pass
+
 for src_dir, dirs, files in os.walk(root_src_dir):
     dst_dir = src_dir.replace(root_src_dir, root_dst_dir, 1)
     if not os.path.exists(dst_dir):
@@ -21,4 +40,6 @@ for src_dir, dirs, files in os.walk(root_src_dir):
             os.remove(dst_file)
         shutil.copy(src_file, dst_dir)
 
-shutil.make_archive('release', 'zip', root_dst_dir)
+print(f"LOG: zipping to {RELEASE_ZIP}.zip")
+
+shutil.make_archive(RELEASE_ZIP, 'zip', root_dst_dir)
