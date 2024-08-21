@@ -17,11 +17,9 @@ set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 project(SPRF)
 
 add_subdirectory(raylib)
-# add_subdirectory(ik)
+add_subdirectory(ik)
 
 file(GLOB_RECURSE sources src/*.cpp src/*.c src/*.h src/*.hpp)
-
-#file(GLOB_RECURSE all_assets assets/*)
 
 add_custom_target(
     assets ALL
@@ -52,13 +50,6 @@ add_custom_target(
                 ${PROJECT_BINARY_DIR}/${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/server_cfg.ini
 )
 
-#add_custom_target(
-#    assets
-#    DEPENDS ${PROJECT_BINARY_DIR}/${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/nothing4
-#    COMMAND ${CMAKE_COMMAND} -E copy_directory
-#                ${CMAKE_SOURCE_DIR}/assets
-#                ${PROJECT_BINARY_DIR}/${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/assets
-#)
 
 add_library(SPRF ${sources})
 
@@ -67,8 +58,7 @@ add_dependencies(SPRF assets autoexec.cfg client_cfg.ini server_cfg.ini)
 target_include_directories(SPRF PUBLIC src raylib-cpp/include raylib/src src/soloud/include)
 
 if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-    # SET( CMAKE_CXX_FLAGS  "-Wall -Wpedantic -g -fsanitize=address -fsanitize=undefined -fno-omit-frame-pointer -fno-inline -fPIC")
-    # SET( CMAKE_CXX_FLAGS  "-fPIC")
+    SET( CMAKE_CXX_FLAGS  "-Wall -Wpedantic -g -fsanitize=address -fsanitize=undefined -fno-omit-frame-pointer -fno-inline -fPIC")
 endif()
 
 if (APPLE)
@@ -128,11 +118,10 @@ foreach( sourcefile ${DRIVER_SOURCES} )
     get_filename_component( name ${sourcefile} NAME_WE )
     add_executable( ${name} ${sourcefile} )
     target_link_directories( ${name} PUBLIC raylib/src)
-    target_link_libraries( ${name} SPRF raylib ${LIBS_PRIVATE})
+    target_link_libraries( ${name} SPRF raylib ik ${LIBS_PRIVATE})
     if (${name} MATCHES "game")
         if (WIN32)
             # /ENTRY:mainCRTStartup keeps the same "main" function instead of requiring "WinMain"
-            # set(CMAKE_EXE_LINKER_FLAGS " /SUBSYSTEM:WINDOWS /ENTRY:mainCRTStartup")
             target_link_options( ${name} PRIVATE "/SUBSYSTEM:WINDOWS" "/ENTRY:mainCRTStartup")
         else()
 

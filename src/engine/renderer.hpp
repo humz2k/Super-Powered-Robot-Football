@@ -411,12 +411,22 @@ class RenderModel : public Logger {
             }
 
             MeshUnmanaged mesh = m_model->meshes[i];
-            MaterialUnmanaged material = m_model->materials[m_model->meshMaterial[i]];
-            material.maps[MATERIAL_MAP_DIFFUSE].color = m_tint;
+            ::Material material = m_model->materials[m_model->meshMaterial[i]];
+
+            Color color = material.maps[MATERIAL_MAP_DIFFUSE].color;
+
+            Color colorTint = Color::White();
+            colorTint.r = (unsigned char)(((int)color.r*(int)m_tint.r)/255);
+            colorTint.g = (unsigned char)(((int)color.g*(int)m_tint.g)/255);
+            colorTint.b = (unsigned char)(((int)color.b*(int)m_tint.b)/255);
+            colorTint.a = (unsigned char)(((int)color.a*(int)m_tint.a)/255);
+
+            material.maps[MATERIAL_MAP_DIFFUSE].color = colorTint;
             material.shader = shader;
             DrawMeshInstanced(mesh, material, m_visible_instances,
                               m_n_visible_instances);
             material.shader = old_shader;
+            material.maps[MATERIAL_MAP_DIFFUSE].color = color;
         }
     }
 
@@ -454,12 +464,27 @@ class RenderModel : public Logger {
                 }
             }
 
+
+
             MeshUnmanaged mesh = m_model->meshes[i];
-            MaterialUnmanaged material = m_model->materials[m_model->meshMaterial[i]];
+            ::Material material = m_model->materials[m_model->meshMaterial[i]];
+
+            Color color = material.maps[MATERIAL_MAP_DIFFUSE].color;
+
+            Color colorTint = Color::White();
+            colorTint.r = (unsigned char)(((int)color.r*(int)m_tint.r)/255);
+            colorTint.g = (unsigned char)(((int)color.g*(int)m_tint.g)/255);
+            colorTint.b = (unsigned char)(((int)color.b*(int)m_tint.b)/255);
+            colorTint.a = (unsigned char)(((int)color.a*(int)m_tint.a)/255);
+
+            material.maps[MATERIAL_MAP_DIFFUSE].color = colorTint;
+
             material.shader = shader;
             DrawMeshInstanced(mesh, material, m_visible_instances,
                               m_n_visible_instances);
             material.shader = old_shader;
+            //TraceLog(LOG_INFO,"drawing here");
+            material.maps[MATERIAL_MAP_DIFFUSE].color = color;
         }
     }
 

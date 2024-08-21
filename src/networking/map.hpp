@@ -111,6 +111,10 @@ class MapCubeElement : public MapElement {
             Mesh::Cube(m_width, m_height, m_length));
         if (m_texture_path != "")
             model->add_texture(m_texture_path);
+        //if (editor){
+        //    TraceLog(LOG_INFO,"transparent cube");
+        //    model->tint(Color(255,255,255,155));
+        //}
         auto map_entity = scene->find_entity("sprf_map");
         assert(map_entity);
         auto parent = map_entity->create_child("map_cube_element_" +
