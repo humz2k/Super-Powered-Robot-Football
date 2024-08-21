@@ -260,7 +260,6 @@ int main() {
     int fullscreen = 1;
     float volume = 1.0;
     ChangeDirectory(GetApplicationDirectory());
-    ChangeDirectory("..");
     mINI::INIFile file("client_cfg.ini");
     mINI::INIStructure ini;
     if (file.read(ini)) { // Ensure the INI file is successfully read

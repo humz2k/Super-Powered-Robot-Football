@@ -5,10 +5,10 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 cmake_policy(SET CMP0091 NEW)
 
-set(CMAKE_BUILD_TYPE Debug)
+#set(CMAKE_BUILD_TYPE Release)
 
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG "package/debug")
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE "package/release")
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "package")
+#set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE "package")
 
 set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 
@@ -20,12 +20,48 @@ add_subdirectory(raylib)
 
 file(GLOB_RECURSE sources src/*.cpp src/*.c src/*.h src/*.hpp)
 
+#file(GLOB_RECURSE all_assets assets/*)
+
 add_custom_target(
-    my_custom_target_that_always_runs4 ALL
+    assets ALL
     DEPENDS ${PROJECT_BINARY_DIR}/${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/nothing4
 )
 
+add_custom_target(
+    autoexec.cfg
+    DEPENDS ${CMAKE_SOURCE_DIR}/autoexec.cfg
+    COMMAND ${CMAKE_COMMAND} -E copy
+                ${CMAKE_SOURCE_DIR}/autoexec.cfg
+                ${PROJECT_BINARY_DIR}/${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/autoexec.cfg
+)
+
+add_custom_target(
+    client_cfg.ini
+    DEPENDS ${CMAKE_SOURCE_DIR}/client_cfg.ini
+    COMMAND ${CMAKE_COMMAND} -E copy
+                ${CMAKE_SOURCE_DIR}/client_cfg.ini
+                ${PROJECT_BINARY_DIR}/${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/client_cfg.ini
+)
+
+add_custom_target(
+    server_cfg.ini
+    DEPENDS ${CMAKE_SOURCE_DIR}/server_cfg.ini
+    COMMAND ${CMAKE_COMMAND} -E copy
+                ${CMAKE_SOURCE_DIR}/server_cfg.ini
+                ${PROJECT_BINARY_DIR}/${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/server_cfg.ini
+)
+
+#add_custom_target(
+#    assets
+#    DEPENDS ${PROJECT_BINARY_DIR}/${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/nothing4
+#    COMMAND ${CMAKE_COMMAND} -E copy_directory
+#                ${CMAKE_SOURCE_DIR}/assets
+#                ${PROJECT_BINARY_DIR}/${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/assets
+#)
+
 add_library(SPRF ${sources})
+
+add_dependencies(SPRF assets autoexec.cfg client_cfg.ini server_cfg.ini)
 
 target_include_directories(SPRF PUBLIC src raylib-cpp/include raylib/src src/soloud/include)
 
@@ -80,21 +116,11 @@ else ()
 endif ()
 
 add_custom_command(
-    OUTPUT ${PROJECT_BINARY_DIR}/${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/nothing4 ${PROJECT_BINARY_DIR}/${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/package
-        COMMAND ${CMAKE_COMMAND} -E make_directory ${PROJECT_BINARY_DIR}/${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/package
-        COMMAND ${CMAKE_COMMAND} -E copy_directory
-                ${CMAKE_SOURCE_DIR}/assets
-                ${PROJECT_BINARY_DIR}/${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/package/assets
-        COMMAND ${CMAKE_COMMAND} -E copy
-                ${CMAKE_SOURCE_DIR}/server_cfg.ini
-                ${PROJECT_BINARY_DIR}/${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/package/server_cfg.ini
-        COMMAND ${CMAKE_COMMAND} -E copy
-                ${CMAKE_SOURCE_DIR}/client_cfg.ini
-                ${PROJECT_BINARY_DIR}/${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/package/client_cfg.ini
-        COMMAND ${CMAKE_COMMAND} -E copy
-                ${CMAKE_SOURCE_DIR}/autoexec.cfg
-                ${PROJECT_BINARY_DIR}/${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/package/autoexec.cfg
-        )
+    OUTPUT ${PROJECT_BINARY_DIR}/${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/nothing4
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+            ${CMAKE_SOURCE_DIR}/assets
+            ${PROJECT_BINARY_DIR}/${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/assets
+)
 
 file( GLOB DRIVER_SOURCES drivers/*.cpp )
 foreach( sourcefile ${DRIVER_SOURCES} )
