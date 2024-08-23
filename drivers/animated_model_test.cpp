@@ -30,6 +30,7 @@ class ModelAnimator : public Component{
         float m_frame_rate;
         int m_anim_count;
         ModelAnimation* m_anims;
+        ModelAnimation m_my_anim;
         bool m_animation_playing = false;
         int m_current_animation = 0;
         float m_current_frame = 0;
@@ -48,9 +49,19 @@ class ModelAnimator : public Component{
                     m_current_animation = i;
                 }
             }
+            // hacky thing to be able to write different stuff not just each frame
+            m_my_anim.boneCount = bone_count;
+            m_my_anim.bones = m_anims[0].bones;
+            m_my_anim.frameCount = 1;
+            m_my_anim.framePoses = (::Transform**)malloc(sizeof(::Transform*));
+            m_my_anim.framePoses[0] = (::Transform*)malloc(sizeof(::Transform) * bone_count);
+            strcpy(m_my_anim.name,"base_anim");
         }
 
         ~ModelAnimator(){
+            // free the hacks
+            free(m_my_anim.framePoses[0]);
+            free(m_my_anim.framePoses);
             UnloadModelAnimations(m_anims,m_anim_count);
         }
 
@@ -58,12 +69,8 @@ class ModelAnimator : public Component{
             m_render_model = m_model->render_model();
             m_raylib_model = *m_render_model->model();
 
-            //auto tmp = this->entity()->scene()->renderer()->create_render_model(Mesh::Sphere(5,10,10));
-
             ModelAnimation cur_anim = m_anims[m_current_animation];
-
-            UpdateModelAnimation(m_raylib_model,cur_anim,0);
-
+            //auto tmp = this->entity()->scene()->renderer()->create_render_model(Mesh::Sphere(5,10,10));
             for (int i = 0; i < m_anims[0].boneCount; i++){
                 int parent = cur_anim.bones[i].parent;
                 Entity* bone_entity;
@@ -80,28 +87,51 @@ class ModelAnimator : public Component{
                 m_entity_bones.push_back(bone_entity);
                 m_entity_transforms.push_back(bone_entity->get_component<Transform>());
             }
+
+            for (int i = 0; i < cur_anim.boneCount; i++){
+                m_my_anim.framePoses[0][i] = cur_anim.framePoses[0][i];
+            }
+
+            UpdateModelAnimation(m_raylib_model,m_my_anim,0);
         }
 
         void update(){
             if (!m_animation_playing)return;
-            int next_frame = m_current_frame;
-            m_current_frame += game_info.frame_time * m_frame_rate;
-            m_current_frame = fmod(m_current_frame,m_anims[m_current_animation].frameCount - 1);
-            if (next_frame == m_last_frame)return;
-
             ModelAnimation cur_anim = m_anims[m_current_animation];
+            //int next_frame = m_current_frame;
+            //if (next_frame == m_last_frame)return;
 
-            UpdateModelAnimation(m_raylib_model,cur_anim,m_current_frame);
-            m_last_frame = m_current_frame;
+            int this_frame_idx = (int)m_current_frame;
+            int next_frame_idx = (this_frame_idx + 1) % (cur_anim.frameCount-1);
+
+            //UpdateModelAnimation(m_raylib_model,cur_anim,m_current_frame);
+            //m_last_frame = m_current_frame;
+
+            auto this_frame = cur_anim.framePoses[this_frame_idx];
+            auto next_frame = cur_anim.framePoses[next_frame_idx];
+            float lerp = m_current_frame - this_frame_idx;
+
+            for (int i = 0; i < cur_anim.boneCount; i++){
+                m_my_anim.framePoses[0][i].scale = Vector3Lerp(this_frame[i].scale,next_frame[i].scale,lerp);
+                m_my_anim.framePoses[0][i].translation = Vector3Lerp(this_frame[i].translation,next_frame[i].translation,lerp);
+                m_my_anim.framePoses[0][i].rotation = QuaternionSlerp(this_frame[i].rotation,next_frame[i].rotation,lerp);
+            }
 
             for (int i = 0; i < cur_anim.boneCount; i++){
                 int parent = cur_anim.bones[i].parent;
                 if (cur_anim.bones[i].parent == -1){
-                    m_entity_transforms[i]->position = cur_anim.framePoses[(int)m_current_frame][i].translation;
+                    m_entity_transforms[i]->position = m_my_anim.framePoses[0][i].translation;
                     continue;
                 }
-                m_entity_transforms[i]->position = vec3(cur_anim.framePoses[(int)m_current_frame][i].translation) - vec3(cur_anim.framePoses[(int)m_current_frame][parent].translation);
+                m_entity_transforms[i]->position = vec3(m_my_anim.framePoses[0][i].translation) - vec3(m_my_anim.framePoses[0][parent].translation);
             }
+
+            //auto my_inverse_global_transform = this->entity()->global_transform().Invert();
+
+            UpdateModelAnimation(m_raylib_model,m_my_anim,0);
+
+            m_current_frame += game_info.frame_time * m_frame_rate;
+            m_current_frame = fmod(m_current_frame,m_anims[m_current_animation].frameCount-1);
         }
 
         void play_animation(int idx){
