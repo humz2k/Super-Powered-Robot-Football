@@ -28,22 +28,22 @@ class DisconnectCommand : public DevConsoleCommand {
 class PlayerComponent : public Component {
   private:
     Transform* m_transform;
-    Transform* m_head_transform;
+    //Transform* m_head_transform;
     NetworkEntity* m_network_entity;
     bool m_enabled = true;
 
   public:
     void init() {
         m_transform = this->entity()->get_component<Transform>();
-        m_head_transform =
-            this->entity()->get_child(0)->get_component<Transform>();
+        //m_head_transform =
+        //    this->entity()->get_child(0)->get_component<Transform>();
         m_network_entity = this->entity()->get_component<NetworkEntity>();
     }
 
     void update() {
         m_transform->position = m_network_entity->position;
         m_transform->rotation.y = m_network_entity->rotation.y;
-        m_head_transform->rotation.x = m_network_entity->rotation.x;
+        //m_head_transform->rotation.x = m_network_entity->rotation.x;
         if (m_network_entity->active && (!m_enabled)) {
             for (auto& i : this->entity()->children()) {
                 TraceLog(LOG_INFO, "enabling");
@@ -67,39 +67,24 @@ class PlayerComponent : public Component {
 
 void init_player(Entity* player) {
     TraceLog(LOG_INFO, "initializing player");
-    auto head_model = player->scene()->renderer()->create_render_model(
-        Mesh::Sphere(0.2, 30, 30));
-    head_model->tint(Color::Red());
-    auto body_model = player->scene()->renderer()->create_render_model(
-        Mesh::Cone(0.2, 0.6, 100));
-    body_model->tint(Color::Red());
-    auto eye_model = player->scene()->renderer()->create_render_model(
-        Mesh::Cube(0.2, 0.1, 0.1));
-    eye_model->tint(Color::Black());
-    auto arm_model = player->scene()->renderer()->create_render_model(
-        Mesh::Cylinder(0.05, 0.4, 100));
-    arm_model->tint(Color::Gray());
+    auto player_model = player->scene()->renderer()->create_render_model("assets/xbot_rigged3.glb");
 
     player->add_component<PlayerComponent>();
-    player->get_component<Transform>()->position.y = 0;
-    auto head = player->create_child();
-    head->get_component<Transform>()->position.y = 0.3;
-    head->add_component<Model>(head_model);
-    auto eye = head->create_child();
-    eye->get_component<Transform>()->position.z = 0.15;
-    eye->add_component<Model>(eye_model);
-    auto body = player->create_child();
-    body->add_component<Model>(body_model);
-    body->get_component<Transform>()->position.y = 0.1;
-    body->get_component<Transform>()->rotation.x = -M_PI;
-    auto gun_parent = body->create_child();
-    auto gun = gun_parent->create_child();
-    gun->add_component<Model>(arm_model);
-    gun->get_component<Transform>()->position.z = -0.023;
-    gun->get_component<Transform>()->position.x = 0.11;
-    gun->get_component<Transform>()->position.y = 0.05;
-    gun->get_component<Transform>()->rotation.x = -M_PI / 2;
-    gun->get_component<Transform>()->rotation.y = 0.05;
+    auto player_model_entity = player->create_child();
+    auto player_model_model = player_model_entity->add_component<Model>(player_model);
+    player_model_entity->get_component<Transform>()->scale = vec3(0.01,0.01,0.01) * PLAYER_HEIGHT;
+    player_model_entity->get_component<Transform>()->rotation = vec3(M_PI_2,0,0);
+    player_model_entity->get_component<Transform>()->position = vec3(0,-0.5,0);
+    auto animator = player_model_entity->add_component<ModelAnimator>(player_model_entity,"assets/xbot_rigged3.glb",player_model_model);
+    animator->play_animation("idle");
+
+    auto gun_model = player->scene()->renderer()->create_render_model("assets/ak47.glb");
+    auto gun_entity = player_model_entity->find_entity("mixamorig:RightHand")->create_child();
+    gun_entity->add_component<Model>(gun_model);
+    //gun_entity->add_component<Selectable>(true,true);
+    gun_entity->get_component<Transform>()->position = vec3(4,6,-18);
+    gun_entity->get_component<Transform>()->rotation = vec3(-M_PI_2,0,M_PI_2);
+    gun_entity->get_component<Transform>()->scale = vec3(20,20,20);
 }
 
 class LocalSceneServerCommands : public DevConsoleCommand {

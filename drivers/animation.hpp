@@ -15,7 +15,6 @@ class AnimationState{
         std::unordered_map<std::string,bool> m_force;
         float m_current_frame = 0;
         float m_frame_rate;
-        vec3 m_rotation = vec3(0,0,0);
         bool m_currently_looping = false;
         AnimationState* m_next = NULL;
 
@@ -103,7 +102,6 @@ class AnimationState{
 
             if ((this_frame_idx == (m_anim.frameCount - 2)) && !m_currently_looping){
                 if (m_next){
-                    //TraceLog(LOG_INFO,"getting next frame?");
                     next_frame = m_next->frame_poses()[0];
                 }
             }
@@ -132,15 +130,6 @@ class AnimationState{
 
         std::string name(){
             return m_animation_name;
-        }
-
-        vec3 rotation(){
-            return m_rotation;
-        }
-
-        vec3 rotation(vec3 rot){
-            m_rotation = rot;
-            return rotation();
         }
 };
 
@@ -203,13 +192,6 @@ class AnimationStateManager{
             }
         }
 
-        vec3 rotation(){
-            if (m_playing){
-                return m_playing->rotation();
-            }
-            return vec3(0,0,0);
-        }
-
         void play_animation(std::string name){
             if (KEY_EXISTS(m_states,name)){
                 if (m_playing){
@@ -238,16 +220,6 @@ class ModelAnimator : public Component{
         std::vector<Transform*> m_entity_transforms;
         AnimationStateManager anim_states;
     public:
-        ModelAnimator(std::string path, Model* model, std::string starting_animation = "TPose", float framerate = 60) : m_model(model){
-            m_anims = LoadModelAnimations(path.c_str(),&m_anim_count);
-            int bone_count = m_anims[0].boneCount;
-            for (int i = 0; i < m_anim_count; i++){
-                assert(bone_count == m_anims[i].boneCount);
-                anim_states.add_animation_state(m_anims[i],true,framerate);
-            }
-            anim_states.play_animation(starting_animation);
-        }
-
         ModelAnimator(Entity* entity, std::string path, Model* model, std::string starting_animation = "TPose", float framerate = 60) : m_model(model){
             m_anims = LoadModelAnimations(path.c_str(),&m_anim_count);
             int bone_count = m_anims[0].boneCount;
@@ -268,13 +240,9 @@ class ModelAnimator : public Component{
                     bone_entity = m_entity_bones[bone.parent]->create_child(bone.name);
                     bone_entity->get_component<Transform>()->position = vec3(updated_anim.framePoses[0][i].translation) - vec3(updated_anim.framePoses[0][bone.parent].translation);
                 }
-                //bone_entity->add_component<Model>(tmp);
-                //bone_entity->add_component<Selectable>(true,true);
 
                 m_entity_transforms.push_back(bone_entity->get_component<Transform>());
                 m_entity_bones.push_back(bone_entity);
-                //auto bone_entity =
-                //m_entity_bones.push_back(this->entity()->c)
             }
         }
 
@@ -291,34 +259,11 @@ class ModelAnimator : public Component{
             m_raylib_model = *m_render_model->model();
             ModelAnimation updated_anim = anim_states.update();
             UpdateModelAnimation(m_raylib_model, updated_anim, 0);
-            this->entity()->get_component<Transform>()->rotation = anim_states.rotation();
-            //auto tmp = this->entity()->scene()->renderer()->create_render_model(Mesh::Sphere(5,10,10));
-            if (m_entity_bones.size() == 0){
-                for (int i = 0; i < updated_anim.boneCount; i++){
-                    auto bone = updated_anim.bones[i];
-                    Entity* bone_entity;
-                    if (bone.parent == -1){
-                        bone_entity = this->entity()->create_child(bone.name);
-                        bone_entity->get_component<Transform>()->position = vec3(updated_anim.framePoses[0][i].translation);
-                    } else {
-                        bone_entity = m_entity_bones[bone.parent]->create_child(bone.name);
-                        bone_entity->get_component<Transform>()->position = vec3(updated_anim.framePoses[0][i].translation) - vec3(updated_anim.framePoses[0][bone.parent].translation);
-                    }
-                    //bone_entity->add_component<Model>(tmp);
-                    //bone_entity->add_component<Selectable>(true,true);
-
-                    m_entity_transforms.push_back(bone_entity->get_component<Transform>());
-                    m_entity_bones.push_back(bone_entity);
-                    //auto bone_entity =
-                    //m_entity_bones.push_back(this->entity()->c)
-                }
-            }
         }
 
         void update(){
             ModelAnimation updated_anim = anim_states.update();
             UpdateModelAnimation(m_raylib_model, updated_anim, 0);
-            this->entity()->get_component<Transform>()->rotation = anim_states.rotation();
             for (int i = 0; i < updated_anim.boneCount; i++){
                 auto bone = updated_anim.bones[i];
                 Transform* bone_transform = m_entity_transforms[i];
