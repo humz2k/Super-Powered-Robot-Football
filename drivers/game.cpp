@@ -6,6 +6,7 @@
 #include "networking/client.hpp"
 #include "networking/map.hpp"
 #include "networking/server.hpp"
+#include "animation.hpp"
 #include <cassert>
 #include <string>
 
@@ -130,69 +131,83 @@ class LocalSceneServerCommands : public DevConsoleCommand {
     }
 };
 
-class LocalScene : public DefaultScene {
-  private:
-    SPRF::Server m_server;
-    Client* m_client;
+class GameScene : public DefaultScene{
+    private:
+        Client* m_client = NULL;
+    public:
+        GameScene(Game* game, std::string host = "127.0.0.1", enet_uint16 port = 31201) : DefaultScene(game){
+            Map("assets/maps/simple_map.json").load(this);
 
+            auto player = this->create_entity();
+            player->add_component<Crosshair>();
+            m_client = player->add_component<Client>(host, port,
+                                                    init_player, dev_console());
+            auto camera = player->create_child();;
+            camera->add_component<Camera>()->set_active();
+            auto hands_model = this->renderer()->create_render_model("assets/xbot_hands.glb");
+            auto hands_entity = camera->create_child("hands");
+            auto hands_model_entity = hands_entity->create_child("hands_model");
+            auto hands_model_component = hands_model_entity->add_component<Model>(hands_model);
+            //hands_model_entity->add_component<Selectable>(true,true);
+            hands_entity->get_component<Transform>()->scale = vec3(0.01,0.01,0.01);
+            hands_entity->get_component<Transform>()->rotation = vec3(M_PI_2,-0.7,0);
+            hands_entity->get_component<Transform>()->position = vec3(-0.1,-1.7,0.2);
+            hands_entity->add_component<Selectable>(true,true);
+            auto model_animator = hands_model_entity->add_component<ModelAnimator>(hands_model_entity,"assets/xbot_hands.glb",hands_model_component);
+            model_animator->play_animation("idle");
+
+            auto gun_model = this->renderer()->create_render_model("assets/ak47.glb");
+
+            auto gun_entity2 = hands_model_entity->find_entity("mixamorig:RightHand")->create_child();
+            gun_entity2->add_component<Model>(gun_model);
+            gun_entity2->add_component<Selectable>(true,true);
+            gun_entity2->get_component<Transform>()->position = vec3(6,0,-18);
+            gun_entity2->get_component<Transform>()->rotation = vec3(-M_PI_2,0.1,0.8);
+            gun_entity2->get_component<Transform>()->scale = vec3(20,20,20);
+
+            player->get_child(0)->add_component<MouseLook>();
+            player->get_child(0)->add_component<SoundListener>();
+
+            std::function<void()> callback = [this]() { disconnect(); };
+            dev_console()->add_command<DisconnectCommand>("disconnect", callback);
+        }
+
+        void disconnect() { this->close(); }
+
+        void on_close() { game()->load_scene<MenuScene>(); }
+
+        virtual ~GameScene(){
+            m_client->close();
+        }
+};
+
+class LocalServer{
+    private:
+        SPRF::Server m_server;
+    public:
+        LocalServer(std::string cfg, std::string host = "127.0.0.1", enet_uint16 port = 31201) : m_server(cfg, host, port){ }
+
+        virtual ~LocalServer(){
+            m_server.quit();
+            m_server.join();
+        }
+};
+
+class LocalScene : public LocalServer, public GameScene {
   public:
     LocalScene(Game* game)
-        : DefaultScene(game), m_server("server_cfg.ini", "127.0.0.1", 31201) {
-
-        // simple_map()->load(this);
-        Map("assets/maps/simple_map.json").load(this);
-
-        auto player = this->create_entity();
-        player->add_component<Crosshair>();
-        m_client = player->add_component<Client>("127.0.0.1", 31201,
-                                                 init_player, dev_console());
-        auto camera = player->create_child()->add_component<Camera>();
-        camera->set_active();
-
-        player->get_child(0)->add_component<MouseLook>();
-        player->get_child(0)->add_component<SoundListener>();
-
-        std::function<void()> callback = [this]() { disconnect(); };
-        dev_console()->add_command<DisconnectCommand>("disconnect", callback);
+        : LocalServer("server_cfg.ini"), GameScene(game)
+        {
 
         dev_console()->add_command<LocalSceneServerCommands>("server");
 
         dev_console()->exec("assets/server/local/cfg/init.cfg");
     }
-
-    ~LocalScene() {
-        m_client->close();
-        m_server.quit();
-        m_server.join();
-    }
-
-    void disconnect() { this->close(); }
-
-    void on_close() { game()->load_scene<MenuScene>(); }
 };
 
-class Scene1 : public DefaultScene {
-  public:
-    Scene1(Game* game, std::string host, enet_uint32 port)
-        : DefaultScene(game) {
-
-        Map("assets/maps/simple_map.json").load(this);
-
-        auto player = this->create_entity();
-        player->add_component<Crosshair>();
-        player->add_component<Client>(host, port, init_player, dev_console());
-        auto camera = player->create_child()->add_component<Camera>();
-        camera->set_active();
-
-        player->get_child(0)->add_component<MouseLook>();
-        player->get_child(0)->add_component<SoundListener>();
-
-        std::function<void()> callback = [this]() { disconnect(); };
-        dev_console()->add_command<DisconnectCommand>("disconnect", callback);
-    }
-    void disconnect() { this->close(); }
-
-    void on_close() { game()->load_scene<MenuScene>(); }
+class Scene1 : public GameScene{
+    public:
+        Scene1(Game* game, std::string host, enet_uint32 port) : GameScene(game,host,port){}
 };
 
 class ConnectCommand : public DevConsoleCommand {
